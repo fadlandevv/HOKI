@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Hoki POS - Manajemen Stok</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* --- CSS SIDEBAR KONSISTEN (GARANSI TIDAK BERUBAH) --- */
+        .sidebar { 
+            width: 220px; background: #d32f2f; color: white; padding: 20px 10px; 
+            transition: 0.3s; display: flex; flex-direction: column; 
+            height: 100vh; position: fixed; left: 0; top: 0; box-sizing: border-box; z-index: 1000;
+        }
+        .sidebar.collapsed { width: 75px; }
+        .sidebar.collapsed .menu-group-label, .sidebar.collapsed li span { display: none; }
+        .sidebar.collapsed li { justify-content: center; padding: 15px 0; }
+        .sidebar.collapsed .brand { font-size: 14px; }
+        .brand { font-weight: 800; letter-spacing: 2px; text-align: center; cursor: pointer; margin-bottom: 10px; transition: 0.3s; }
+        .menu-group-label { font-size: 11px; color: #ff9999; padding: 15px 15px 5px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800; }
+        .sidebar ul { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; overflow-x: hidden; }
+        .sidebar ul li { font-size: 13px; padding: 12px 15px; transition: 0.3s; color: white; cursor: pointer; display: flex; align-items: center; border-radius: 8px; margin-bottom: 5px; }
+        .sidebar ul li:hover { background: rgba(255,255,255,0.1); }
+        .sidebar ul li.active { background: #b71c1c; font-weight: bold; }
+        .sidebar ul li .icon { min-width: 25px; font-size: 16px; text-align: center; }
+        .sidebar ul li span { margin-left: 10px; white-space: nowrap; }
+        .logout-section { padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); margin-top: auto; }
+        .btn-logout-sidebar { width: 100%; background: #333; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+
+        /* Penyesuaian Konten */
+        .main-content { margin-left: 220px; padding: 25px; transition: 0.3s; flex: 1; min-height: 100vh; }
+        .main-content.expanded { margin-left: 75px; }
+
+        /* --- CSS HALAMAN STOK --- */
+        .grid-stok { display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
+        .card-stok { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: #d32f2f; color: white; }
+        .btn-add { background: #2e7d32; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
+        .btn-save { background: #d32f2f; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 15px; }
+        .master-item-list { border: 1px solid #eee; padding: 10px; border-radius: 8px; max-height: 150px; overflow-y: auto; margin-top: 10px; background: #fafafa; }
+        .master-row { display: flex; justify-content: space-between; font-size: 13px; padding: 8px 5px; border-bottom: 1px solid #eee; }
+
+        /* --- OVERLAY DETAIL --- */
+        #detailOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f7f6; z-index: 1000; display: none; padding: 40px; box-sizing: border-box; }
+        .detail-container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="dashboard-body" style="display: flex;">
+
+    <div class="sidebar" id="sidebar">
+        <h2 class="brand" onclick="toggleSidebar()">HOKI</h2>
+        <nav><ul id="sidebarMenu"></ul></nav>
+        <div class="logout-section">
+            <button class="btn-logout-sidebar" onclick="logout()">
+                <div class="icon">🚪</div> <span>LOGOUT</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <h2>📦 Manajemen Stok Cabang: <span id="displayCabang" style="color: #d32f2f;">...</span></h2>
+        <p style="font-size: 14px; color: #666;">Pantau ketersediaan material harian di setiap outlet.</p>
+        <hr>
+
+        <div class="grid-stok">
+            <div class="left-col">
+                <div class="card-stok" id="boxMasterOwner" style="display: none; margin-bottom: 20px; border: 2px solid #ffcccc;">
+                    <h4 style="margin-top:0; color: #d32f2f;">🛡️ Kelola Master Barang (Owner/VIP)</h4>
+                    <p style="font-size: 11px; margin-bottom: 10px;">Tambah barang yang wajib dilaporkan stoknya oleh Staff.</p>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="text" id="newMasterItem" placeholder="Nama Barang Baru...">
+                        <button onclick="tambahMasterItem()" style="background:#333; color:white; border:none; padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">+</button>
+                    </div>
+                    <div class="master-item-list" id="listMasterItem"></div>
+                </div>
+
+                <div class="card-stok">
+                    <h4 style="margin-top:0;">📝 Input Laporan Harian</h4>
+                    <label style="font-size: 11px; font-weight: bold;">Pilih Barang:</label>
+                    <select id="selectItemLaporan"></select>
+                    
+                    <label style="font-size: 11px; font-weight: bold;">Jumlah / Qty:</label>
+                    <input type="number" id="qtyItemLaporan" placeholder="0">
+                    
+                    <button class="btn-add" onclick="tambahKeDraft()">+ Masukkan ke Daftar</button>
+
+                    <table>
+                        <thead><tr><th>Material</th><th>Qty</th><th>X</th></tr></thead>
+                        <tbody id="tabelDraft"></tbody>
+                    </table>
+
+                    <button class="btn-save" onclick="simpanLaporanFinal()">💾 Simpan & Update Stok</button>
+                </div>
+            </div>
+
+            <div class="card-stok">
+                <h4 style="margin-top:0;">📄 History Laporan Stok</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Petugas</th>
+                            <th>Cabang</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelHistoryStok"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="detailOverlay">
+        <div class="detail-container">
+            <button onclick="tutupDetail()" style="background:#333; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">← Kembali</button>
+            <h2 id="detID" style="margin:20px 0 5px; color:#d32f2f;">Detail Stok</h2>
+            <p id="detWaktu" style="color:#888; font-size:14px; margin-bottom:15px;"></p>
+            <hr>
+            <table style="width:100%; margin-top:15px;">
+                <thead><tr><th>Nama Barang</th><th>Qty</th></tr></thead>
+                <tbody id="detTabelItems"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff', cabang:''};
+        const cabangAktif = localStorage.getItem('cabangHoki') || 'Pekapuran';
+        document.getElementById('displayCabang').innerText = cabangAktif;
+        let draftItem = [];
+        let historyStokCloud = []; // Penampung data dari cloud agar fungsi 'Detail' tetap jalan
+    
+        // --- 1. SIDEBAR SINKRON (TIDAK BERUBAH) ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'small' : 'large');
+        }
+    
+        function buildSidebar() {
+            const menuContainer = document.getElementById('sidebarMenu');
+            const role = currentUser.role;
+            const currentPage = window.location.pathname.split("/").pop() || 'dashboard.html';
+            if (localStorage.getItem('sidebarState') === 'small') {
+                document.getElementById('sidebar').classList.add('collapsed');
+                document.getElementById('mainContent').classList.add('expanded');
+            }
+            let menuHTML = '';
+            const createItem = (icon, label, link, active) => `
+                <li class="${active ? 'active' : ''}" onclick="location.href='${link}'">
+                    <div class="icon">${icon}</div> <span>${label}</span>
+                </li>`;
+    
+            menuHTML += `<div class="menu-group-label">Frontline Operations</div>`;
+            menuHTML += createItem('🛒', 'Kasir', 'dashboard.html', currentPage === 'dashboard.html');
+            menuHTML += createItem('📄', 'History Transaksi', 'history.html', currentPage === 'history.html');
+            menuHTML += createItem('📦', 'Stok Harian', 'stok.html', currentPage === 'stok.html');
+            menuHTML += createItem('🚚', 'Restock Barang', 'restock.html', currentPage === 'restock.html');
+            menuHTML += createItem('📊', 'Laporan Penjualan', 'laporan_staff.html', currentPage === 'laporan_staff.html');
+    
+            if (['Senior Staff', 'SPV', 'Owner', 'VIP'].includes(role)) {
+                menuHTML += `<div class="menu-group-label">Tactical Management</div>`;
+                menuHTML += createItem('🍱', 'Master Produk', 'produk.html', currentPage === 'produk.html');
+                menuHTML += createItem('📈', 'Rekapan Penjualan', 'rekap.html', currentPage === 'rekap.html');
+                menuHTML += createItem('💸', 'Belanja', 'belanja.html', currentPage === 'belanja.html');
+            }
+    
+            if (['Owner', 'VIP'].includes(role)) {
+                menuHTML += `<div class="menu-group-label">Executive Suite</div>`;
+                menuHTML += createItem('📊', 'Keuangan Global', 'laporan.html', currentPage === 'laporan.html');
+                menuHTML += createItem('📈', 'Statistik', 'statistik.html', currentPage === 'statistik.html');
+            }
+    
+            if (role === 'VIP') {
+                menuHTML += `<div class="menu-group-label" style="color: #ffeb3b; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">👑 VIP Access</div>`;
+                menuHTML += createItem('👥', 'Manajemen User', 'user.html', currentPage === 'user.html');
+                menuHTML += createItem('🔑', 'History Login', 'login_history.html', currentPage === 'login_history.html');
+            }
+            menuContainer.innerHTML = menuHTML;
+        }
+    
+        // --- 2. LOGIKA MASTER BARANG (CLOUD) ---
+        function initMasterAccess() {
+            if (currentUser.role === 'Owner' || currentUser.role === 'VIP') {
+                document.getElementById('boxMasterOwner').style.display = 'block';
+            }
+            renderMaster();
+        }
+    
+        async function tambahMasterItem() {
+            const nama = document.getElementById('newMasterItem').value.trim();
+            if(!nama) return;
+            
+            // Simpan ke Cloud
+            await fetch('api.php?action=save_master_stok', {
+                method: 'POST',
+                body: JSON.stringify({ nama: nama })
+            });
+    
+            document.getElementById('newMasterItem').value = '';
+            renderMaster();
+        }
+    
+        async function renderMaster() {
+            try {
+                const res = await fetch('api.php?action=get_master_stok');
+                const master = await res.json();
+                
+                const listDiv = document.getElementById('listMasterItem');
+                const select = document.getElementById('selectItemLaporan');
+                
+                listDiv.innerHTML = ''; select.innerHTML = '';
+                master.forEach((m) => {
+                    listDiv.innerHTML += `
+                        <div class="master-row">
+                            <span>${m.nama_item}</span>
+                            <span style="color:red; cursor:pointer; font-weight:bold;" onclick="hapusMaster(${m.id})">✖</span>
+                        </div>`;
+                    select.innerHTML += `<option value="${m.nama_item}">${m.nama_item}</option>`;
+                });
+            } catch (e) { console.error("Gagal muat master stok cloud"); }
+        }
+    
+        async function hapusMaster(id) {
+            if(confirm("Hapus barang ini dari Master?")) {
+                await fetch(`api.php?action=del_master_stok&id=${id}`);
+                renderMaster();
+            }
+        }
+    
+        // --- 3. LOGIKA LAPORAN (CLOUD) ---
+        function tambahKeDraft() {
+            const item = document.getElementById('selectItemLaporan').value;
+            const qty = document.getElementById('qtyItemLaporan').value;
+            if(!qty) return alert("Isi jumlah!");
+            draftItem.push({ item, qty });
+            document.getElementById('qtyItemLaporan').value = '';
+            renderDraft();
+        }
+    
+        function renderDraft() {
+            const tbody = document.getElementById('tabelDraft');
+            tbody.innerHTML = '';
+            draftItem.forEach((d, i) => {
+                tbody.innerHTML += `<tr><td>${d.item}</td><td><b>${d.qty}</b></td><td><button onclick="draftItem.splice(${i},1); renderDraft();">x</button></td></tr>`;
+            });
+        }
+    
+        async function simpanLaporanFinal() {
+            if(draftItem.length === 0) return alert("Daftar masih kosong!");
+            
+            // CEK: Apakah nama petugas ada?
+            const namaPetugas = currentUser.user || currentUser.username || "Tanpa Nama";
+            
+            // CEK: Apakah cabang terdeteksi?
+            if(!cabangAktif || cabangAktif === 'Belum Pilih') {
+                return alert("Cabang tidak terdeteksi! Silakan Login ulang.");
+            }
+        
+            const reportData = {
+                report_id: "STK-" + Date.now().toString().slice(-6),
+                petugas: namaPetugas,
+                cabang: cabangAktif,
+                items: draftItem
+            };
+        
+            try {
+                const res = await fetch('api.php?action=save_laporan_stok', {
+                    method: 'POST',
+                    body: JSON.stringify(reportData)
+                });
+                
+                const hasil = await res.json();
+                
+                if(hasil.status === 'success') {
+                    alert("Laporan Stok Berhasil Disimpan! ✅");
+                    draftItem = []; 
+                    renderDraft(); 
+                    renderHistoryStok();
+                } else {
+                    // Jika PHP kirim error, kita tampilkan di sini
+                    alert("Gagal Simpan: " + hasil.message);
+                }
+            } catch (e) { 
+                console.error(e);
+                alert("Koneksi ke Server Terputus! Cek internet atau file api.php");
+            }
+        }
+    
+        async function renderHistoryStok() {
+            try {
+                const url = `api.php?action=get_laporan_stok&role=${currentUser.role}&cabang=${encodeURIComponent(currentUser.cabang)}`;
+                const res = await fetch(url);
+                historyStokCloud = await res.json();
+                
+                const tbody = document.getElementById('tabelHistoryStok');
+                tbody.innerHTML = '';
+                
+                historyStokCloud.forEach((h) => {
+                    tbody.innerHTML += `<tr>
+                        <td><small>${h.waktu}</small></td>
+                        <td>${h.petugas}</td>
+                        <td><b>${h.cabang}</b></td>
+                        <td>
+                            <button onclick="bukaDetail('${h.report_id}')" style="background:#d32f2f; color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;">Detail</button>
+                            <button onclick="hapusLaporan(${h.id})" style="background:#333; color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;">X</button>
+                        </td>
+                    </tr>`;
+                });
+            } catch (e) { console.error("Gagal muat history stok cloud"); }
+        }
+    
+        async function hapusLaporan(id) {
+            if(confirm("Hapus laporan ini permanen dari Cloud?")) {
+                await fetch(`api.php?action=del_laporan_stok&id=${id}`);
+                renderHistoryStok();
+            }
+        }
+    
+        function bukaDetail(report_id) {
+            const data = historyStokCloud.find(h => h.report_id === report_id);
+            if(!data) return;
+            
+            document.getElementById('detWaktu').innerText = "Waktu Lapor: " + data.waktu;
+            const tbodyDetail = document.getElementById('detTabelItems');
+            tbodyDetail.innerHTML = '';
+            
+            // Bongkar JSON items dari database
+            const items = JSON.parse(data.items_json || '[]');
+            items.forEach(it => { 
+                tbodyDetail.innerHTML += `<tr><td>${it.item}</td><td><b>${it.qty}</b></td></tr>`; 
+            });
+            document.getElementById('detailOverlay').style.display = 'block';
+        }
+    
+        function tutupDetail() { document.getElementById('detailOverlay').style.display = 'none'; }
+        function logout() { if(confirm("Logout?")) { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; } }
+    
+        window.onload = function() {
+            buildSidebar();
+            initMasterAccess();
+            renderHistoryStok();
+        };
+    </script>
+</body>
+</html>

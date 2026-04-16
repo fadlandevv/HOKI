@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Hoki POS - Pemasukan & Pengeluaran</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body" style="display: flex;">
+
+    <div class="sidebar" id="sidebar">
+        <h2 class="brand" onclick="toggleSidebar()">HOKI</h2>
+        <nav><ul id="sidebarMenu"></ul></nav>
+        <div class="logout-section">
+            <button class="btn-logout-sidebar" onclick="logout()">🚪 <span>LOGOUT</span></button>
+        </div>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <h2>💰 Pemasukan & Pengeluaran (Buku Kas)</h2>
+        <p style="color: #666; font-size: 14px;">Catat semua arus kas masuk dan keluar cabang secara mendetail.</p>
+        <hr>
+    
+        <div class="form-belanja">
+            <div class="grid-input">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="fUser" readonly style="background: #f0f0f0;">
+                </div>
+                <div class="input-group">
+                    <label>Tanggal & Jam</label>
+                    <input type="datetime-local" id="fWaktu">
+                </div>
+                <div class="input-group">
+                    <label>Jenis Transaksi</label>
+                    <div style="display:flex; gap:5px;">
+                        <select id="fJenis"></select>
+                        <button onclick="manageJenis()" style="cursor:pointer; border:none; background:#333; color:white; border-radius:5px; padding:0 10px;">+</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Nama Transaksi</label>
+                    <input type="text" id="fNama" list="listNama" placeholder="Cth: Penjualan Event / Beli Sabun">
+                    <datalist id="listNama"></datalist>
+                </div>
+                <div class="input-group">
+                    <label>Qty</label>
+                    <input type="number" id="fQty" value="1">
+                </div>
+                <div class="input-group">
+                    <label>Credit / Debit</label>
+                    <select id="fMode">
+                        <option value="Credit">Pemasukan (Credit)</option>
+                        <option value="Debit">Pengeluaran (Debit)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Nominal (Rp)</label>
+                    <input type="number" id="fNominal" placeholder="0">
+                </div>
+                <div class="input-group">
+                    <label>Keterangan</label>
+                    <input type="text" id="fKet" list="listKet" placeholder="Catatan tambahan...">
+                    <datalist id="listKet"></datalist>
+                </div>
+    
+                <div class="btn-action">
+                    <button class="btn-save" onclick="simpanTransaksi()">💾 Simpan Transaksi</button>
+                </div>
+            </div>
+        </div>
+    
+        <div class="grid-stats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+            <div class="stat-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border-bottom: 4px solid #2e7d32;">
+                <h3 style="margin:0; font-size: 10px; color: #999; text-transform: uppercase;">Total Credit (Masuk)</h3>
+                <p id="totalDebit" style="margin: 5px 0 0; font-size: 20px; font-weight: 800; color: #2e7d32;">Rp 0</p>
+            </div>
+            <div class="stat-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border-bottom: 4px solid #d32f2f;">
+                <h3 style="margin:0; font-size: 10px; color: #999; text-transform: uppercase;">Total Debit (Keluar)</h3>
+                <p id="totalCredit" style="margin: 5px 0 0; font-size: 20px; font-weight: 800; color: #d32f2f;">Rp 0</p>
+            </div>
+            <div class="stat-card" style="background: #fffcf0; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border-bottom: 4px solid #333;">
+                <h3 style="margin:0; font-size: 10px; color: #999; text-transform: uppercase;">Saldo Bersih</h3>
+                <p id="totalNet" style="margin: 5px 0 0; font-size: 20px; font-weight: 800; color: #333;">Rp 0</p>
+            </div>
+        </div>
+    
+        <div class="form-belanja" style="background: #f8f8f8; border: 1px solid #ddd; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 15px 0; font-size: 12px; color: #333;">🔍 Filter Data History</h4>
+            <div class="grid-input" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));">
+                <div class="input-group">
+                    <label>Dari Tanggal</label>
+                    <input type="date" id="filterTglMulai" onchange="muatTabel()">
+                </div>
+                <div class="input-group">
+                    <label>Sampai Tanggal</label>
+                    <input type="date" id="filterTglSelesai" onchange="muatTabel()">
+                </div>
+                <div class="input-group">
+                    <label>Cari User</label>
+                    <input type="text" id="filterUser" placeholder="Nama staff..." onkeyup="muatTabel()">
+                </div>
+                <div class="input-group">
+                    <label>Pilih Jenis</label>
+                    <select id="filterJenis" onchange="muatTabel()">
+                        <option value="">Semua Jenis</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Nama Transaksi</label>
+                    <input type="text" id="filterNama" placeholder="Cari transaksi..." onkeyup="muatTabel()">
+                </div>
+                <div class="input-group">
+                    <label>Mode (In/Out)</label>
+                   <select id="filterMode" onchange="muatTabel()">
+                        <option value="">Semua</option>
+                        <option value="Credit">Credit (Masuk)</option>
+                        <option value="Debit">Debit (Keluar)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Keterangan</label>
+                    <input type="text" id="filterKet" placeholder="Cari catatan..." onkeyup="muatTabel()">
+                </div>
+            </div>
+            <button onclick="resetSemuaFilter()" style="margin-top:10px; border:none; background:#eee; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:11px;">Reset Filter</button>
+        </div>
+    
+        <table>
+            <thead>
+                <tr>
+                    <th>Waktu</th>
+                    <th>User</th>
+                    <th>Jenis</th>
+                    <th>Transaksi</th>
+                    <th>Qty</th>
+                    <th>In/Out</th>
+                    <th>Nominal</th>
+                    <th>Keterangan</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="tabelArusKas"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff', cabang:''};
+
+        // --- 1. SIDEBAR SINKRON (TETAP) ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'small' : 'large');
+        }
+    
+        function buildSidebar() {
+            const menuContainer = document.getElementById('sidebarMenu');
+            const role = currentUser.role;
+            const currentPage = window.location.pathname.split("/").pop() || 'dashboard.html';
+    
+            if (localStorage.getItem('sidebarState') === 'small') {
+                document.getElementById('sidebar').classList.add('collapsed');
+                document.getElementById('mainContent').classList.add('expanded');
+            }
+    
+            let menuHTML = '';
+            const createItem = (icon, label, link, active) => `
+                <li class="${active ? 'active' : ''}" onclick="location.href='${link}'">
+                    <div class="icon">${icon}</div> <span>${label}</span>
+                </li>`;
+    
+            menuHTML += `<div class="menu-group-label">Frontline Operations</div>`;
+            menuHTML += createItem('🛒', 'Kasir', 'dashboard.html', currentPage === 'dashboard.html');
+            menuHTML += createItem('📄', 'History Transaksi', 'history.html', currentPage === 'history.html');
+            menuHTML += createItem('📦', 'Stok Harian', 'stok.html', currentPage === 'stok.html');
+            menuHTML += createItem('🚚', 'Restock Barang', 'restock.html', currentPage === 'restock.html');
+            menuHTML += createItem('📊', 'Laporan Penjualan', 'laporan_staff.html', currentPage === 'laporan_staff.html');
+    
+            if (['Senior Staff', 'SPV', 'Owner', 'VIP'].includes(role)) {
+                menuHTML += `<div class="menu-group-label">Tactical Management</div>`;
+                menuHTML += createItem('🍱', 'Master Produk', 'produk.html', currentPage === 'produk.html');
+                menuHTML += createItem('📈', 'Rekapan Penjualan', 'rekap.html', currentPage === 'rekap.html');
+                menuHTML += createItem('💸', 'Belanja', 'belanja.html', currentPage === 'belanja.html');
+            }
+    
+            if (['Owner', 'VIP'].includes(role)) {
+                menuHTML += `<div class="menu-group-label">Executive Suite</div>`;
+                menuHTML += createItem('📊', 'Keuangan Global', 'laporan.html', currentPage === 'laporan.html');
+                menuHTML += createItem('📈', 'Statistik', 'statistik.html', currentPage === 'statistik.html');
+            }
+    
+            if (role === 'VIP') {
+                menuHTML += `<div class="menu-group-label" style="color: #ffeb3b; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">👑 VIP Access</div>`;
+                menuHTML += createItem('👥', 'Manajemen User', 'user.html', currentPage === 'user.html');
+                menuHTML += createItem('🔑', 'History Login', 'login_history.html', currentPage === 'login_history.html');
+            }
+            menuContainer.innerHTML = menuHTML;
+        }
+    
+        // --- 2. LOGIKA KAS (CLOUD) ---
+        async function initForm() {
+            document.getElementById('fUser').value = currentUser.user;
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('fWaktu').value = now.toISOString().slice(0, 16);
+            
+            await muatJenis();
+            await muatTabel();
+        }
+    
+        async function muatJenis() {
+            try {
+                const res = await fetch('api.php?action=get_kas_jenis');
+                const types = await res.json();
+                const select = document.getElementById('fJenis');
+                select.innerHTML = '';
+                types.forEach(t => {
+                    select.innerHTML += `<option value="${t.nama_jenis}">${t.nama_jenis}</option>`;
+                });
+            } catch (e) { console.error("Gagal muat jenis kas"); }
+        }
+    
+        async function manageJenis() {
+            const action = confirm("Klik OK untuk TAMBAH jenis, klik CANCEL untuk HAPUS jenis saat ini.");
+            const target = document.getElementById('fJenis').value;
+    
+            if (action) {
+                const baru = prompt("Masukkan nama jenis baru:");
+                if (baru) {
+                    await fetch('api.php?action=save_kas_jenis', { method: 'POST', body: JSON.stringify({ nama: baru }) });
+                }
+            } else {
+                if (confirm(`Hapus jenis '${target}'?`)) {
+                    await fetch(`api.php?action=del_kas_jenis&nama=${encodeURIComponent(target)}`);
+                }
+            }
+            muatJenis();
+        }
+    
+        async function muatSaran(data) {
+            const listNama = document.getElementById('listNama');
+            const listKet = document.getElementById('listKet');
+            
+            const unikNama = [...new Set(data.map(d => d.nama))];
+            const unikKet = [...new Set(data.map(d => d.ket))];
+    
+            listNama.innerHTML = unikNama.map(n => `<option value="${n}">`).join('');
+            listKet.innerHTML = unikKet.map(k => `<option value="${k}">`).join('');
+        }
+    
+        async function simpanTransaksi() {
+            const payload = {
+                waktu: document.getElementById('fWaktu').value,
+                user: currentUser.user,
+                jenis: document.getElementById('fJenis').value,
+                nama: document.getElementById('fNama').value,
+                qty: document.getElementById('fQty').value,
+                mode: document.getElementById('fMode').value,
+                nominal: document.getElementById('fNominal').value,
+                ket: document.getElementById('fKet').value,
+                cabang: localStorage.getItem('cabangHoki') || 'Pusat'
+            };
+    
+            if (!payload.nama || !payload.nominal) return alert("Nama transaksi dan Nominal wajib diisi!");
+    
+            try {
+                const res = await fetch('api.php?action=save_kas_data', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const hasil = await res.json();
+                if (hasil.status === 'success') {
+                    document.getElementById('fNama').value = '';
+                    document.getElementById('fNominal').value = '';
+                    document.getElementById('fKet').value = '';
+                    alert("Data Kas Berhasil Disimpan ke Cloud!");
+                    muatTabel();
+                }
+            } catch (e) { alert("Gagal simpan ke Cloud"); }
+        }
+    
+        let cacheDataKas = []; // Penampung data asli dari cloud
+
+        async function muatTabel() {
+            try {
+                // Ambil data dari server hanya jika cache kosong
+                if (cacheDataKas.length === 0) {
+                    const url = `api.php?action=get_kas_data&role=${currentUser.role}&cabang=${encodeURIComponent(currentUser.cabang)}`;
+                    const res = await fetch(url);
+                    cacheDataKas = await res.json();
+                }
+        
+                // Ambil nilai filter
+                const fMulai = document.getElementById('filterTglMulai').value;
+                const fSelesai = document.getElementById('filterTglSelesai').value;
+                const fUser = document.getElementById('filterUser').value.toLowerCase();
+                const fJenis = document.getElementById('filterJenis').value;
+                const fNama = document.getElementById('filterNama').value.toLowerCase();
+                const fMode = document.getElementById('filterMode').value;
+                const fKet = document.getElementById('filterKet').value.toLowerCase();
+        
+                // Proses Filter
+                const filtered = cacheDataKas.filter(d => {
+                    const tgl = d.waktu.split(' ')[0] || d.waktu.split('T')[0];
+                    return (!fMulai || tgl >= fMulai) &&
+                           (!fSelesai || tgl <= fSelesai) &&
+                           (!fUser || d.user.toLowerCase().includes(fUser)) &&
+                           (!fJenis || d.jenis === fJenis) &&
+                           (!fNama || d.nama.toLowerCase().includes(fNama)) &&
+                           (!fMode || d.mode === fMode) &&
+                           (!fKet || (d.ket && d.ket.toLowerCase().includes(fKet)));
+                });
+        
+                // Hitung Total & Render Tabel
+                let debit = 0; let credit = 0;
+                const tbody = document.getElementById('tabelArusKas');
+                tbody.innerHTML = '';
+        
+                // Cari bagian ini di dalam fungsi muatTabel()
+                filtered.forEach(d => {
+                    const nom = parseInt(d.nominal || 0);
+                    
+                    // LOGIKA BARU: Credit Masuk (+), Debit Keluar (-)
+                    if (d.mode === 'Credit') credit += nom; 
+                    else debit += nom;
+                
+                    const badge = d.mode === 'Credit' ? 'badge-in' : 'badge-out';
+                    const sign = d.mode === 'Credit' ? '+' : '-';
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${d.waktu.replace('T', ' ')}</td>
+                            <td>${d.user}</td>
+                            <td>${d.jenis}</td>
+                            <td><b>${d.nama}</b></td>
+                            <td>${d.qty}</td>
+                            <td><span class="${badge}">${d.mode}</span></td>
+                            <td style="font-weight:bold; color:${d.mode === 'Credit' ? 'green' : 'red'};">
+                                ${sign} Rp ${nom.toLocaleString()}
+                            </td>
+                            <td><small>${d.ket || '-'}</small></td>
+                            <td><button onclick="hapusKas(${d.id})" ...>✖</button></td>
+                        </tr>`;
+                });
+                
+                // Update Kartu Statistik (Rumus Saldo: Credit dikurangi Debit)
+                document.getElementById('totalDebit').innerText = `Rp ${debit.toLocaleString()}`;
+                document.getElementById('totalCredit').innerText = `Rp ${credit.toLocaleString()}`;
+                document.getElementById('totalNet').innerText = `Rp ${(credit - debit).toLocaleString()}`;
+                
+                // Update pilihan filter jenis (otomatis mengikuti data yang ada)
+                updateDropdownJenisFilter();
+        
+            } catch (e) { console.error("Gagal muat data cloud"); }
+        }
+        
+        // Fungsi untuk me-refresh data (dipakai setelah simpan/hapus)
+        function refreshDataCloud() {
+            cacheDataKas = []; // Kosongkan cache agar tarik data baru
+            muatTabel();
+        }
+        
+        function resetSemuaFilter() {
+            document.getElementById('filterTglMulai').value = '';
+            document.getElementById('filterTglSelesai').value = '';
+            document.getElementById('filterUser').value = '';
+            document.getElementById('filterJenis').value = '';
+            document.getElementById('filterNama').value = '';
+            document.getElementById('filterMode').value = '';
+            document.getElementById('filterKet').value = '';
+            muatTabel();
+        }
+        
+        function updateDropdownJenisFilter() {
+            const select = document.getElementById('filterJenis');
+            if (select.options.length > 1) return; // Sudah diisi
+            const jenisUnik = [...new Set(cacheDataKas.map(d => d.jenis))];
+            jenisUnik.sort().forEach(j => {
+                select.innerHTML += `<option value="${j}">${j}</option>`;
+            });
+        }
+    
+        async function hapusKas(id) {
+            if(confirm("Hapus catatan ini secara permanen dari Cloud?")) {
+                await fetch(`api.php?action=del_kas_data&id=${id}`);
+                muatTabel();
+            }
+        }
+    
+        function logout() { if(confirm("Logout?")) { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; } }
+    
+        window.onload = function() {
+            buildSidebar();
+            initForm();
+        };
+    </script>
+</body>
+</html>
+

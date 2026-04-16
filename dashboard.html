@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=5.0, user-scalable=yes">
+    <title>Hoki POS 2026 - Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="dashboard-body">
+    <div class="sidebar" id="sidebar">
+        <h2 class="brand" onclick="toggleSidebar()"><span>HOKI</span></h2>
+        <nav><ul id="sidebarMenu"></ul></nav>
+        <div class="logout-section">
+            <button class="btn-logout-sidebar" onclick="logout()">
+                <div class="icon">🚪</div> <span>LOGOUT</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <header>
+            <div>
+                <h2 style="margin:0;">Menu Kasir - <span id="namaCabangDisplay" style="color: #d32f2f;">...</span></h2>
+                <p id="userGreeting" style="font-size: 12px; color: #666; margin: 5px 0 0 0;"></p>
+            </div>
+            <div class="clock-container">
+                <p id="realtimeClock">00:00:00</p>
+                <p id="realtimeDate">...</p>
+            </div>
+        </header>
+
+        <div class="pos-container">
+            <div class="menu-section">
+                <div class="menu-grid" id="gridProduk"></div>
+            </div>
+
+            <div class="cart">
+                <h3 style="margin:0 0 15px 0; font-size: 16px;">🛒 Keranjang</h3>
+                <div id="cart-items" style="min-height: 100px; max-height: 300px; overflow-y: auto;">
+                    <p style="color:#999; text-align: center; margin-top: 30px; font-size: 12px;">Belum ada pesanan...</p>
+                </div>
+                
+                <div style="border-top: 2px dashed #eee; margin: 15px 0; padding-top: 10px;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 800;">
+                        <span>TOTAL:</span>
+                        <span id="totalHarga" style="color: #d32f2f;">Rp 0</span>
+                    </div>
+                </div>
+
+                <select id="metodeBayar" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd; background: #f9f9f9; font-weight: bold;">
+                    <option value="CASH">💵 CASH</option>
+                    <option value="QRIS">📱 QRIS</option>
+                    <option value="GF">🛵 GRABFOOD</option>
+                    <option value="GB">🍴 GOFOOD</option>
+                </select>
+
+                <div style="display: grid; gap: 8px;">
+                    <button class="btn-primary" onclick="prosesTransaksi(false)">💾 SIMPAN DATA</button>
+                    <button class="btn-primary" style="background:#333;" onclick="prosesTransaksi(true)">🖨️ CETAK STRUK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        const cabangHoki = localStorage.getItem('cabangHoki') || 'Pusat';
+        let keranjang = [];
+        let daftarProduk = [];
+
+        if (!currentUser) { window.location.href = 'index.html'; }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'small' : 'large');
+        }
+
+        function updateHeaderInfo() {
+            document.getElementById('namaCabangDisplay').innerText = cabangHoki;
+            document.getElementById('userGreeting').innerText = `Petugas: ${currentUser.user} (${currentUser.role})`;
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('realtimeClock').innerText = now.toLocaleTimeString('id-ID');
+            document.getElementById('realtimeDate').innerText = now.toLocaleDateString('id-ID', options);
+        }
+        setInterval(updateClock, 1000);
+
+        function buildSidebar() {
+    const menuContainer = document.getElementById('sidebarMenu');
+    const role = currentUser.role;
+    const currentPage = window.location.pathname.split("/").pop() || 'dashboard.html';
+
+    // Pulihkan status minimize dari memori
+    if (localStorage.getItem('sidebarState') === 'small') {
+        document.getElementById('sidebar').classList.add('collapsed');
+        document.getElementById('mainContent').classList.add('expanded');
+    }
+
+    let menuHTML = '';
+    const createItem = (icon, label, link, active) => `
+        <li class="${active ? 'active' : ''}" onclick="location.href='${link}'">
+            <div class="icon">${icon}</div> <span>${label}</span>
+        </li>`;
+
+    // --- GROUP 1: FRONTLINE OPERATIONS (Semua Role) ---
+    menuHTML += `<div class="menu-group-label">Frontline Operations</div>`;
+    menuHTML += createItem('🛒', 'Kasir', 'dashboard.html', currentPage === 'dashboard.html');
+    menuHTML += createItem('📄', 'History Transaksi', 'history.html', currentPage === 'history.html');
+    menuHTML += createItem('📦', 'Stok Harian', 'stok.html', currentPage === 'stok.html');
+    menuHTML += createItem('🚚', 'Restock Barang', 'restock.html', currentPage === 'restock.html');
+    menuHTML += createItem('📊', 'Laporan Penjualan', 'laporan_staff.html', currentPage === 'laporan_staff.html');
+
+    // --- GROUP 2: TACTICAL MANAGEMENT (Senior Staff, SPV, Owner, VIP) ---
+    if (['Senior Staff', 'SPV', 'Owner', 'VIP'].includes(role)) {
+        menuHTML += `<div class="menu-group-label">Tactical Management</div>`;
+        menuHTML += createItem('🍱', 'Master Produk', 'produk.html', currentPage === 'produk.html');
+        menuHTML += createItem('📈', 'Rekapan Penjualan', 'rekap.html', currentPage === 'rekap.html');
+        menuHTML += createItem('💸', 'Belanja', 'belanja.html', currentPage === 'belanja.html');
+    }
+
+    // --- GROUP 3: EXECUTIVE SUITE (Owner & VIP) ---
+    if (['Owner', 'VIP'].includes(role)) {
+        menuHTML += `<div class="menu-group-label">Executive Suite</div>`;
+        menuHTML += createItem('📊', 'Keuangan Global', 'laporan.html', currentPage === 'laporan.html');
+        menuHTML += createItem('📈', 'Statistik', 'statistik.html', currentPage === 'statistik.html');
+    }
+
+    // --- GROUP 4: VIP ACCESS (KHUSUS ROLE VIP SAAT INI) ---
+    if (role === 'VIP') {
+        menuHTML += `
+            <div class="menu-group-label" style="color: #ffeb3b; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                👑 VIP Access
+            </div>`;
+        menuHTML += createItem('👥', 'Manajemen User', 'user.html', currentPage === 'user.html');
+        menuHTML += createItem('🔑', 'History Login', 'login_history.html', currentPage === 'login_history.html');
+    }
+
+    menuContainer.innerHTML = menuHTML;
+}
+
+        async function renderKasir() {
+            try {
+                const res = await fetch('api.php?action=get_produk');
+                daftarProduk = await res.json();
+                const grid = document.getElementById('gridProduk');
+                grid.innerHTML = '';
+                daftarProduk.forEach(p => {
+                    const item = document.createElement('div');
+                    item.className = 'menu-item';
+                    item.onclick = () => { 
+                        keranjang.push({ sku: p.sku, nama: p.nama, harga: parseInt(p.harga) }); 
+                        updateCart(); 
+                    };
+                    item.innerHTML = `
+                        <span class="sku-text">${p.sku}</span>
+                        <span class="name-text">${p.nama}</span>
+                        <div class="price-text">Rp ${parseInt(p.harga).toLocaleString()}</div>
+                    `;
+                    grid.appendChild(item);
+                });
+            } catch (e) { console.error("Gagal muat produk cloud"); }
+        }
+
+        function updateCart() {
+            const container = document.getElementById('cart-items');
+            const totalDisplay = document.getElementById('totalHarga');
+            container.innerHTML = '';
+            let total = 0;
+            keranjang.forEach((item, index) => {
+                total += item.harga;
+                container.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; background: #fdfdfd; padding: 6px; border-radius: 6px; border: 1px solid #eee;">
+                        <span>${item.nama}</span>
+                        <span>${item.harga.toLocaleString()} <b style="color:#d32f2f; cursor:pointer; margin-left:5px;" onclick="hapusCart(${index})">x</b></span>
+                    </div>`;
+            });
+            totalDisplay.innerText = "Rp " + total.toLocaleString();
+            if(keranjang.length === 0) container.innerHTML = '<p style="color:#999; text-align:center; margin-top:20px; font-size:11px;">Belum ada pesanan...</p>';
+        }
+
+        function hapusCart(i) { keranjang.splice(i, 1); updateCart(); }
+
+        async function prosesTransaksi(denganCetak) {
+            if(keranjang.length === 0) return alert("Pilih menu dulu!");
+            const total = keranjang.reduce((sum, itm) => sum + itm.harga, 0);
+            const metode = document.getElementById('metodeBayar').value;
+
+            const data = { cabang: cabangHoki, petugas: currentUser.user, total: total, metode: metode, items: keranjang };
+
+            try {
+                const res = await fetch('api.php?action=save_transaksi', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const hasil = await res.json();
+                if (hasil.status === 'success') {
+                    if (denganCetak) {
+                        document.getElementById('p-cabang').innerText = "Cabang: " + cabangHoki;
+                        document.getElementById('p-total').innerText = "Rp " + total.toLocaleString();
+                        document.getElementById('p-metode').innerText = "Metode: " + metode;
+                        document.getElementById('p-waktu').innerText = new Date().toLocaleString('id-ID');
+                        let htmlItems = "";
+                        keranjang.forEach(it => { htmlItems += `<div style="display:flex; justify-content:space-between;"><span>${it.nama}</span><span>${it.harga.toLocaleString()}</span></div>`; });
+                        document.getElementById('p-items').innerHTML = htmlItems;
+                        setTimeout(() => { window.print(); alert("Berhasil! ✅"); keranjang = []; updateCart(); }, 500);
+                    } else {
+                        alert("Berhasil Disimpan! ✅");
+                        keranjang = []; updateCart();
+                    }
+                }
+            } catch (e) { alert("Gagal koneksi server!"); }
+        }
+
+        function logout() { if(confirm("Logout?")) { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; } }
+
+        window.onload = () => { updateHeaderInfo(); buildSidebar(); renderKasir(); updateClock(); };
+    </script>
+
+    <div id="area-struk">
+        <div style="text-align:center;">
+            <h3 style="margin:0">HOKI DIMSUM</h3>
+            <p id="p-cabang" style="font-size:10px; margin:2px 0;"></p>
+            <p>----------------------------</p>
+        </div>
+        <div id="p-items"></div>
+        <p>----------------------------</p>
+        <div style="display:flex; justify-content:space-between; font-weight:bold;">
+            <span>TOTAL</span><span id="p-total"></span>
+        </div>
+        <p id="p-metode"></p>
+        <p>----------------------------</p>
+        <div style="text-align:center; font-size:10px;">
+            <p id="p-waktu"></p>
+            <p>Terima Kasih!</p>
+        </div>
+    </div>
+</body>
+</html>

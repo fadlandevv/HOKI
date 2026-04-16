@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hoki POS 2026 - Login VIP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="card" id="loginCard">
+            <h2 class="brand" style="color:#d32f2f; margin-bottom:0; font-weight: 800; letter-spacing: 0px;">HOKI DIMSUM</h2>
+            <p style="font-size: 13px; color: #666; margin-top: 2px;">Sistem Keuangan Terpusat</p>
+
+            <!-- DEV MODE BANNER — hapus tag ini saat production -->
+            <div id="devBanner" style="display:none; background:#fff8e1; border:1px solid #ffe082; border-radius:8px; padding:8px 12px; margin:12px 0; font-size:11px; color:#795548; text-align:left;">
+                <b>🛠 DEV MODE</b> — tidak butuh api.php<br>
+                <span style="color:#555;">admin/admin · owner/owner · spv1/spv1 · senior/senior · staff1/staff1</span>
+            </div>
+
+            <input type="text" id="username" placeholder="Username" style="margin-top:14px;">
+            <p style="margin-top: 6px;"></p>
+            <input type="password" id="password" placeholder="Password">
+            <p style="margin-top: 12px;"></p>
+            <button onclick="cekAksesLogin()">Login Account</button>
+        </div>
+
+        <div class="card hidden" id="nextStepCard">
+            <div id="userBadge" style="background:#eee; padding:5px 12px; border-radius:20px; font-size:11px; margin-bottom:15px; display:inline-block; font-weight: bold; color: #d32f2f;"></div>
+            <h3 style="margin-bottom: 5px;">Pilih Lokasi Cabang</h3>
+            <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Cabang tempat kamu bertugas hari ini:</p>
+            <select id="cabangPilihan"></select>
+            <button onclick="finalMasuk()" style="margin-top:14px;">Buka Kasir Sekarang</button>
+        </div>
+    </div>
+
+    <script>
+    // ─────────────────────────────────────────────────────────
+    //  DEV MODE CONFIG
+    //  Set DEV_MODE = true  → login pakai data dummy, tanpa api.php
+    //  Set DEV_MODE = false → login pakai api.php (production)
+    // ─────────────────────────────────────────────────────────
+    const DEV_MODE = true;
+
+    const DEV_USERS = [
+        { user: 'admin',  pass: 'admin',  role: 'VIP',          cabang: 'Semua' },
+        { user: 'owner',  pass: 'owner',  role: 'Owner',        cabang: 'Semua' },
+        { user: 'spv1',   pass: 'spv1',   role: 'SPV',          cabang: 'Pusat' },
+        { user: 'senior', pass: 'senior', role: 'Senior Staff', cabang: 'Pusat,Cabang A' },
+        { user: 'staff1', pass: 'staff1', role: 'Staff',        cabang: 'Pusat,Cabang A,Cabang B' },
+    ];
+
+    const DEV_CABANG = ['Pusat', 'Cabang A', 'Cabang B'];
+
+    // Tampilkan banner dev mode
+    if (DEV_MODE) document.getElementById('devBanner').style.display = 'block';
+
+    // ─────────────────────────────────────────────────────────
+    //  FUNGSI LOGIN UTAMA
+    // ─────────────────────────────────────────────────────────
+    async function cekAksesLogin() {
+        const userIn = document.getElementById('username').value.trim();
+        const passIn = document.getElementById('password').value.trim();
+
+        if (!userIn || !passIn) return alert("Username dan Password harus diisi!");
+
+        if (DEV_MODE) {
+            // ── JALUR DEV: cek dari array dummy ──
+            const ketemu = DEV_USERS.find(u => u.user === userIn && u.pass === passIn);
+            if (ketemu) {
+                prosesHasilLogin(ketemu, true);
+            } else {
+                alert("Username atau Password salah! (Dev Mode)\n\nCoba: admin/admin, owner/owner, staff1/staff1");
+            }
+            return;
+        }
+
+        // ── JALUR PRODUCTION: fetch ke api.php ──
+        try {
+            const response = await fetch('api.php?action=login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user: userIn, pass: passIn })
+            });
+
+            if (!response.ok) throw new Error("Server api.php bermasalah (HTTP " + response.status + ")");
+
+            const hasil = await response.json();
+
+            if (hasil.status === 'success') {
+                prosesHasilLogin(hasil.user, false);
+            } else {
+                alert(hasil.message || "Username atau Password salah!");
+            }
+        } catch (err) {
+            alert("Terjadi Kesalahan: " + err.message);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  PROSES SETELAH LOGIN BERHASIL (sama untuk dev & prod)
+    // ─────────────────────────────────────────────────────────
+    async function prosesHasilLogin(ketemu, isDevMode) {
+
+        // A. VIP & OWNER → langsung ke dashboard
+        if (ketemu.role === 'VIP' || ketemu.role === 'Owner') {
+            localStorage.setItem('currentUser', JSON.stringify({
+                user: ketemu.user, role: ketemu.role, cabang: 'Semua'
+            }));
+            localStorage.setItem('cabangHoki', 'Semua');
+            if (!isDevMode) await catatLogLogin(ketemu.user, ketemu.role, 'Semua');
+            alert(ketemu.role === 'VIP' ? "👑 AKSES VIP DITERIMA!" : "Halo Bos Besar!");
+            window.location.href = 'dashboard.html';
+        }
+
+        // B. SPV → langsung ke dashboard dengan cabang tetap
+        else if (ketemu.role === 'SPV') {
+            const lokasi = ketemu.cabang;
+            if (!lokasi) return alert("Error: Cabang SPV belum ditentukan!");
+            localStorage.setItem('currentUser', JSON.stringify({
+                user: ketemu.user, role: ketemu.role, cabang: ketemu.cabang
+            }));
+            localStorage.setItem('cabangHoki', lokasi);
+            if (!isDevMode) await catatLogLogin(ketemu.user, ketemu.role, lokasi);
+            alert(`Halo SPV ${ketemu.user}!`);
+            window.location.href = 'dashboard.html';
+        }
+
+        // C. STAFF / SENIOR STAFF → pilih cabang dulu
+        else {
+            localStorage.setItem('tempUser', JSON.stringify(ketemu));
+            document.getElementById('loginCard').classList.add('hidden');
+            document.getElementById('nextStepCard').classList.remove('hidden');
+            document.getElementById('userBadge').innerText = "ROLE: " + ketemu.role;
+
+            const select = document.getElementById('cabangPilihan');
+            select.innerHTML = '<option value="">-- Pilih Cabang --</option>';
+
+            if (isDevMode) {
+                // Dev mode: isi dari DEV_CABANG
+                DEV_CABANG.forEach(c => {
+                    select.innerHTML += `<option value="${c}">${c}</option>`;
+                });
+            } else {
+                // Production: ambil dari api.php
+                let daftarCabang = ketemu.cabang;
+                if (!daftarCabang) {
+                    try {
+                        const resCab = await fetch('api.php?action=get_cabang');
+                        const globalCabang = await resCab.json();
+                        globalCabang.forEach(c => {
+                            let nama = c.nama_cabang || c;
+                            select.innerHTML += `<option value="${nama}">${nama}</option>`;
+                        });
+                    } catch(e) { console.error("Gagal load cabang"); }
+                } else {
+                    daftarCabang.split(',').forEach(cab => {
+                        select.innerHTML += `<option value="${cab.trim()}">${cab.trim()}</option>`;
+                    });
+                }
+            }
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  MASUK SETELAH PILIH CABANG (Staff)
+    // ─────────────────────────────────────────────────────────
+    async function finalMasuk() {
+        const user = JSON.parse(localStorage.getItem('tempUser'));
+        const cabangPilihan = document.getElementById('cabangPilihan').value;
+        if (!cabangPilihan) return alert("Pilih cabang dulu!");
+
+        localStorage.setItem('currentUser', JSON.stringify({
+            user: user.user, role: user.role, cabang: user.cabang
+        }));
+        localStorage.setItem('cabangHoki', cabangPilihan);
+
+        if (!DEV_MODE) await catatLogLogin(user.user, user.role, cabangPilihan);
+        alert(`Login Berhasil! Selamat bertugas di ${cabangPilihan}`);
+
+        localStorage.removeItem('tempUser');
+        window.location.href = 'dashboard.html';
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  CATAT LOG (hanya production)
+    // ─────────────────────────────────────────────────────────
+    async function catatLogLogin(username, role, cabang) {
+        try {
+            await fetch('api.php?action=add_log', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user: username, role: role, cabang: cabang })
+            });
+        } catch (e) {
+            console.error("Gagal mencatat log login ke server.");
+        }
+    }
+
+    // Enter key support
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            const nextCard = document.getElementById('nextStepCard');
+            if (nextCard.classList.contains('hidden')) cekAksesLogin();
+            else finalMasuk();
+        }
+    });
+    </script>
+</body>
+</html>

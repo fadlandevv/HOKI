@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Hoki POS - Laporan Penjualan (Master Control)</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* --- CSS SIDEBAR & LAYOUT --- */
+        .sidebar { width: 220px; background: #d32f2f; color: white; padding: 20px 10px; transition: 0.3s; display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; box-sizing: border-box; z-index: 1000; }
+        .sidebar.collapsed { width: 75px; }
+        .sidebar.collapsed .menu-group-label, .sidebar.collapsed li span { display: none; }
+        .brand { font-weight: 800; letter-spacing: 2px; text-align: center; cursor: pointer; margin-bottom: 10px; transition: 0.3s; }
+        .sidebar ul { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; overflow-x: hidden; }
+        .sidebar ul li { font-size: 13px; padding: 12px 15px; cursor: pointer; display: flex; align-items: center; border-radius: 8px; margin-bottom: 5px; }
+        .sidebar ul li.active { background: #b71c1c; font-weight: bold; }
+        .logout-section { padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); margin-top: auto; }
+        .btn-logout-sidebar { width: 100%; background: #333; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+
+        .main-content { margin-left: 220px; padding: 25px; transition: 0.3s; flex: 1; min-height: 100vh; background: #f8f9fa; }
+        .main-content.expanded { margin-left: 75px; }
+
+        /* --- CSS LAPORAN --- */
+        .grid-laporan { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; }
+        .card-laporan { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .section-title { background: #fff0f0; padding: 8px; border-radius: 5px; color: #d32f2f; font-weight: bold; margin-top: 15px; font-size: 13px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: #f8f8f8; font-weight: bold; }
+        
+        .total-highlight { font-size: 20px; font-weight: 800; color: #d32f2f; text-align: right; margin-top: 15px; border-top: 2px solid #eee; padding-top: 10px; }
+        input { padding: 8px; border: 1px solid #ddd; border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 12px; }
+
+        /* --- OVERLAYS --- */
+        #detailOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        .detail-container { max-width: 800px; margin: auto; background: white; padding: 25px; border-radius: 15px; }
+        .btn-close { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-bottom: 15px; }
+        .btn-save-wa { background: #25d366; color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 20px; }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <div class="sidebar" id="sidebar">
+        <h2 class="brand" onclick="toggleSidebar()">HOKI</h2>
+        <nav><ul id="sidebarMenu"></ul></nav>
+        <div class="logout-section">
+            <button class="btn-logout-sidebar" onclick="logout()">🚪 <span>LOGOUT</span></button>
+        </div>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div>
+                <h2 style="margin:0;">📊 Laporan Penjualan</h2>
+                <p style="font-size: 13px; color: #666; margin: 5px 0 0 0;">Audit settlement cloud & WhatsApp reporting.</p>
+            </div>
+            <div style="text-align: right;">
+                <label style="font-size: 11px; font-weight: bold;">Tanggal Laporan:</label>
+                <input type="date" id="filterTanggal" onchange="fetchLaporanData()" style="width: 150px; display: block;">
+            </div>
+        </header>
+
+        <div class="grid-laporan">
+            <div class="card-laporan">
+                <h3 style="margin:0;">📝 Settlement Harian</h3>
+                <p style="font-size:11px; color:#888;">ID: <b id="reportID"></b></p>
+
+                <div class="section-title">💰 Omset Per Metode</div>
+                <table id="tableMetode"><tbody></tbody></table>
+
+                <div class="section-title">📉 Audit Stok</div>
+                <table>
+                    <thead><tr><th>Item</th><th>Awal</th><th>Laku</th><th>Sisa</th></tr></thead>
+                    <tbody>
+                        <tr><td>Dimsum (Pcs)</td><td><input type="number" id="dAw" value="0" oninput="hitungSisa()"></td><td><b id="dLak">0</b></td><td><b id="dSis">0</b></td></tr>
+                        <tr><td>Tray (Pcs)</td><td><input type="number" id="tAw" value="0" oninput="hitungSisa()"></td><td><b id="tLak">0</b></td><td><b id="tSis">0</b></td></tr>
+                    </tbody>
+                </table>
+
+                <div class="section-title">💸 Pengeluaran</div>
+                <div style="display: grid; grid-template-columns: 2fr 1.5fr auto; gap: 5px; margin-top: 8px;">
+                    <input type="text" id="exNama" placeholder="Nama Barang">
+                    <input type="number" id="exHarga" placeholder="Rp Total">
+                    <button onclick="addEx()" style="background:#333; color:white; border:none; border-radius:5px; padding: 0 10px;">+</button>
+                </div>
+                <table id="tableExp"><tbody></tbody></table>
+
+                <div class="total-highlight">
+                    <span id="grandTotal">Rp 0</span>
+                </div>
+
+                <button class="btn-save-wa" onclick="simpanDanKirimWA()">💾 Simpan & Kirim Laporan</button>
+            </div>
+
+            <div class="card-laporan">
+                <h3 style="margin:0;">📄 History Settlement</h3>
+                <table id="historyTable">
+                    <thead>
+                        <tr><th>Waktu</th><th>Cabang</th><th>Total</th><th>Aksi</th></tr>
+                    </thead>
+                    <tbody id="historyBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="detailOverlay">
+        <div class="detail-container">
+            <button class="btn-close" onclick="tutupDetail()">← Kembali</button>
+            <h2 id="detID" style="color:#d32f2f; margin:0; font-size: 18px;"></h2>
+            <p id="detMeta" style="color:#888; font-size:12px; margin: 5px 0;"></p>
+            <hr>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                <div>
+                    <h4 class="section-title">💰 Settlement</h4>
+                    <table id="detTabelMetode"></table>
+                </div>
+                <div>
+                    <h4 class="section-title">📉 Stok</h4>
+                    <table id="detTabelAudit"></table>
+                </div>
+            </div>
+            <h4 class="section-title">💸 Pengeluaran</h4>
+            <table id="detTabelExp"></table>
+            <div class="total-highlight" id="detGrandTotal"></div>
+        </div>
+    </div>
+
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff'};
+        const cabangAktif = localStorage.getItem('cabangHoki') || 'Pusat';
+        let pengeluaran = [];
+        let cacheHistoryLaporan = [];
+        let omzetPerMetode = {};
+        let lakuDimsum = 0;
+        let lakuTray = 0;
+        let currentDetailID = null;
+
+        if (!currentUser.user) { window.location.href = 'index.html'; }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            document.getElementById('mainContent').classList.toggle('expanded');
+        }
+
+        function buildSidebar() {
+            const menuContainer = document.getElementById('sidebarMenu');
+            const role = currentUser.role;
+            const path = window.location.pathname;
+            const currentPage = path.split("/").pop() || 'dashboard.html';
+        
+            // 1. Pulihkan status minimize dari memori
+            if (localStorage.getItem('sidebarState') === 'small') {
+                document.getElementById('sidebar').classList.add('collapsed');
+                document.getElementById('mainContent').classList.add('expanded');
+            }
+        
+            let menuHTML = '';
+            const createItem = (icon, label, link, activeName) => {
+                const isActive = currentPage.includes(activeName);
+                return `
+                    <li class="${isActive ? 'active' : ''}" onclick="location.href='${link}'">
+                        <div class="icon">${icon}</div> <span>${label}</span>
+                    </li>`;
+            };
+        
+            // --- GROUP 1: FRONTLINE OPERATIONS (Semua Role) ---
+            menuHTML += `<div class="menu-group-label">Frontline Operations</div>`;
+            menuHTML += createItem('🛒', 'Kasir', 'dashboard.html', 'dashboard.html');
+            menuHTML += createItem('📄', 'History Transaksi', 'history.html', 'history.html');
+            menuHTML += createItem('📦', 'Stok Harian', 'stok.html', 'stok.html');
+            menuHTML += createItem('🚚', 'Restock Barang', 'restock.html', 'restock.html');
+            menuHTML += createItem('📊', 'Laporan Penjualan', 'laporan_staff.html', 'laporan_staff.html');
+        
+            // --- GROUP 2: TACTICAL MANAGEMENT (Senior Staff, SPV, Owner, VIP) ---
+            if (['Senior Staff', 'SPV', 'Owner', 'VIP'].includes(role)) {
+                menuHTML += `<div class="menu-group-label">Tactical Management</div>`;
+                menuHTML += createItem('🍱', 'Master Produk', 'produk.html', 'produk.html');
+                menuHTML += createItem('📈', 'Rekapan Penjualan', 'rekap.html', 'rekap.html');
+                menuHTML += createItem('💸', 'Belanja', 'belanja.html', 'belanja.html');
+            }
+        
+            // --- GROUP 3: EXECUTIVE SUITE (Owner & VIP) ---
+            if (['Owner', 'VIP'].includes(role)) {
+                menuHTML += `<div class="menu-group-label">Executive Suite</div>`;
+                menuHTML += createItem('📊', 'Keuangan Global', 'laporan.html', 'laporan.html');
+                menuHTML += createItem('📈', 'Statistik', 'statistik.html', 'statistik.html');
+            }
+        
+            // --- GROUP 4: VIP ACCESS (Khusus VIP) ---
+            if (role === 'VIP') {
+                menuHTML += `
+                    <div class="menu-group-label" style="color: #ffeb3b; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                        👑 VIP Access
+                    </div>`;
+                menuHTML += createItem('👥', 'Manajemen User', 'user.html', 'user.html');
+                menuHTML += createItem('🔑', 'History Login', 'login_history.html', 'login_history.html');
+            }
+        
+            menuContainer.innerHTML = menuHTML;
+        }
+
+        async function fetchLaporanData() {
+            const tglDipilih = document.getElementById('filterTanggal').value;
+            try {
+                const resProd = await fetch('api.php?action=get_produk');
+                const masterProduk = await resProd.json();
+                const resTrx = await fetch('api.php?action=get_history');
+                const transactions = await resTrx.json();
+
+                omzetPerMetode = { CASH: 0, QRIS: 0, GF: 0, GB: 0, PG: 0, RM: 0 };
+                lakuDimsum = 0; lakuTray = 0;
+                let totalOmzet = 0;
+
+                transactions.forEach(t => {
+                    if (t.waktu.split(' ')[0] === tglDipilih && t.cabang === cabangAktif) {
+                        const mtd = t.metode.toUpperCase();
+                        if (omzetPerMetode[mtd] !== undefined) omzetPerMetode[mtd] += parseInt(t.total);
+                        totalOmzet += parseInt(t.total);
+
+                        const items = JSON.parse(t.items_json || '[]');
+                        items.forEach(it => {
+                            const p = masterProduk.find(x => x.nama === it.nama || x.sku === it.sku);
+                            if (p) {
+                                lakuDimsum += (parseInt(p.dimsumPcs) || 0) * (it.qty || 1);
+                                lakuTray += (parseInt(p.aluTrayPcs) || 0) * (it.qty || 1);
+                            }
+                        });
+                    }
+                });
+
+                let htmlM = "";
+                for (let m in omzetPerMetode) {
+                    htmlM += `<tr><td><b>${m}</b></td><td>Rp ${omzetPerMetode[m].toLocaleString()}</td></tr>`;
+                }
+                document.querySelector('#tableMetode tbody').innerHTML = htmlM;
+                document.getElementById('dLak').innerText = lakuDimsum;
+                document.getElementById('tLak').innerText = lakuTray;
+                document.getElementById('grandTotal').innerText = "Rp " + totalOmzet.toLocaleString();
+                window.currentGrandTotal = totalOmzet;
+                document.getElementById('reportID').innerText = `LP-${cabangAktif.toUpperCase()}-${tglDipilih.replace(/-/g, '')}`;
+                hitungSisa();
+            } catch (e) { console.error(e); }
+        }
+
+        function hitungSisa() {
+            const dAw = parseInt(document.getElementById('dAw').value) || 0;
+            const tAw = parseInt(document.getElementById('tAw').value) || 0;
+            document.getElementById('dSis').innerText = dAw - lakuDimsum;
+            document.getElementById('tSis').innerText = tAw - lakuTray;
+        }
+
+        function addEx() {
+            const nama = document.getElementById('exNama').value;
+            const harga = document.getElementById('exHarga').value;
+            if (!nama || !harga) return;
+            pengeluaran.push({ nama, harga: parseInt(harga) });
+            document.getElementById('exNama').value = ''; document.getElementById('exHarga').value = '';
+            renderExpTable();
+        }
+
+        function renderExpTable() {
+            const tbody = document.querySelector('#tableExp tbody');
+            tbody.innerHTML = pengeluaran.map((ex, i) => `<tr><td>${ex.nama}</td><td>Rp ${ex.harga.toLocaleString()}</td><td onclick="pengeluaran.splice(${i},1);renderExpTable()" style="color:red; cursor:pointer;">x</td></tr>`).join('');
+        }
+
+        async function simpanDanKirimWA() {
+            const data = {
+                report_id: document.getElementById('reportID').innerText,
+                petugas: currentUser.user,
+                cabang: cabangAktif,
+                metode: omzetPerMetode,
+                audit: { dAw: document.getElementById('dAw').value, tAw: document.getElementById('tAw').value, dLak: lakuDimsum, tLak: lakuTray },
+                expens: pengeluaran,
+                total: window.currentGrandTotal
+            };
+
+            const res = await fetch('api.php?action=save_laporan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const hasil = await res.json();
+            if (hasil.status === 'success') {
+                alert("Laporan Tersimpan! ✅");
+                renderHistoryLaporan();
+            }
+            
+            // Di dalam simpanDanKirimWA(), setelah fetch berhasil:
+            if (hasil.status === 'success') {
+                alert("Laporan Tersimpan! ✅");
+                kirimWA(dataLaporan); // <--- Panggil fungsi ini
+                renderHistoryLaporan();
+            }
+            
+            // Fungsi Kirim WA-nya (Tambahkan jika belum ada)
+            function kirimWA(d) {
+                const nomor = "6281234567890"; // Ganti nomor Bos
+                let txt = `*SETTLEMENT HOKI POS*\nID: ${d.report_id}\n------------------\n`;
+                for(let m in d.metode) if(d.metode[m]>0) txt += `${m}: Rp ${d.metode[m].toLocaleString()}\n`;
+                txt += `------------------\nDimsum Laku: ${d.audit.dLak}\nTray Laku: ${d.audit.tLak}\n------------------\nTOTAL: Rp ${d.total.toLocaleString()}`;
+                window.open(`https://wa.me/${nomor}?text=${encodeURIComponent(txt)}`, '_blank');
+            }
+        }
+
+        async function renderHistoryLaporan() {
+            const res = await fetch('api.php?action=get_laporan_history');
+            cacheHistoryLaporan = await res.json();
+            const tbody = document.getElementById('historyBody');
+            tbody.innerHTML = '';
+            
+            cacheHistoryLaporan.forEach(l => {
+                if (currentUser.role !== 'Owner' && currentUser.role !== 'VIP' && l.cabang !== cabangAktif) return;
+                tbody.innerHTML += `<tr>
+                    <td><small>${l.waktu}</small></td>
+                    <td>${l.petugas}</td>
+                    <td>Rp ${parseInt(l.grand_total).toLocaleString()}</td>
+                    <td>
+                        <button onclick="bukaDetail('${l.report_id}')">👁️</button>
+                        ${['Owner','VIP'].includes(currentUser.role) ? `<button onclick="hapusLaporan(${l.id})">🗑️</button>` : ''}
+                    </td>
+                </tr>`;
+            });
+        }
+
+        function bukaDetail(rid) {
+            const data = cacheHistoryLaporan.find(x => x.report_id === rid);
+            if (!data) return;
+            currentDetailID = rid;
+        
+            const audit = JSON.parse(data.audit_json);
+            const metode = JSON.parse(data.metode_json);
+            const exps = JSON.parse(data.pengeluaran_json || '[]');
+        
+            document.getElementById('detID').innerText = data.report_id;
+            document.getElementById('detMeta').innerText = `${data.petugas} | ${data.cabang}`;
+            
+            // --- 1. EDIT METODE (Kunci Cash/QR, Buka Sisanya) ---
+            let htmlM = "<thead><tr><th>Metode</th><th>Nominal</th></tr></thead><tbody>";
+            for (let m in metode) {
+                // REVISI DISINI: Kunci jika Metode CASH/QRIS ATAU jika USER bukan Owner/VIP
+                const isAuthorized = ['Owner', 'VIP'].includes(currentUser.role);
+                const lock = (m === 'CASH' || m === 'QRIS' || !isAuthorized);
+        
+                htmlM += `<tr><td>${m}</td><td>
+                    ${lock ? `<span>${metode[m].toLocaleString()}</span>` : 
+                    `<input type="number" class="edit-mtd" data-m="${m}" value="${metode[m]}" oninput="recalcDetail()">`}
+                </td></tr>`;
+            }
+            document.getElementById('detTabelMetode').innerHTML = htmlM + "</tbody>";
+        
+            // --- 2. AUDIT STOK LENGKAP (Awal, Laku, Sisa) ---
+            document.getElementById('detTabelAudit').innerHTML = `
+                <thead><tr><th>Item</th><th>Awal</th><th>Laku</th><th>Sisa</th></tr></thead>
+                <tbody>
+                    <tr><td>Dimsum</td><td>${audit.dAw}</td><td>${audit.dLak}</td><td><b>${audit.dAw - audit.dLak}</b></td></tr>
+                    <tr><td>Tray</td><td>${audit.tAw}</td><td>${audit.tLak}</td><td><b>${audit.tAw - audit.tLak}</b></td></tr>
+                </tbody>`;
+        
+            // --- 3. TOMBOL UPDATE (Hanya untuk Boss) ---
+            document.getElementById('detGrandTotal').innerHTML = `
+                Total: <span id="detTotal">Rp ${parseInt(data.grand_total).toLocaleString()}</span>
+                ${currentUser.role !== 'Staff' ? `<button onclick="saveEditDetail()" class="btn-save-wa" style="background:#333; margin-top:10px;">💾 Simpan Perubahan</button>` : ''}`;
+            
+            document.getElementById('detailOverlay').style.display = 'block';
+        }
+        
+        function recalcDetail() {
+            let total = 0;
+            const data = cacheHistoryLaporan.find(x => x.report_id === currentDetailID);
+            const mtd = JSON.parse(data.metode_json);
+            // Tambah Cash & QR yang mati
+            total += (parseInt(mtd.CASH) || 0) + (parseInt(mtd.QRIS) || 0);
+            // Tambah hasil inputan GF/GB/RM dll
+            document.querySelectorAll('.edit-mtd').forEach(i => total += parseInt(i.value) || 0);
+            document.getElementById('detTotal').innerText = "Rp " + total.toLocaleString();
+            window.tempTotal = total;
+        }
+        
+        async function saveEditDetail() {
+            if(!confirm("Simpan perubahan settlement?")) return;
+            const dataLama = cacheHistoryLaporan.find(x => x.report_id === currentDetailID);
+            const mtd = JSON.parse(dataLama.metode_json);
+            
+            // Update data metode dari input
+            document.querySelectorAll('.edit-mtd').forEach(i => mtd[i.dataset.m] = parseInt(i.value) || 0);
+        
+            const dataBaru = {
+                report_id: currentDetailID,
+                petugas: dataLama.petugas,
+                cabang: dataLama.cabang,
+                metode: mtd,
+                audit: JSON.parse(dataLama.audit_json),
+                expens: JSON.parse(dataLama.pengeluaran_json),
+                total: window.tempTotal || dataLama.grand_total
+            };
+        
+            const res = await fetch('api.php?action=save_laporan', { method:'POST', body: JSON.stringify(dataBaru) });
+            if((await res.json()).status === 'success') {
+                alert("Settlement Diupdate! ✅");
+                tutupDetail();
+                renderHistoryLaporan();
+            }
+        }
+
+        async function hapusLaporan(id) {
+            if (!confirm("Hapus laporan ini?")) return;
+            await fetch(`api.php?action=del_laporan&id=${id}`);
+            renderHistoryLaporan();
+        }
+
+        function tutupDetail() { document.getElementById('detailOverlay').style.display = 'none'; }
+        function logout() { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; }
+
+        window.onload = () => {
+            buildSidebar();
+            const filterTgl = document.getElementById('filterTanggal');
+            filterTgl.value = new Date().toISOString().split('T')[0];
+            if (currentUser.role === 'Staff') { filterTgl.disabled = true; filterTgl.style.background = "#f0f0f0"; }
+            fetchLaporanData();
+            renderHistoryLaporan();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Hoki POS - Owner Insights</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* --- CSS SIDEBAR & CONTENT (IDENTIK) --- */
+        .sidebar { width: 220px; background: #d32f2f; color: white; padding: 20px 10px; transition: 0.3s; display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; box-sizing: border-box; z-index: 1000; }
+        .sidebar.collapsed { width: 75px; }
+        .sidebar.collapsed .menu-group-label, .sidebar.collapsed li span { display: none; }
+        .main-content { margin-left: 220px; padding: 25px; transition: 0.3s; flex: 1; min-height: 100vh; background: #f8f9fa; }
+        .main-content.expanded { margin-left: 75px; }
+        .brand { font-weight: 800; letter-spacing: 2px; text-align: center; cursor: pointer; margin-bottom: 10px; }
+        .menu-group-label { font-size: 11px; color: #ff9999; padding: 15px 15px 5px; text-transform: uppercase; font-weight: 800; }
+        .sidebar ul { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; }
+        .sidebar ul li { font-size: 13px; padding: 12px 15px; transition: 0.3s; color: white; cursor: pointer; display: flex; align-items: center; border-radius: 8px; margin-bottom: 5px; }
+        .sidebar ul li:hover { background: rgba(255,255,255,0.1); }
+        .sidebar ul li.active { background: #b71c1c; font-weight: bold; }
+        .sidebar ul li .icon { min-width: 25px; text-align: center; }
+
+        /* --- FILTER BAR --- */
+        .filter-container { background: white; padding: 20px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
+        .filter-group { display: flex; flex-direction: column; gap: 5px; }
+        .filter-group label { font-size: 11px; font-weight: bold; color: #d32f2f; text-transform: uppercase; }
+        select, input { padding: 10px; border-radius: 8px; border: 1px solid #ddd; outline: none; font-size: 12px; }
+
+        /* --- CARDS & CHARTS --- */
+        .grid-dashboard { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .card-insight { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        .card-insight h3 { margin: 0 0 15px 0; font-size: 14px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        
+        .bar-container { background: #eee; border-radius: 5px; height: 10px; margin-top: 5px; overflow: hidden; }
+        .bar-fill { background: #d32f2f; height: 100%; transition: 0.5s; }
+        .highlight-text { font-size: 20px; font-weight: bold; color: #d32f2f; }
+        .label-small { font-size: 11px; color: #666; }
+
+        @media (max-width: 900px) { .grid-dashboard { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body class="dashboard-body" style="display: flex;">
+
+    <div class="sidebar" id="sidebar">
+        <h2 class="brand" onclick="toggleSidebar()">HOKI</h2>
+        <nav><ul id="sidebarMenu"></ul></nav>
+        <div class="logout-section" style="padding:10px;">
+            <button class="btn-logout-sidebar" onclick="logout()" style="width:100%; padding:10px; background:#333; color:white; border:none; border-radius:8px; cursor:pointer;">🚪 <span>LOGOUT</span></button>
+        </div>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <header>
+            <h2 style="margin: 0;">📈 Statistik Performa Strategis</h2>
+            <p style="font-size: 14px; color: #666; margin-bottom: 20px;">Analisis Laba, Jam Sibuk, dan Produk Unggulan.</p>
+        </header>
+
+        <div class="filter-container">
+            <div class="filter-group">
+                <label>📍 Cabang</label>
+                <select id="filterCabang" onchange="loadStatistik()">
+                    <option value="Semua">Semua Cabang</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>📅 Dari Tanggal</label>
+                <input type="date" id="startDate" onchange="loadStatistik()">
+            </div>
+            <div class="filter-group">
+                <label>📅 Sampai Tanggal</label>
+                <input type="date" id="endDate" onchange="loadStatistik()">
+            </div>
+            <button onclick="resetFilter()" style="padding:10px 20px; border-radius:8px; border:none; background:#eee; cursor:pointer; font-weight:bold;">Reset</button>
+        </div>
+
+        <div class="grid-dashboard">
+            <div class="card-insight">
+                <h3>💰 Arus Kas (In vs Out)</h3>
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                        <span class="label-small">Pemasukan (Laporan Staff)</span>
+                        <div id="valIn" class="highlight-text" style="color: green;">Rp 0</div>
+                    </div>
+                    <div>
+                        <span class="label-small">Pengeluaran (Buku Kas)</span>
+                        <div id="valOut" class="highlight-text">Rp 0</div>
+                    </div>
+                </div>
+                <div class="bar-container" style="height: 15px; margin-top: 15px;">
+                    <div id="barProfit" class="bar-fill" style="background: green; width: 0%;"></div>
+                </div>
+                <p id="profitInfo" class="label-small" style="margin-top: 10px; text-align: center; font-weight: bold;"></p>
+            </div>
+
+            <div class="card-insight">
+                <h3>🏆 Performa Omset Cabang</h3>
+                <div id="chartCabang"></div>
+            </div>
+
+            <div class="card-insight">
+                <h3>⏰ Jam Paling Ramai (Rush Hour)</h3>
+                <div id="chartJam" style="display: flex; align-items: flex-end; height: 100px; gap: 4px; margin-top: 10px;"></div>
+                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                    <span class="label-small">07:00</span><span class="label-small">15:00</span><span class="label-small">22:00</span>
+                </div>
+            </div>
+
+            <div class="card-insight">
+                <h3>🔥 Jawara Menu (Top 5)</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tbody id="listProdukUnggulan"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff', cabang:''};
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            document.getElementById('mainContent').classList.toggle('expanded');
+        }
+    
+        function buildSidebar() {
+            const menuContainer = document.getElementById('sidebarMenu');
+            const role = currentUser.role;
+            const currentPage = window.location.pathname.split("/").pop() || 'dashboard.html';
+    
+            if (localStorage.getItem('sidebarState') === 'small') {
+                document.getElementById('sidebar').classList.add('collapsed');
+                document.getElementById('mainContent').classList.add('expanded');
+            }
+    
+            let menuHTML = '';
+            const createItem = (icon, label, link, active) => `
+                <li class="${active ? 'active' : ''}" onclick="location.href='${link}'">
+                    <div class="icon">${icon}</div> <span>${label}</span>
+                </li>`;
+    
+            menuHTML += `<div class="menu-group-label">Frontline Operations</div>`;
+            menuHTML += createItem('🛒', 'Kasir', 'dashboard.html', currentPage === 'dashboard.html');
+            menuHTML += createItem('📄', 'History Transaksi', 'history.html', currentPage === 'history.html');
+            menuHTML += createItem('📦', 'Stok Harian', 'stok.html', currentPage === 'stok.html');
+            menuHTML += createItem('🚚', 'Restock Barang', 'restock.html', currentPage === 'restock.html');
+            menuHTML += createItem('📊', 'Laporan Penjualan', 'laporan_staff.html', currentPage === 'laporan_staff.html');
+    
+            if (['Senior Staff', 'SPV', 'Owner', 'VIP'].includes(role)) {
+                menuHTML += `<div class="menu-group-label">Tactical Management</div>`;
+                menuHTML += createItem('🍱', 'Master Produk', 'produk.html', currentPage === 'produk.html');
+                menuHTML += createItem('📈', 'Rekapan Penjualan', 'rekap.html', currentPage === 'rekap.html');
+                menuHTML += createItem('💸', 'Belanja', 'belanja.html', currentPage === 'belanja.html');
+            }
+    
+            if (['Owner', 'VIP'].includes(role)) {
+                menuHTML += `<div class="menu-group-label">Executive Suite</div>`;
+                menuHTML += createItem('📊', 'Keuangan Global', 'laporan.html', currentPage === 'laporan.html');
+                menuHTML += createItem('📈', 'Statistik', 'statistik.html', currentPage === 'statistik.html');
+            }
+    
+            if (role === 'VIP') {
+                menuHTML += `<div class="menu-group-label" style="color: #ffeb3b; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">👑 VIP Access</div>`;
+                menuHTML += createItem('👥', 'Manajemen User', 'user.html', currentPage === 'user.html');
+                menuHTML += createItem('🔑', 'History Login', 'login_history.html', currentPage === 'login_history.html');
+            }
+            menuContainer.innerHTML = menuHTML;
+        }
+    
+        // --- 1. CLOUD: AMBIL DAFTAR CABANG ---
+        async function loadFilters() {
+            try {
+                const res = await fetch('api.php?action=get_branches');
+                const data = await res.json();
+                const select = document.getElementById('filterCabang');
+                
+                // Bersihkan kecuali opsi "Semua"
+                select.innerHTML = '<option value="Semua">Semua Cabang</option>';
+                
+                data.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.nama_cabang; 
+                    opt.innerText = c.nama_cabang;
+                    select.appendChild(opt);
+                });
+            } catch (e) { console.error("Gagal muat cabang cloud."); }
+        }
+    
+        // --- 2. CLOUD: HITUNG STATISTIK UTAMA ---
+        async function loadStatistik() {
+            try {
+                // Tarik 3 Pipa Data Sekaligus
+                const [resHistory, resSettlement, resKas] = await Promise.all([
+                    fetch(`api.php?action=get_history`), // History Transaksi (Menu & Jam)
+                    fetch(`api.php?action=get_laporan_history&role=Owner&cabang=Semua`), // Omset In
+                    fetch(`api.php?action=get_kas_data&role=Owner&cabang=Semua`) // Belanja Out
+                ]);
+    
+                const transaksi = await resHistory.json();
+                const lapStaff = await resSettlement.json();
+                const kasData = await resKas.json();
+    
+                const cabFilter = document.getElementById('filterCabang').value;
+                const startStr = document.getElementById('startDate').value;
+                const endStr = document.getElementById('endDate').value;
+                const startTime = startStr ? new Date(startStr).setHours(0,0,0,0) : null;
+                const endTime = endStr ? new Date(endStr).setHours(23,59,59,999) : null;
+    
+                // --- A. HITUNG ARUS KAS ---
+                let totalIn = 0;
+                lapStaff.forEach(l => {
+                    const d = new Date(l.waktu).getTime();
+                    if ((cabFilter === 'Semua' || l.cabang === cabFilter) && (!startTime || d >= startTime) && (!endTime || d <= endTime)) {
+                        totalIn += parseFloat(l.grand_total || 0);
+                    }
+                });
+    
+                let totalOut = 0;
+                kasData.forEach(k => {
+                    const d = new Date(k.waktu).getTime();
+                    // Sesuai revisi Bos: Debit adalah Pengeluaran
+                    if ((cabFilter === 'Semua' || k.cabang === cabFilter) && (!startTime || d >= startTime) && (!endTime || d <= endTime) && k.mode === 'Debit') {
+                        totalOut += parseFloat(k.nominal || 0);
+                    }
+                });
+    
+                document.getElementById('valIn').innerText = "Rp " + totalIn.toLocaleString();
+                document.getElementById('valOut').innerText = "Rp " + totalOut.toLocaleString();
+                let profit = totalIn - totalOut;
+                let ratio = totalIn > 0 ? (profit / totalIn) * 100 : 0;
+                document.getElementById('barProfit').style.width = Math.max(0, Math.min(100, ratio)) + "%";
+                document.getElementById('barProfit').style.background = profit >= 0 ? "green" : "red";
+                document.getElementById('profitInfo').innerText = `Laba Bersih: Rp ${profit.toLocaleString()} (${ratio.toFixed(1)}%)`;
+    
+                // --- B. PERFORMA OMSET CABANG ---
+                let perCabang = {};
+                lapStaff.forEach(l => {
+                    const d = new Date(l.waktu).getTime();
+                    if ((!startTime || d >= startTime) && (!endTime || d <= endTime)) {
+                        perCabang[l.cabang] = (perCabang[l.cabang] || 0) + parseFloat(l.grand_total || 0);
+                    }
+                });
+                const chartCab = document.getElementById('chartCabang');
+                chartCab.innerHTML = '';
+                const maxCab = Math.max(...Object.values(perCabang), 1);
+                Object.entries(perCabang).sort((a,b) => b[1]-a[1]).forEach(([name, val]) => {
+                    let p = (val / maxCab) * 100;
+                    chartCab.innerHTML += `<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:12px;"><span>${name}</span><b>Rp ${val.toLocaleString()}</b></div><div class="bar-container"><div class="bar-fill" style="width:${p}%"></div></div></div>`;
+                });
+    
+                // --- C. JAM RAMAI & TOP MENU ---
+                let jamData = {};
+                let menuData = {};
+                transaksi.forEach(t => {
+                    const d = new Date(t.waktu).getTime();
+                    const mCab = (cabFilter === 'Semua' || t.cabang === cabFilter);
+                    const mDate = (!startTime || d >= startTime) && (!endTime || d <= endTime);
+    
+                    if (mCab && mDate) {
+                        // Jam
+                        const jam = new Date(t.waktu).getHours();
+                        jamData[jam] = (jamData[jam] || 0) + 1;
+                        // Menu
+                        const items = JSON.parse(t.items_json || '[]');
+                        items.forEach(item => {
+                            const nama = item.nama || item.sku;
+                            menuData[nama] = (menuData[nama] || 0) + (parseInt(item.qty) || 1);
+                        });
+                    }
+                });
+    
+                // Render Jam
+                const chartJam = document.getElementById('chartJam');
+                chartJam.innerHTML = '';
+                const maxJam = Math.max(...Object.values(jamData), 1);
+                for(let h=7; h<=22; h++) {
+                    let count = jamData[h] || 0;
+                    let p = (count / maxJam) * 100;
+                    chartJam.innerHTML += `<div style="flex:1; display:flex; flex-direction:column; align-items:center;"><div style="background:#eee; width:100%; height:80px; display:flex; align-items:flex-end; border-radius:3px; overflow:hidden;"><div style="background:#d32f2f; width:100%; height:${p}%;"></div></div><span style="font-size:8px; margin-top:4px;">${h}</span></div>`;
+                }
+    
+                // Render Top 5 Menu
+                const listP = document.getElementById('listProdukUnggulan');
+                listP.innerHTML = '';
+                Object.entries(menuData).sort((a,b) => b[1]-a[1]).slice(0,5).forEach(([name, qty]) => {
+                    listP.innerHTML += `<tr style="border-bottom: 1px solid #eee;"><td style="padding:8px 0; font-size:12px;">${name}</td><td style="text-align:right; font-weight:bold;">${qty} <small>Porsi</small></td></tr>`;
+                });
+    
+            } catch (e) { console.error("Gagal sinkron statistik cloud:", e); }
+        }
+    
+        function resetFilter() {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('filterCabang').value = 'Semua';
+            loadStatistik();
+        }
+    
+        function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+    
+        window.onload = async () => {
+            buildSidebar();
+            await loadFilters();
+            loadStatistik();
+        };
+    </script>
+</body>
+</html>

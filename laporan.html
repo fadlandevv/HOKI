@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Hoki POS - Konsolidasi Keuangan Global (Cloud)</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* --- CSS SIDEBAR & KONSISTENSI (Sama seperti sebelumnya) --- */
+        .sidebar { width: 220px; background: #d32f2f; color: white; padding: 20px 10px; transition: 0.3s; display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; box-sizing: border-box; z-index: 1000; }
+        .sidebar.collapsed { width: 75px; }
+        .sidebar.collapsed .menu-group-label, .sidebar.collapsed li span { display: none; }
+        .brand { font-weight: 800; letter-spacing: 2px; text-align: center; cursor: pointer; margin-bottom: 10px; }
+        .sidebar ul { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; overflow-x: hidden; }
+        .sidebar ul li { font-size: 13px; padding: 12px 15px; transition: 0.3s; color: white; cursor: pointer; display: flex; align-items: center; border-radius: 8px; margin-bottom: 5px; }
+        .sidebar ul li:hover { background: rgba(255,255,255,0.1); }
+        .sidebar ul li.active { background: #b71c1c; font-weight: bold; }
+        .logout-section { padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); margin-top: auto; }
+        .btn-logout-sidebar { width: 100%; background: #333; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        .main-content { margin-left: 220px; padding: 25px; transition: 0.3s; flex: 1; min-height: 100vh; }
+        .main-content.expanded { margin-left: 75px; }
+
+        /* --- UI COMPONENT --- */
+        .filter-container { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .filter-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; align-items: flex-start; }
+        .filter-group { display: flex; flex-direction: column; gap: 5px; }
+        .filter-group label { font-size: 11px; font-weight: bold; color: #d32f2f; text-transform: uppercase; }
+        select, input { padding: 10px; border-radius: 8px; border: 1px solid #ddd; outline: none; font-size: 12px; }
+        select[multiple] { height: 100px; background: #fff; }
+        .grid-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; }
+        .stat-card h3 { margin: 0; font-size: 10px; color: #999; text-transform: uppercase; }
+        .stat-card p { margin: 10px 0 0; font-size: 22px; font-weight: 800; }
+        .white-box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-x: auto; margin-bottom: 25px; }
+        h4 { margin: 0 0 15px 0; border-left: 4px solid #d32f2f; padding-left: 10px; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; font-size: 10px; }
+        th { background: #333; color: white; padding: 10px 5px; text-align: center; text-transform: uppercase; border: 1px solid #444; }
+        td { padding: 8px 5px; border: 1px solid #eee; text-align: right; }
+        .text-left { text-align: left; }
+        .text-center { text-align: center; }
+        .row-total { background: #f9f9f9; font-weight: bold; }
+
+        @media print {
+            .sidebar, .filter-container, button, .no-print { display: none !important; }
+            .main-content { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+            .print-header { display: block !important; text-align: center; border-bottom: 3px double #333; margin-bottom: 20px; padding-bottom: 10px; }
+        }
+        .print-header { display: none; }
+    </style>
+</head>
+<body class="dashboard-body" style="display: flex;">
+
+    <div class="sidebar" id="sidebar">
+        <h2 class="brand" onclick="toggleSidebar()">HOKI</h2>
+        <nav><ul id="sidebarMenu"></ul></nav>
+        <div class="logout-section">
+            <button class="btn-logout-sidebar" onclick="logout()">🚪 LOGOUT</button>
+        </div>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <div class="print-header">
+            <h1 style="margin: 0; font-size: 24px; color: #d32f2f;">HOKI POS SYSTEM</h1>
+            <h2 style="margin: 5px 0; font-size: 18px;">Laporan Konsolidasi Keuangan Global</h2>
+            <p id="pdfPeriode" style="margin: 0; font-size: 12px; color: #555; font-weight: bold;">Periode: Semua Waktu</p>
+            <p style="margin: 5px 0 0; font-size: 9px; color: #999;">Dicetak pada: <span id="pdfTglCetak"></span></p>
+        </div>
+
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h2 style="margin: 0;">📊 Konsolidasi Pemasukan & Pengeluaran</h2>
+                <p style="color: #666; font-size: 13px;">Sinkronisasi Cloud Data Settlement & Biaya Operasional.</p>
+            </div>
+            <button onclick="window.print()" style="background:#333; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">🖨️ Cetak PDF</button>
+        </header>
+
+        <div class="filter-container">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>📍 Pilih Cabang</label>
+                    <select id="filterCabang" onchange="hitungLaporan()">
+                        <option value="Semua">Memuat Cabang...</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>📅 Mulai Tanggal</label>
+                    <input type="date" id="startDate" onchange="hitungLaporan()">
+                </div>
+                <div class="filter-group">
+                    <label>📅 Sampai Tanggal</label>
+                    <input type="date" id="endDate" onchange="hitungLaporan()">
+                </div>
+                <div class="filter-group">
+                    <label>📂 Filter Jenis Biaya</label>
+                    <select id="filterKeterangan" multiple onchange="hitungLaporan()" style="height: 100px;">
+                        </select>
+                    <small style="font-size: 9px; color: #999;">*Tahan Ctrl untuk pilih banyak</small>
+                </div>
+            </div>
+            <button onclick="resetFilter()" style="margin-top:10px; border:none; background:#eee; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:11px;">Reset Filter</button>
+        </div>
+
+        <div class="grid-stats">
+            <div class="stat-card"><h3>Total Omset Bruto</h3><p id="sumOmset" style="color:#2e7d32;">Rp 0</p></div>
+            <div class="stat-card"><h3>Total Pengeluaran</h3><p id="sumBelanja" style="color:#d32f2f;">Rp 0</p></div>
+            <div class="stat-card" style="background:#fffcf0;"><h3>Estimasi Laba Bersih</h3><p id="sumLaba" style="color:#333;">Rp 0</p></div>
+        </div>
+
+        <div class="white-box">
+            <h4>🏢 Rekapitulasi Pemasukan per Cabang (Settlement)</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2">Nama Cabang</th>
+                        <th colspan="2" style="background:#2e7d32">Offline</th>
+                        <th colspan="5" style="background:#1565c0">Aplikasi / Digital</th>
+                        <th rowspan="2" style="background:#333">Total</th>
+                    </tr>
+                    <tr>
+                        <th style="background:#43a047">Cash</th>
+                        <th style="background:#43a047">QR</th>
+                        <th style="background:#1e88e5">GB</th>
+                        <th style="background:#1e88e5">GF</th>
+                        <th style="background:#1e88e5">SF</th>
+                        <th style="background:#1e88e5">PG</th>
+                        <th style="background:#1e88e5">RM</th>
+                    </tr>
+                </thead>
+                <tbody id="tBodyPemasukan"></tbody>
+                <tfoot id="tFootPemasukan"></tfoot>
+            </table>
+        </div>
+
+        <div class="white-box">
+            <h4>🛒 Rincian Pengeluaran Terlapor</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>WAKTU</th><th>CABANG</th><th>NAMA BARANG</th>
+                        <th>QTY</th><th>NOMINAL</th><th>KETERANGAN</th>
+                    </tr>
+                </thead>
+                <tbody id="tBodyPengeluaran"></tbody>
+                <tfoot id="tFootPengeluaran"></tfoot>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {role:'Staff', cabang:''};
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            document.getElementById('mainContent').classList.toggle('expanded');
+        }
+
+        function buildSidebar() {
+            const menuContainer = document.getElementById('sidebarMenu');
+            const role = currentUser.role;
+            const currentPage = window.location.pathname.split("/").pop() || 'dashboard.html';
+        
+            // Pulihkan status minimize dari memori
+            if (localStorage.getItem('sidebarState') === 'small') {
+                document.getElementById('sidebar').classList.add('collapsed');
+                document.getElementById('mainContent').classList.add('expanded');
+            }
+        
+            let menuHTML = '';
+            const createItem = (icon, label, link, active) => `
+                <li class="${active ? 'active' : ''}" onclick="location.href='${link}'">
+                    <div class="icon">${icon}</div> <span>${label}</span>
+                </li>`;
+        
+            // --- GROUP 1: FRONTLINE OPERATIONS (Semua Role) ---
+            menuHTML += `<div class="menu-group-label">Frontline Operations</div>`;
+            menuHTML += createItem('🛒', 'Kasir', 'dashboard.html', currentPage === 'dashboard.html');
+            menuHTML += createItem('📄', 'History Transaksi', 'history.html', currentPage === 'history.html');
+            menuHTML += createItem('📦', 'Stok Harian', 'stok.html', currentPage === 'stok.html');
+            menuHTML += createItem('🚚', 'Restock Barang', 'restock.html', currentPage === 'restock.html');
+            menuHTML += createItem('📊', 'Laporan Penjualan', 'laporan_staff.html', currentPage === 'laporan_staff.html');
+        
+            // --- GROUP 2: TACTICAL MANAGEMENT (Senior Staff, SPV, Owner, VIP) ---
+            if (['Senior Staff', 'SPV', 'Owner', 'VIP'].includes(role)) {
+                menuHTML += `<div class="menu-group-label">Tactical Management</div>`;
+                menuHTML += createItem('🍱', 'Master Produk', 'produk.html', currentPage === 'produk.html');
+                menuHTML += createItem('📈', 'Rekapan Penjualan', 'rekap.html', currentPage === 'rekap.html');
+                menuHTML += createItem('💸', 'Belanja', 'belanja.html', currentPage === 'belanja.html');
+            }
+        
+            // --- GROUP 3: EXECUTIVE SUITE (Owner & VIP) ---
+            if (['Owner', 'VIP'].includes(role)) {
+                menuHTML += `<div class="menu-group-label">Executive Suite</div>`;
+                menuHTML += createItem('📊', 'Keuangan Global', 'laporan.html', currentPage === 'laporan.html');
+                menuHTML += createItem('📈', 'Statistik', 'statistik.html', currentPage === 'statistik.html');
+            }
+        
+            // --- GROUP 4: VIP ACCESS (KHUSUS ROLE VIP SAAT INI) ---
+            if (role === 'VIP') {
+                menuHTML += `
+                    <div class="menu-group-label" style="color: #ffeb3b; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                        👑 VIP Access
+                    </div>`;
+                menuHTML += createItem('👥', 'Manajemen User', 'user.html', currentPage === 'user.html');
+                menuHTML += createItem('🔑', 'History Login', 'login_history.html', currentPage === 'login_history.html');
+            }
+        
+            menuContainer.innerHTML = menuHTML;
+        }
+
+
+        // --- CLOUD FETCH: LOAD DROPDOWN CABANG ---
+        async function loadCabangDropdown() {
+            try {
+                const res = await fetch('api.php?action=get_branches');
+                const data = await res.json();
+                const select = document.getElementById('filterCabang');
+                
+                // Filter dropdown sesuai hak akses user (untuk keamanan UI)
+                const aksesCabang = (currentUser.role === 'Owner' || currentUser.role === 'VIP') 
+                    ? data.map(c => c.nama_cabang) 
+                    : (currentUser.cabang || "").split(',').map(s => s.trim());
+
+                select.innerHTML = '<option value="Semua">Semua Cabang</option>';
+                data.forEach(c => {
+                    if (aksesCabang.includes(c.nama_cabang)) {
+                        select.innerHTML += `<option value="${c.nama_cabang}">${c.nama_cabang}</option>`;
+                    }
+                });
+            } catch (e) { console.error("Gagal muat cabang cloud."); }
+        }
+
+        // --- CLOUD FETCH: HITUNG LAPORAN GLOBAL ---
+        async function hitungLaporan() {
+            const startStr = document.getElementById('startDate').value;
+            const endStr = document.getElementById('endDate').value;
+            const cabFilter = document.getElementById('filterCabang').value;
+            
+            // Ambil pilihan filter jenis biaya
+            const selectedKets = Array.from(document.getElementById('filterKeterangan').selectedOptions).map(o => o.value);
+        
+            try {
+                // --- PIPA 1: Ambil Data Settlement (Untuk Omset/Pemasukan) ---
+                const resSet = await fetch(`api.php?action=get_laporan_history&role=${currentUser.role}&cabang=${encodeURIComponent(currentUser.cabang)}`);
+                const allSettlements = await resSet.json();
+        
+                // --- PIPA 2: Ambil Data Kas/Belanja (Untuk Pengeluaran & Filter) ---
+                const resKas = await fetch(`api.php?action=get_kas_data&role=${currentUser.role}&cabang=${encodeURIComponent(currentUser.cabang)}`);
+                const allKasData = await resKas.json();
+        
+                let totals = { omset: 0, belanja: 0, cash:0, qr:0, gb:0, gf:0, sf:0, pg:0, rm:0 };
+                let rekapCabang = {};
+                let rowsBelanja = [];
+                let setKeterangan = new Set();
+        
+                const startTime = startStr ? new Date(startStr).setHours(0,0,0,0) : null;
+                const endTime = endStr ? new Date(endStr).setHours(23,59,59,999) : null;
+        
+                // --- PROSES PEMASUKAN (Dari Settlement) ---
+                allSettlements.forEach(r => {
+                    const d = new Date(r.waktu).getTime();
+                    const mCab = (cabFilter === 'Semua' || r.cabang === cabFilter);
+                    const mDate = (!startTime || d >= startTime) && (!endTime || d <= endTime);
+        
+                    if (mCab && mDate) {
+                        const cb = r.cabang;
+                        const m = JSON.parse(r.metode_json || '{}');
+                        const vOmset = parseInt(r.grand_total || 0);
+        
+                        if(!rekapCabang[cb]) rekapCabang[cb] = { cash:0, qr:0, gb:0, gf:0, sf:0, pg:0, rm:0, total:0 };
+                        
+                        rekapCabang[cb].cash += parseInt(m.CASH || 0);
+                        rekapCabang[cb].qr += parseInt(m.QRIS || 0);
+                        rekapCabang[cb].gb += parseInt(m.GB || 0);
+                        rekapCabang[cb].gf += parseInt(m.GF || 0);
+                        rekapCabang[cb].sf += parseInt(m.SF || 0);
+                        rekapCabang[cb].pg += parseInt(m.PG || 0);
+                        rekapCabang[cb].rm += parseInt(m.RM || 0);
+                        rekapCabang[cb].total += vOmset;
+                        totals.omset += vOmset;
+                    }
+                });
+        
+                // --- PROSES PENGELUARAN (Dari hoki_kas_data / Belanja) ---
+                allKasData.forEach(k => {
+                    // Pastikan kita hanya ambil yang mode 'Debit' (Pengeluaran)
+                    if (k.mode !== 'Debit') return;
+                
+                    const d = new Date(k.waktu).getTime();
+                    const mCab = (cabFilter === 'Semua' || k.cabang === cabFilter);
+                    const mDate = (!startTime || d >= startTime) && (!endTime || d <= endTime);
+                    
+                    // PERUBAHAN DI SINI: Sekarang ambil dari kolom 'ket' (Keterangan)
+                    const kategoriBiaya = k.ket || "Tanpa Keterangan"; 
+                    setKeterangan.add(kategoriBiaya);
+                
+                    const mKet = selectedKets.length === 0 || selectedKets.includes(kategoriBiaya);
+                
+                    if (mCab && mDate && mKet) {
+                        const nominal = parseInt(k.nominal || 0);
+                        totals.belanja += nominal;
+                        rowsBelanja.push({
+                            waktu: k.waktu,
+                            cabang: k.cabang,
+                            nama: k.nama,
+                            qty: k.qty || 1,
+                            harga: nominal
+                        });
+                    }
+                });
+        
+                // Update dropdown filter biaya dari tabel kas
+                updateKeteranganOptions(Array.from(setKeterangan));
+                
+                // Tampilkan hasil konsolidasi
+                renderUI(totals, rekapCabang, rowsBelanja);
+        
+            } catch (e) { 
+                console.error("Gagal konsolidasi data cloud:", e); 
+            }
+        }
+
+        function updateKeteranganOptions(list) {
+            const select = document.getElementById('filterKeterangan');
+            if (!select) return;
+        
+            // Simpan apa yang sedang dipilih user supaya tidak hilang saat list di-refresh
+            const selectedValues = Array.from(select.selectedOptions).map(option => option.value);
+        
+            // Buat daftar kategori unik & urutkan
+            const uniqueList = [...new Set(list)].filter(item => item).sort();
+        
+            // Hapus semua isi lama
+            select.innerHTML = '';
+        
+            // Isi ulang dengan data terbaru dari Cloud
+            uniqueList.forEach(k => {
+                const opt = document.createElement('option');
+                opt.value = k;
+                opt.innerText = k;
+                // Jika sebelumnya sudah dipilih, biarkan tetap terpilih
+                if (selectedValues.includes(k)) opt.selected = true;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderUI(totals, rekapCabang, rowsBelanja) {
+            document.getElementById('sumOmset').innerText = `Rp ${totals.omset.toLocaleString()}`;
+            document.getElementById('sumBelanja').innerText = `Rp ${totals.belanja.toLocaleString()}`;
+            document.getElementById('sumLaba').innerText = `Rp ${(totals.omset - totals.belanja).toLocaleString()}`;
+
+            // Pemasukan Table
+            let htmlP = "";
+            for (const cab in rekapCabang) {
+                const r = rekapCabang[cab];
+                htmlP += `<tr><td class="text-left"><b>${cab}</b></td><td>${r.cash.toLocaleString()}</td><td>${r.qr.toLocaleString()}</td><td>${r.gb.toLocaleString()}</td><td>${r.gf.toLocaleString()}</td><td>${r.sf.toLocaleString()}</td><td>${r.pg.toLocaleString()}</td><td>${r.rm.toLocaleString()}</td><td style="font-weight:bold;">Rp ${r.total.toLocaleString()}</td></tr>`;
+            }
+            document.getElementById('tBodyPemasukan').innerHTML = htmlP || '<tr><td colspan="9" align="center">Tidak ada data</td></tr>';
+            document.getElementById('tFootPemasukan').innerHTML = `<tr class="row-total"><td class="text-left">TOTAL</td><td>${totals.cash.toLocaleString()}</td><td>${totals.qr.toLocaleString()}</td><td>${totals.gb.toLocaleString()}</td><td>${totals.gf.toLocaleString()}</td><td>${totals.sf.toLocaleString()}</td><td>${totals.pg.toLocaleString()}</td><td>${totals.rm.toLocaleString()}</td><td style="background:#333; color:white;">Rp ${totals.omset.toLocaleString()}</td></tr>`;
+
+            // Pengeluaran Table
+            document.getElementById('tBodyPengeluaran').innerHTML = rowsBelanja.map(b => `<tr><td>${b.waktu}</td><td class="text-left">${b.cabang}</td><td class="text-left">${b.nama}</td><td class="text-center">${b.qty}</td><td>Rp ${parseInt(b.harga).toLocaleString()}</td><td class="text-left">-</td></tr>`).join('') || '<tr><td colspan="6" align="center">Tidak ada pengeluaran</td></tr>';
+            document.getElementById('tFootPengeluaran').innerHTML = `<tr class="row-total"><td colspan="4" class="text-right">TOTAL PENGELUARAN</td><td style="background:#d32f2f; color:white;">Rp ${totals.belanja.toLocaleString()}</td><td></td></tr>`;
+        }
+
+        function resetFilter() {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('filterCabang').value = 'Semua';
+            hitungLaporan();
+        }
+
+        function logout() { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; }
+
+        window.onload = async () => { 
+            buildSidebar(); 
+            await loadCabangDropdown(); 
+            hitungLaporan(); 
+        };
+    </script>
+</body>
+</html>

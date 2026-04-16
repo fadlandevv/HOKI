@@ -1,0 +1,316 @@
+s<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Hoki POS - History Transaksi</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* --- CSS SIDEBAR KONSISTEN & COLLAPSIBLE --- */
+        .sidebar { 
+            width: 220px; background: #d32f2f; color: white; padding: 20px 10px; 
+            transition: 0.3s; display: flex; flex-direction: column; 
+            height: 100vh; position: fixed; left: 0; top: 0; box-sizing: border-box; z-index: 1000;
+        }
+        .sidebar.collapsed { width: 75px; }
+        .sidebar.collapsed .menu-group-label, .sidebar.collapsed li span { display: none; }
+        .sidebar.collapsed li { justify-content: center; padding: 15px 0; }
+        .sidebar.collapsed .brand { font-size: 14px; }
+
+        .brand { font-weight: 800; letter-spacing: 2px; text-align: center; cursor: pointer; margin-bottom: 10px; transition: 0.3s; }
+        
+        .menu-group-label { 
+            font-size: 11px; color: #ff9999; padding: 15px 15px 5px; 
+            text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;
+        }
+        
+        .sidebar ul { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; overflow-x: hidden; }
+        .sidebar ul li { 
+            font-size: 13px; padding: 12px 15px; transition: 0.3s; color: white; 
+            cursor: pointer; display: flex; align-items: center; border-radius: 8px; margin-bottom: 5px;
+        }
+        .sidebar ul li:hover { background: rgba(255,255,255,0.1); }
+        .sidebar ul li.active { background: #b71c1c; font-weight: bold; }
+        .sidebar ul li .icon { min-width: 25px; font-size: 16px; text-align: center; }
+        .sidebar ul li span { margin-left: 10px; white-space: nowrap; }
+
+        .logout-section { padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); margin-top: auto; }
+        .btn-logout-sidebar { 
+            width: 100%; background: #333; color: white; border: none; padding: 10px; 
+            border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;
+        }
+        .sidebar.collapsed .btn-logout-sidebar span { display: none; }
+
+        /* Penyesuaian Konten */
+        .main-content { margin-left: 220px; padding: 25px; transition: 0.3s; flex: 1; min-height: 100vh; }
+        .main-content.expanded { margin-left: 75px; }
+
+        /* --- CSS HALAMAN HISTORY --- */
+        .filter-section {
+            background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 12px; font-weight: bold; color: #666; }
+        input[type="date"], select { padding: 8px; border: 1px solid #ddd; border-radius: 5px; outline: none; }
+        
+        .btn-filter { background: #d32f2f; color: white; border: none; padding: 9px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-quick { background: #f0f0f0; border: 1px solid #ddd; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; }
+
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: #d32f2f; color: white; }
+        tr:hover { background: #fff9f9; }
+        
+        .tag-metode { background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+    </style>
+</head>
+<body class="dashboard-body" style="display: flex;">
+
+    <div class="sidebar" id="sidebar">
+        <h2 class="brand" onclick="toggleSidebar()">HOKI</h2>
+        <nav><ul id="sidebarMenu"></ul></nav>
+        <div class="logout-section">
+            <button class="btn-logout-sidebar" onclick="logout()">
+                <div class="icon">🚪</div> <span>LOGOUT</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h2 style="margin:0;">📄 History Transaksi</h2>
+                <p style="font-size: 14px; color: #666;">Pantau performa penjualan cabang harian.</p>
+            </div>
+        </header>
+
+        <div class="filter-section">
+            <div class="filter-group">
+                <label>Mulai:</label>
+                <input type="date" id="tglMulai">
+            </div>
+            <div class="filter-group">
+                <label>Sampai:</label>
+                <input type="date" id="tglSelesai">
+            </div>
+            <div class="filter-group">
+                <label>Cabang:</label>
+                <select id="filterCabang">
+                    <option value="Semua">Semua Cabang</option>
+                </select>
+            </div>
+            <button class="btn-filter" onclick="renderHistory()">Cari Data</button>
+            <button class="btn-quick" onclick="filterHariIni()">Hari Ini</button>
+            
+            <button onclick="hapusSemuaHistory()" style="background:#333; color:white; border:none; padding:9px 15px; border-radius:5px; cursor:pointer; margin-left:auto; font-weight:bold;">⚠️ Kosongkan</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Waktu</th>
+                    <th>Petugas</th>
+                    <th>Cabang</th>
+                    <th>Item</th>
+                    <th>Total</th>
+                    <th>Metode</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="tabelHistory"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+const cabangLogin = localStorage.getItem('cabangHoki'); // Cabang yang dipilih saat login
+
+if (!currentUser) { window.location.href = 'index.html'; }
+
+// --- 1. SIDEBAR & UI (TETAP KONSISTEN) ---
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    sidebar.classList.toggle('collapsed');
+    mainContent.classList.toggle('expanded');
+    localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'small' : 'large');
+}
+
+function buildSidebar() {
+    const menuContainer = document.getElementById('sidebarMenu');
+    const role = currentUser.role;
+    const currentPage = window.location.pathname.split("/").pop() || 'dashboard.html';
+
+    // Pulihkan status minimize dari memori
+    if (localStorage.getItem('sidebarState') === 'small') {
+        document.getElementById('sidebar').classList.add('collapsed');
+        document.getElementById('mainContent').classList.add('expanded');
+    }
+
+    let menuHTML = '';
+    const createItem = (icon, label, link, active) => `
+        <li class="${active ? 'active' : ''}" onclick="location.href='${link}'">
+            <div class="icon">${icon}</div> <span>${label}</span>
+        </li>`;
+
+    // --- GROUP 1: FRONTLINE OPERATIONS (Semua Role) ---
+    menuHTML += `<div class="menu-group-label">Frontline Operations</div>`;
+    menuHTML += createItem('🛒', 'Kasir', 'dashboard.html', currentPage === 'dashboard.html');
+    menuHTML += createItem('📄', 'History Transaksi', 'history.html', currentPage === 'history.html');
+    menuHTML += createItem('📦', 'Stok Harian', 'stok.html', currentPage === 'stok.html');
+    menuHTML += createItem('🚚', 'Restock Barang', 'restock.html', currentPage === 'restock.html');
+    menuHTML += createItem('📊', 'Laporan Penjualan', 'laporan_staff.html', currentPage === 'laporan_staff.html');
+
+    // --- GROUP 2: TACTICAL MANAGEMENT (Senior Staff, SPV, Owner, VIP) ---
+    if (['Senior Staff', 'SPV', 'Owner', 'VIP'].includes(role)) {
+        menuHTML += `<div class="menu-group-label">Tactical Management</div>`;
+        menuHTML += createItem('🍱', 'Master Produk', 'produk.html', currentPage === 'produk.html');
+        menuHTML += createItem('📈', 'Rekapan Penjualan', 'rekap.html', currentPage === 'rekap.html');
+        menuHTML += createItem('💸', 'Belanja', 'belanja.html', currentPage === 'belanja.html');
+    }
+
+    // --- GROUP 3: EXECUTIVE SUITE (Owner & VIP) ---
+    if (['Owner', 'VIP'].includes(role)) {
+        menuHTML += `<div class="menu-group-label">Executive Suite</div>`;
+        menuHTML += createItem('📊', 'Keuangan Global', 'laporan.html', currentPage === 'laporan.html');
+        menuHTML += createItem('📈', 'Statistik', 'statistik.html', currentPage === 'statistik.html');
+    }
+
+    // --- GROUP 4: VIP ACCESS (KHUSUS ROLE VIP SAAT INI) ---
+    if (role === 'VIP') {
+        menuHTML += `
+            <div class="menu-group-label" style="color: #ffeb3b; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                👑 VIP Access
+            </div>`;
+        menuHTML += createItem('👥', 'Manajemen User', 'user.html', currentPage === 'user.html');
+        menuHTML += createItem('🔑', 'History Login', 'login_history.html', currentPage === 'login_history.html');
+    }
+
+    menuContainer.innerHTML = menuHTML;
+}
+
+// --- 2. LOGIKA HISTORY CLOUD ---
+
+async function renderHistory() {
+    try {
+        const res = await fetch('api.php?action=get_history');
+        const history = await res.json();
+        
+        const filterCab = document.getElementById('filterCabang').value;
+        const tglMulai = document.getElementById('tglMulai').value;
+        const tglSelesai = document.getElementById('tglSelesai').value;
+        
+        const tbody = document.getElementById('tabelHistory');
+        tbody.innerHTML = '';
+
+        history.forEach((t) => {
+            const dateTrx = t.waktu.split(' ')[0]; 
+            const role = currentUser.role;
+
+            // 1. FILTER BERDASARKAN ROLE & CABANG LOGIN (PROTEKSI UTAMA)
+            if (['Staff', 'Senior Staff', 'SPV'].includes(role)) {
+                // Paksa hanya tampilkan data cabangnya sendiri
+                if (t.cabang !== cabangLogin) return;
+            } else {
+                // Owner/VIP baru boleh pakai filter dropdown
+                if (filterCab !== "Semua" && t.cabang !== filterCab) return;
+            }
+
+            // 2. Filter Tanggal (Tetap berfungsi untuk semua)
+            if (tglMulai && dateTrx < tglMulai) return;
+            if (tglSelesai && dateTrx > tglSelesai) return;
+
+            const items = JSON.parse(t.items_json || '[]');
+            const namaItems = items.map(it => it.nama).join(', ');
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><small>${t.waktu}</small></td>
+                    <td>${t.petugas}</td>
+                    <td><b>${t.cabang}</b></td>
+                    <td><small>${namaItems}</small></td>
+                    <td style="font-weight:bold; color:#d32f2f;">Rp ${parseInt(t.total).toLocaleString()}</td>
+                    <td><span class="tag-metode">${t.metode}</span></td>
+                    <td>
+                        ${role === 'VIP' || role === 'Owner' ? 
+                          `<button style="background:#f44336; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;" onclick="hapusTransaksi(${t.id})">Hapus</button>` 
+                          : `-`}
+                    </td>
+                </tr>
+            `;
+        });
+    } catch (e) {
+        console.error("Gagal muat history");
+    }
+}
+
+async function hapusTransaksi(id) {
+    if(confirm("Hapus transaksi ini secara permanen dari Cloud?")) {
+        await fetch(`api.php?action=del_transaksi&id=${id}`);
+        renderHistory();
+    }
+}
+
+async function hapusSemuaHistory() {
+    if(confirm("⚠️ PERINGATAN! Ini akan menghapus SELURUH data penjualan di database cloud. Lanjutkan?")) {
+        await fetch('api.php?action=clear_history');
+        renderHistory();
+    }
+}
+
+function filterHariIni() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('tglMulai').value = today;
+    document.getElementById('tglSelesai').value = today;
+    renderHistory();
+}
+
+async function loadCabang() {
+    try {
+        const res = await fetch('api.php?action=get_branches');
+        const cabangDB = await res.json();
+        const select = document.getElementById('filterCabang');
+        
+        // Bersihkan dropdown dulu (kecuali opsi "Semua")
+        select.innerHTML = '<option value="Semua">Semua Cabang</option>';
+
+        cabangDB.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.nama_cabang;
+            opt.innerText = c.nama_cabang;
+            select.appendChild(opt);
+        });
+
+        // --- LOGIKA PEMBATASAN AKSES (REVISI) ---
+        const role = currentUser.role;
+        
+        if (['Staff', 'Senior Staff', 'SPV'].includes(role)) {
+            // Jika bukan Owner/VIP, kunci dropdown ke cabang tempat dia login
+            select.value = cabangLogin;
+            select.disabled = true; // User tidak bisa ganti cabang
+            
+            // Sembunyikan tombol "Hapus Semua" untuk keamanan
+            const btnClear = document.querySelector('button[onclick="hapusSemuaHistory()"]');
+            if(btnClear) btnClear.style.display = 'none';
+        } else {
+            // Owner & VIP bebas pilih
+            select.disabled = false;
+        }
+
+    } catch (e) {
+        console.error("Gagal load daftar cabang");
+    }
+}
+
+function logout() { 
+    if(confirm("Logout?")) { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; } 
+}
+
+window.onload = async () => { 
+    buildSidebar(); 
+    await loadCabang(); // Load cabang dulu baru render data
+    renderHistory(); 
+};
+    </script>
+</body>
+</html>

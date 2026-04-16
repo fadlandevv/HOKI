@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Hoki POS - Rekapan Tactical (Synced)</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* --- CSS SIDEBAR KONSISTEN --- */
+        .sidebar { width: 220px; background: #d32f2f; color: white; padding: 20px 10px; transition: 0.3s; display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; box-sizing: border-box; z-index: 1000; }
+        .sidebar.collapsed { width: 75px; }
+        .sidebar.collapsed .menu-group-label, .sidebar.collapsed li span { display: none; }
+        .brand { font-weight: 800; letter-spacing: 2px; text-align: center; cursor: pointer; margin-bottom: 10px; }
+        .menu-group-label { font-size: 11px; color: #ff9999; padding: 15px 15px 5px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800; }
+        .sidebar ul { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; overflow-x: hidden; }
+        .sidebar ul li { font-size: 13px; padding: 12px 15px; transition: 0.3s; color: white; cursor: pointer; display: flex; align-items: center; border-radius: 8px; margin-bottom: 5px; }
+        .sidebar ul li:hover { background: rgba(255,255,255,0.1); }
+        .sidebar ul li.active { background: #b71c1c; font-weight: bold; }
+        .logout-section { padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); margin-top: auto; }
+        .btn-logout-sidebar { width: 100%; background: #333; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+
+        .main-content { margin-left: 220px; padding: 25px; transition: 0.3s; flex: 1; min-height: 100vh; }
+        .main-content.expanded { margin-left: 75px; }
+
+        /* --- CSS REKAP --- */
+        .filter-bar { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; display: flex; gap: 15px; align-items: flex-end; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .grid-rekap { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .card-rekap { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .stat-val { font-size: 24px; font-weight: 800; color: #d32f2f; margin-top: 5px; }
+        .section-title { font-size: 14px; font-weight: bold; color: #333; border-bottom: 2px solid #fff0f0; padding-bottom: 10px; margin-bottom: 15px; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 10px 5px; border-bottom: 1px solid #f4f4f4; text-align: left; }
+
+        @media print {
+            .sidebar, .filter-bar, button { display: none !important; }
+            .main-content { margin: 0 !important; padding: 0 !important; margin-left: 0 !important; }
+        }
+    </style>
+</head>
+<body class="dashboard-body" style="display: flex;">
+
+    <div class="sidebar" id="sidebar">
+        <h2 class="brand" onclick="toggleSidebar()">HOKI</h2>
+        <nav><ul id="sidebarMenu"></ul></nav>
+        <div class="logout-section">
+            <button class="btn-logout-sidebar" onclick="logout()">🚪 <span>LOGOUT</span></button>
+        </div>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h2 style="margin:0;">📈 Rekapan Penjualan Cabang (Final)</h2>
+                <p style="color: #666; font-size: 14px;">Data tersinkronisasi dengan Laporan Staff & Edit Admin.</p>
+            </div>
+            <button onclick="window.print()" style="background:#d32f2f; color:white; border:none; padding:12px 25px; border-radius:8px; cursor:pointer; font-weight:bold;">🖨️ CETAK LAPORAN</button>
+        </header>
+
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label style="font-size: 11px; font-weight: bold;">Pilih Tanggal:</label>
+                <input type="date" id="filterTgl" onchange="hitungRekapan()">
+            </div>
+            <div class="filter-group" style="flex: 1;">
+                <label style="font-size: 11px; font-weight: bold;">Pilih Cabang (Bisa centang banyak):</label>
+                <div id="containerCabang" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
+                    </div>
+            </div>
+        </div>
+
+        <div class="grid-rekap">
+            <div class="card-rekap">
+                <div class="section-title">💰 OMSET (SESUAI EDIT)</div>
+                <div class="stat-val" id="totalOmset">Rp 0</div>
+            </div>
+            <div class="card-rekap">
+                <div class="section-title">🥟 ESTIMASI DIMSUM (PCS)</div>
+                <div class="stat-val" id="totalPcs" style="color: #2e7d32;">0 Pcs</div>
+            </div>
+            <div class="card-rekap">
+                <div class="section-title">💸 PENGELUARAN (AUDIT)</div>
+                <div class="stat-val" id="totalExp" style="color: #333;">Rp 0</div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="card-rekap">
+                <div class="section-title">💳 Rincian Pembayaran (Settlement)</div>
+                <table id="tableMetode">
+                    <thead><tr><th>Metode</th><th>Nominal</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="card-rekap">
+                <div class="section-title">🍱 Menu Terjual</div>
+                <table id="tableMenu">
+                    <thead><tr><th>Nama Menu</th><th>Qty</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card-rekap" style="margin-top: 20px;">
+            <div class="section-title">📝 Detail Pengeluaran Terlapor</div>
+            <table id="tableDaftarExp">
+                <thead><tr><th>Nama Barang</th><th>Qty</th><th>Harga</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        const role = currentUser.role;
+        
+        async function loadFilterCabang() {
+            try {
+                const res = await fetch('api.php?action=get_branches');
+                const dataCabang = await res.json();
+                const container = document.getElementById('containerCabang');
+                container.innerHTML = '';
+        
+                // 1. Ambil data hak akses
+                const role = currentUser.role;
+                const jatahCabang = currentUser.cabang || ""; 
+        
+                // 2. Pecah jadi array dan bersihkan
+                const daftarAkses = jatahCabang.split(',').map(s => s.trim().toUpperCase());
+        
+                // 3. LOGIKA FILTER (Ditingkatkan)
+                dataCabang.forEach(c => {
+                    const namaCabangSistem = c.nama_cabang.trim().toUpperCase();
+                    
+                    // Cek 1: Apakah dia Owner/VIP?
+                    const isBoss = (role === 'Owner' || role === 'VIP');
+                    // Cek 2: Apakah dia punya hak akses "Semua"?
+                    const hasAllAccess = daftarAkses.includes("SEMUA");
+                    // Cek 3: Apakah cabang ini ada di daftar jatahnya?
+                    const isAuthorized = daftarAkses.includes(namaCabangSistem);
+        
+                    // JIKA salah satu terpenuhi, TAMPILKAN checkbox-nya
+                    if (isBoss || hasAllAccess || isAuthorized) {
+                        container.innerHTML += `
+                            <label style="font-size: 12px; background: #eee; padding: 5px 10px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                <input type="checkbox" class="cb-cabang" value="${c.nama_cabang}" onchange="hitungRekapan()" checked>
+                                ${c.nama_cabang}
+                            </label>`;
+                    }
+                });
+        
+                // Jalankan hitungan pertama kali setelah checkbox siap
+                hitungRekapan();
+        
+            } catch (e) {
+                console.error("Gagal sinkron data cabang:", e);
+            }
+        }
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+
+        function buildSidebar() {
+    const menuContainer = document.getElementById('sidebarMenu');
+    const role = currentUser.role;
+    const currentPage = window.location.pathname.split("/").pop() || 'dashboard.html';
+
+    // Pulihkan status minimize dari memori
+    if (localStorage.getItem('sidebarState') === 'small') {
+        document.getElementById('sidebar').classList.add('collapsed');
+        document.getElementById('mainContent').classList.add('expanded');
+    }
+
+    let menuHTML = '';
+    const createItem = (icon, label, link, active) => `
+        <li class="${active ? 'active' : ''}" onclick="location.href='${link}'">
+            <div class="icon">${icon}</div> <span>${label}</span>
+        </li>`;
+
+    // --- GROUP 1: FRONTLINE OPERATIONS (Semua Role) ---
+    menuHTML += `<div class="menu-group-label">Frontline Operations</div>`;
+    menuHTML += createItem('🛒', 'Kasir', 'dashboard.html', currentPage === 'dashboard.html');
+    menuHTML += createItem('📄', 'History Transaksi', 'history.html', currentPage === 'history.html');
+    menuHTML += createItem('📦', 'Stok Harian', 'stok.html', currentPage === 'stok.html');
+    menuHTML += createItem('🚚', 'Restock Barang', 'restock.html', currentPage === 'restock.html');
+    menuHTML += createItem('📊', 'Laporan Penjualan', 'laporan_staff.html', currentPage === 'laporan_staff.html');
+
+    // --- GROUP 2: TACTICAL MANAGEMENT (Senior Staff, SPV, Owner, VIP) ---
+    if (['Senior Staff', 'SPV', 'Owner', 'VIP'].includes(role)) {
+        menuHTML += `<div class="menu-group-label">Tactical Management</div>`;
+        menuHTML += createItem('🍱', 'Master Produk', 'produk.html', currentPage === 'produk.html');
+        menuHTML += createItem('📈', 'Rekapan Penjualan', 'rekap.html', currentPage === 'rekap.html');
+        menuHTML += createItem('💸', 'Belanja', 'belanja.html', currentPage === 'belanja.html');
+    }
+
+    // --- GROUP 3: EXECUTIVE SUITE (Owner & VIP) ---
+    if (['Owner', 'VIP'].includes(role)) {
+        menuHTML += `<div class="menu-group-label">Executive Suite</div>`;
+        menuHTML += createItem('📊', 'Keuangan Global', 'laporan.html', currentPage === 'laporan.html');
+        menuHTML += createItem('📈', 'Statistik', 'statistik.html', currentPage === 'statistik.html');
+    }
+
+    // --- GROUP 4: VIP ACCESS (KHUSUS ROLE VIP SAAT INI) ---
+    if (role === 'VIP') {
+        menuHTML += `
+            <div class="menu-group-label" style="color: #ffeb3b; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                👑 VIP Access
+            </div>`;
+        menuHTML += createItem('👥', 'Manajemen User', 'user.html', currentPage === 'user.html');
+        menuHTML += createItem('🔑', 'History Login', 'login_history.html', currentPage === 'login_history.html');
+    }
+
+    menuContainer.innerHTML = menuHTML;
+}
+
+
+        // --- INI KUNCI SINKRONISASINYA ---
+        async function hitungRekapan() {
+            const tglVal = document.getElementById('filterTgl').value;
+            if (!tglVal) return;
+        
+            // 1. Ambil daftar cabang yang dicentang di layar
+            let selectedBranches = Array.from(document.querySelectorAll('.cb-cabang:checked')).map(cb => cb.value);
+        
+            // 2. Jika tidak ada cabang yang dicentang, langsung nol-kan tampilan
+            if (selectedBranches.length === 0) {
+                renderTampilan({ omset: 0, pcs: 0, exp: 0, metode: {}, menu: {}, listExp: [] });
+                return;
+            }
+        
+            try {
+                // --- 3. KUNCI KEAMANAN: Kirim Role & Hak Akses ke API ---
+                // Kita kirim lewat URL agar PHP bisa memfilter data langsung di Database
+                const params = new URLSearchParams({
+                    action: 'get_laporan_history',
+                    role: currentUser.role,
+                    cabang: currentUser.cabang || "" // Kirim list hak akses user (contoh: "Pekapuran,Sukatani")
+                });
+        
+                const res = await fetch(`api.php?${params.toString()}`);
+                const allReports = await res.json();
+        
+                // 4. Siapkan penampung totalan
+                let total = { omset: 0, pcs: 0, exp: 0, metode: {}, menu: {}, listExp: [] };
+        
+                // 5. Filter data hasil dari server berdasarkan tanggal dan pilihan checkbox
+                const filtered = allReports.filter(r => {
+                    const rDate = r.waktu.split(' ')[0]; // Ambil YYYY-MM-DD dari kolom waktu
+                    // Pastikan tanggal cocok DAN cabang ada di daftar yang dicentang
+                    return rDate === tglVal && selectedBranches.includes(r.cabang);
+                });
+        
+                // 6. Proses Agregasi (Penjumlahan)
+                filtered.forEach(r => {
+                    // Tambahkan Omset
+                    total.omset += parseInt(r.grand_total || 0);
+        
+                    // Gabungkan Metode Pembayaran (JSON)
+                    const mtd = JSON.parse(r.metode_json || '{}');
+                    for (let m in mtd) {
+                        total.metode[m] = (total.metode[m] || 0) + parseInt(mtd[m]);
+                    }
+        
+                    // Gabungkan Estimasi Dimsum Laku (JSON)
+                    const audit = JSON.parse(r.audit_json || '{}');
+                    total.pcs += parseInt(audit.dLak || 0);
+        
+                    // Gabungkan Menu Terjual (JSON Array)
+                    const items = JSON.parse(r.items_json || '[]');
+                    items.forEach(it => {
+                        total.menu[it.nama] = (total.menu[it.nama] || 0) + parseInt(it.qty || 0);
+                    });
+        
+                    // Gabungkan Pengeluaran (JSON Array)
+                    const exps = JSON.parse(r.pengeluaran_json || '[]');
+                    exps.forEach(e => {
+                        total.exp += parseInt(e.harga || 0);
+                        // Tambahkan info cabang di list pengeluaran agar Bos tahu ini biaya cabang mana
+                        total.listExp.push({ ...e, cabang: r.cabang });
+                    });
+                });
+        
+                // 7. Lempar hasil akhir ke fungsi render tampilan
+                renderTampilan(total);
+        
+            } catch (e) {
+                console.error("Gagal hitung rekapan:", e);
+                alert("Terjadi kesalahan saat mengambil data!");
+            }
+        }
+    
+        function renderTampilan(data) {
+            document.getElementById('totalOmset').innerText = `Rp ${data.omset.toLocaleString()}`;
+            document.getElementById('totalPcs').innerText = `${data.pcs.toLocaleString()} Pcs`;
+            document.getElementById('totalExp').innerText = `Rp ${data.exp.toLocaleString()}`;
+    
+            // Tabel Metode
+            const tbodyM = document.querySelector('#tableMetode tbody');
+            tbodyM.innerHTML = Object.entries(data.metode).length 
+                ? Object.entries(data.metode).map(([m, val]) => `<tr><td><b>${m}</b></td><td>Rp ${val.toLocaleString()}</td></tr>`).join('')
+                : '<tr><td colspan="2" align="center">Tidak ada data</td></tr>';
+    
+            // Tabel Menu
+            const tbodyMenu = document.querySelector('#tableMenu tbody');
+            tbodyMenu.innerHTML = Object.entries(data.menu).sort((a,b) => b[1]-a[1]).map(([nama, qty]) => 
+                `<tr><td>${nama}</td><td><b>${qty} Porsi</b></td></tr>`).join('');
+    
+            // Tabel Pengeluaran
+            const tbodyExp = document.querySelector('#tableDaftarExp tbody');
+            tbodyExp.innerHTML = data.listExp.map(e => 
+                `<tr><td>${e.nama} <small>(${e.cabang})</small></td><td>${e.qty || 1}</td><td>Rp ${parseInt(e.harga).toLocaleString()}</td></tr>`).join('');
+        }
+    
+        function logout() { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; }
+    
+        window.onload = () => {
+            buildSidebar();
+            document.getElementById('filterTgl').value = new Date().toISOString().split('T')[0];
+            loadFilterCabang();
+        };
+
+    </script>
+</body>
+</html>
