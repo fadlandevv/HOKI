@@ -2,86 +2,370 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Hoki POS - Master Admin & Kepegawaian</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hoki POS - Manajemen User</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* --- CSS SIDEBAR KONSISTEN & COLLAPSIBLE (IDENTIK DASHBOARD) --- */
-        .sidebar { 
-            width: 220px; background: #d32f2f; color: white; padding: 20px 10px; 
-            transition: 0.3s; display: flex; flex-direction: column; 
-            height: 100vh; position: fixed; left: 0; top: 0; box-sizing: border-box; z-index: 1000;
+
+    /* ── GRID LAYOUT ── */
+    .grid-admin {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1.5fr;
+        gap: 12px;
+    }
+
+    /* ── BOX ── */
+    .box {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 20px;
+        box-shadow: var(--sh-sm);
+        margin-bottom: 16px;
+    }
+
+    .box:last-child {
+        margin-bottom: 0;
+    }
+
+    /* ── SECTION TITLE ── */
+    .section-title {
+        color: var(--red);
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 10px;
+        margin-bottom: 14px;
+    }
+
+    /* ── FORM ── */
+    .form-group {
+        margin-bottom: 12px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 4px;
+    }
+
+    .two-col {
+        display: flex;
+        gap: 10px;
+    }
+
+    .two-col .form-group {
+        flex: 1;
+    }
+
+    /* ── CHECKLIST CABANG ── */
+    .checklist-container {
+        border: 1px solid var(--border);
+        border-radius: var(--r-md);
+        max-height: 100px;
+        overflow-y: auto;
+        background: var(--surface-2);
+    }
+
+    .check-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 7px 10px;
+        border-bottom: 1px solid var(--border);
+        font-size: 12px;
+        color: var(--text);
+        cursor: pointer;
+    }
+
+    .check-item:last-child {
+        border-bottom: none;
+    }
+
+    .check-item input {
+        width: auto;
+        margin: 0;
+        accent-color: var(--red);
+    }
+
+    /* ── UPLOAD DOCS BOX ── */
+    .upload-box {
+        background: var(--red-soft);
+        border: 1.5px dashed var(--red-border);
+        border-radius: var(--r-md);
+        padding: 14px;
+        margin-bottom: 12px;
+    }
+
+    .upload-box label {
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--red);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 10px;
+    }
+
+    .upload-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin: 8px 0 4px;
+    }
+
+    .upload-box input[type="file"] {
+        width: 100%;
+        font-size: 12px;
+        padding: 6px;
+        border: 1px solid var(--border);
+        border-radius: var(--r-sm);
+        background: var(--surface);
+        margin: 0;
+    }
+
+    /* ── BUTTONS ── */
+    .btn-green {
+        background: var(--green);
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: var(--r-md);
+        width: 100%;
+        margin-top: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 700;
+        font-family: 'DM Sans', sans-serif;
+        transition: filter 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .btn-green:hover {
+        filter: brightness(0.9);
+    }
+
+    .btn-dark {
+        background: #1c1c1a;
+        color: rgba(255,255,255,0.88);
+        border: none;
+        padding: 10px;
+        border-radius: var(--r-md);
+        width: 100%;
+        margin-top: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 700;
+        font-family: 'DM Sans', sans-serif;
+        transition: filter 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .btn-dark:hover {
+        filter: brightness(1.2);
+    }
+
+    .btn-save {
+        background: var(--red);
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: var(--r-md);
+        width: 100%;
+        margin-top: 10px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 700;
+        font-family: 'DM Sans', sans-serif;
+        transition: filter 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        box-shadow: 0 4px 12px rgba(211,47,47,0.25);
+    }
+
+    .btn-save:hover {
+        filter: brightness(0.9);
+    }
+
+    .btn-view-doc {
+        background: var(--blue-soft);
+        color: var(--blue);
+        border: none;
+        padding: 4px 10px;
+        border-radius: var(--r-sm);
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 700;
+        font-family: 'DM Sans', sans-serif;
+        transition: filter 0.15s;
+    }
+
+    .btn-view-doc:hover {
+        filter: brightness(0.9);
+    }
+
+    .btn-del-user {
+        background: none;
+        border: none;
+        color: var(--red);
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 700;
+        padding: 4px 6px;
+        border-radius: var(--r-sm);
+        transition: background 0.15s;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .btn-del-user:hover {
+        background: var(--red-soft);
+    }
+
+    /* ── TABLE OVERRIDES ── */
+    .table-wrap {
+        overflow-x: auto;
+    }
+
+    #tabelCabang,
+    #tabelRole,
+    #tabelUser {
+        width: 100%;
+        border-collapse: collapse;
+        box-shadow: none;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        margin-top: 12px;
+        font-size: 12px;
+    }
+
+    #tabelCabang th,
+    #tabelRole th,
+    #tabelUser th {
+        background: var(--red);
+        color: white;
+        padding: 8px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        border: none;
+        border-radius: 0;
+    }
+
+    #tabelCabang td,
+    #tabelRole td,
+    #tabelUser td {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--border);
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        color: var(--text);
+    }
+
+    #tabelUser code {
+        font-family: 'DM Mono', monospace;
+        background: var(--surface-2);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+    }
+
+    /* ── SELECT ROLE (custom dropdown) ── */
+    .custom-select-wrap {
+        margin-bottom: 0;
+    }
+
+    .custom-select-btn {
+        border-radius: var(--r-sm);
+        padding: 8px 12px;
+        font-size: 13px;
+        border-width: 1px;
+    }
+
+    /* ── RESPONSIVE MOBILE ── */
+    @media (max-width: 844px) {
+
+        .grid-admin {
+            grid-template-columns: 1fr;
         }
-        .sidebar.collapsed { width: 75px; }
-        .sidebar.collapsed .menu-group-label, .sidebar.collapsed li span { display: none; }
-        .sidebar.collapsed li { justify-content: center; padding: 15px 0; }
-        .sidebar.collapsed .brand { font-size: 14px; }
-        .brand { font-weight: 800; letter-spacing: 2px; text-align: center; cursor: pointer; margin-bottom: 10px; transition: 0.3s; }
-        .menu-group-label { font-size: 11px; color: #ff9999; padding: 15px 15px 5px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800; }
-        .sidebar ul { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; overflow-x: hidden; }
-        .sidebar ul li { 
-            font-size: 13px; padding: 12px 15px; transition: 0.3s; color: white; 
-            cursor: pointer; display: flex; align-items: center; border-radius: 8px; margin-bottom: 5px;
+
+        .two-col {
+            flex-direction: column;
         }
-        .sidebar ul li:hover { background: rgba(255,255,255,0.1); }
-        .sidebar ul li.active { background: #b71c1c; font-weight: bold; }
-        .sidebar ul li .icon { min-width: 25px; font-size: 16px; text-align: center; }
-        .sidebar ul li span { margin-left: 10px; white-space: nowrap; }
-        .logout-section { padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); margin-top: auto; }
-        .btn-logout-sidebar { 
-            width: 100%; background: #333; color: white; border: none; padding: 10px; 
-            border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;
-        }
-        .sidebar.collapsed .btn-logout-sidebar span { display: none; }
 
-        /* Penyesuaian Konten */
-        .main-content { margin-left: 220px; padding: 25px; transition: 0.3s; flex: 1; min-height: 100vh; }
-        .main-content.expanded { margin-left: 75px; }
+    }
 
-        /* --- CSS HALAMAN ADMIN & KEPEGAWAIAN --- */
-        .grid-admin { display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 20px; }
-        .box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .section-title { color: #d32f2f; border-bottom: 2px solid #eee; padding-bottom: 5px; margin-bottom: 15px; font-size: 16px; font-weight: bold; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-        th, td { padding: 10px; border: 1px solid #eee; text-align: left; }
-        th { background: #d32f2f; color: white; }
-
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #555; }
-        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 13px; }
-        
-        .checklist-container { border: 1px solid #ddd; border-radius: 8px; max-height: 100px; overflow-y: auto; padding: 5px; background: #fafafa; }
-        .check-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; font-size: 11px; }
-
-        .btn-view-doc { background: #1565c0; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 10px; font-weight: bold; }
-        .btn-save { background: #d32f2f; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
-<body class="dashboard-body" style="display: flex;">
+<body>
 
-    <div class="sidebar" id="sidebar">
-        <h2 class="brand" onclick="toggleSidebar()">HOKI</h2>
-        <nav><ul id="sidebarMenu"></ul></nav>
-        <div class="logout-section">
-            <button class="btn-logout-sidebar" onclick="logout()">
-                <div class="icon">🚪</div> <span>LOGOUT</span>
-            </button>
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand" onclick="toggleSidebar()">
+        <div class="sidebar-logo">
+            <img src="Assets/logobrand.png" alt="Hoki">
+        </div>
+        <div class="sidebar-brand-text">
+            <div class="sidebar-brand-name">Hoki Dimsum</div>
+            <div class="sidebar-brand-sub">POS System v2.0</div>
         </div>
     </div>
+    <button class="sidebar-toggle" onclick="toggleSidebar()">‹</button>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-user">
+        <div class="user-card">
+            <div class="user-avatar" id="userAvatarInitial">?</div>
+            <div class="user-info">
+                <div class="user-name" id="sidebarUserName">Loading...</div>
+                <div class="user-role" id="sidebarUserRole">—</div>
+            </div>
+            <button class="btn-logout-icon" onclick="logout()" title="Logout">🚪</button>
+        </div>
+    </div>
+</aside>
 
-    <div class="main-content" id="mainContent">
-        <header>
-            <h2 style="margin:0;">Pusat Kendali & Kepegawaian</h2>
-            <p style="font-size: 14px; color: #666; margin-bottom: 20px;">Kelola Akun, Cabang, dan Berkas Penting Tim Hoki Dimsum.</p>
-        </header>
-        <hr>
+<!-- ── MAIN CONTENT ── -->
+<div class="main-content" id="mainContent">
 
+    <header class="top-header">
+        <div class="header-left">
+            <div class="header-page-title">👥 Manajemen User</div>
+        </div>
+        <div class="header-right">
+            <div class="clock-pill">
+                <div id="realtimeClock">00:00:00</div>
+                <div id="realtimeDate">...</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="page-body">
         <div class="grid-admin">
+
+            <!-- KOLOM KIRI: Cabang + Role -->
             <div class="col-side">
-                <div class="box" style="margin-bottom: 20px;">
+                <div class="box">
                     <h3 class="section-title">🏢 List Cabang</h3>
                     <input type="text" id="namaCabang" placeholder="Nama cabang baru...">
-                    <button onclick="tambahCabang()" style="background:green; color:white; border:none; padding:10px; border-radius:8px; width:100%; margin-top:5px; cursor:pointer; font-weight:bold;">+ Simpan Cabang</button>
+                    <button class="btn-green" onclick="tambahCabang()">+ Simpan Cabang</button>
                     <table id="tabelCabang">
                         <thead><tr><th>Cabang</th><th>Aksi</th></tr></thead>
                         <tbody></tbody>
@@ -90,7 +374,7 @@
                 <div class="box">
                     <h3 class="section-title">🛡️ List Role</h3>
                     <input type="text" id="namaRole" placeholder="Role baru...">
-                    <button onclick="tambahRole()" style="background:#333; color:white; border:none; padding:10px; border-radius:8px; width:100%; margin-top:5px; cursor:pointer; font-weight:bold;">+ Simpan Role</button>
+                    <button class="btn-dark" onclick="tambahRole()">+ Simpan Role</button>
                     <table id="tabelRole">
                         <thead><tr><th>Role</th><th>Aksi</th></tr></thead>
                         <tbody></tbody>
@@ -98,48 +382,61 @@
                 </div>
             </div>
 
-            <div class="box">
+            <!-- KOLOM TENGAH: Pendaftaran -->
+            <div class="box" style="margin-bottom:0;">
                 <h3 class="section-title">📝 Pendaftaran Akun</h3>
-                
+
                 <div class="form-group">
-                    <label>Nama Lengkap (Sesuai KTP):</label>
+                    <label>Nama Lengkap (Sesuai KTP)</label>
                     <input type="text" id="fullName" placeholder="Masukkan nama...">
                 </div>
 
-                <div style="display: flex; gap: 10px;">
-                    <div class="form-group" style="flex: 1;">
-                        <label>Username Login:</label>
+                <div class="two-col">
+                    <div class="form-group">
+                        <label>Username Login</label>
                         <input type="text" id="uName" placeholder="user123">
                     </div>
-                    <div class="form-group" style="flex: 1;">
-                        <label>Password Login:</label>
+                    <div class="form-group">
+                        <label>Password Login</label>
                         <input type="text" id="uPass" placeholder="pass123">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Role Jabatan:</label>
-                    <select id="uRole"></select>
+                    <label>Role Jabatan</label>
+                    <div class="custom-select-wrap" id="wrapRole">
+                        <button class="custom-select-btn" onclick="toggleDropdownRole()">
+                            <span id="iconRole">🛡️</span>
+                            <span id="labelRole">Pilih Role</span>
+                            <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1l5 5 5-5" stroke="#d32f2f" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        </button>
+                        <div class="custom-dropdown" id="dropdownRole"></div>
+                        <input type="hidden" id="uRole" value="">
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Akses Cabang:</label>
+                    <label>Akses Cabang</label>
                     <div class="checklist-container" id="containerCeklis"></div>
                 </div>
 
-                <div class="form-group" style="background: #fff5f5; padding: 15px; border-radius: 10px; border: 1px dashed #d32f2f;">
-                    <label style="color: #d32f2f;">📂 Upload Dokumen (Format Gambar):</label>
-                    <label>KTP:</label> <input type="file" id="fileKTP" accept="image/*">
-                    <label>KK:</label> <input type="file" id="fileKK" accept="image/*">
-                    <label>Surat Kerja:</label> <input type="file" id="fileSPK" accept="image/*">
+                <div class="upload-box">
+                    <label>📂 Upload Dokumen (Format Gambar)</label>
+                    <span class="upload-label">KTP:</span>
+                    <input type="file" id="fileKTP" accept="image/*">
+                    <span class="upload-label">KK:</span>
+                    <input type="file" id="fileKK" accept="image/*">
+                    <span class="upload-label">Surat Kerja:</span>
+                    <input type="file" id="fileSPK" accept="image/*">
                 </div>
 
-                <button class="btn-save" onclick="tambahUser()">💾 DAFTARKAN SEKARANG</button>
+                <button class="btn-save" onclick="tambahUser()">💾 Daftarkan Sekarang</button>
             </div>
 
-            <div class="box">
+            <!-- KOLOM KANAN: Database Tim -->
+            <div class="box" style="margin-bottom:0;">
                 <h3 class="section-title">👥 Database Tim</h3>
-                <div style="overflow-x: auto;">
+                <div class="table-wrap">
                     <table>
                         <thead>
                             <tr>
@@ -155,169 +452,250 @@
                     </table>
                 </div>
             </div>
+
         </div>
     </div>
+</div>
 
-    <script>
-       const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff'};
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+    <button class="bn-item" onclick="location.href='dashboard.html'"><span class="bn-icon">🛒</span><span class="bn-label">Kasir</span></button>
+    <button class="bn-item" onclick="location.href='history.html'"><span class="bn-icon">📄</span><span class="bn-label">History</span></button>
+    <button class="bn-item" onclick="location.href='stok.html'"><span class="bn-icon">📦</span><span class="bn-label">Stok</span></button>
+    <button class="bn-item" onclick="location.href='laporan_staff.html'"><span class="bn-icon">📊</span><span class="bn-label">Laporan</span></button>
+    <button class="bn-item active" onclick="openSheet('moreSheet')"><span class="bn-icon">☰</span><span class="bn-label">Lainnya</span></button>
+</nav>
 
-// --- 1. SIDEBAR SINKRON (TETAP SAMA SEPERTI ASLI) ---
+<!-- MORE SHEET -->
+<div class="sheet-overlay" id="moreSheet" onclick="closeSheetOutside(event,'moreSheet')">
+    <div class="bottom-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <p style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Menu Lainnya</p>
+        <div class="more-grid" id="moreGrid"></div>
+    </div>
+</div>
+
+<script>
+const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff'};
+if (!currentUser.user) window.location.href = 'index.html';
+
+/* ── SIDEBAR ── */
 function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    sidebar.classList.toggle('collapsed');
-    mainContent.classList.toggle('expanded');
-    localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'small' : 'large');
+    const sb = document.getElementById('sidebar');
+    const mc = document.getElementById('mainContent');
+    sb.classList.toggle('collapsed');
+    mc.classList.toggle('expanded');
+    localStorage.setItem('sidebarState', sb.classList.contains('collapsed') ? 'small' : 'large');
 }
 
-        function buildSidebar() {
-            const menuContainer = document.getElementById('sidebarMenu');
-            const role = currentUser.role;
-            const currentPage = window.location.pathname.split("/").pop() || 'dashboard.html';
-    
-            if (localStorage.getItem('sidebarState') === 'small') {
-                document.getElementById('sidebar').classList.add('collapsed');
-                document.getElementById('mainContent').classList.add('expanded');
-            }
-    
-            let menuHTML = '';
-            const createItem = (icon, label, link, active) => `
-                <li class="${active ? 'active' : ''}" onclick="location.href='${link}'">
-                    <div class="icon">${icon}</div> <span>${label}</span>
-                </li>`;
-    
-            menuHTML += `<div class="menu-group-label">Frontline Operations</div>`;
-            menuHTML += createItem('🛒', 'Kasir', 'dashboard.html', currentPage === 'dashboard.html');
-            menuHTML += createItem('📄', 'History Transaksi', 'history.html', currentPage === 'history.html');
-            menuHTML += createItem('📦', 'Stok Harian', 'stok.html', currentPage === 'stok.html');
-            menuHTML += createItem('🚚', 'Restock Barang', 'restock.html', currentPage === 'restock.html');
-            menuHTML += createItem('📊', 'Laporan Penjualan', 'laporan_staff.html', currentPage === 'laporan_staff.html');
-    
-            if (['Senior Staff', 'SPV', 'Owner', 'VIP'].includes(role)) {
-                menuHTML += `<div class="menu-group-label">Tactical Management</div>`;
-                menuHTML += createItem('🍱', 'Master Produk', 'produk.html', currentPage === 'produk.html');
-                menuHTML += createItem('📈', 'Rekapan Penjualan', 'rekap.html', currentPage === 'rekap.html');
-                menuHTML += createItem('💸', 'Belanja', 'belanja.html', currentPage === 'belanja.html');
-            }
-    
-            if (['Owner', 'VIP'].includes(role)) {
-                menuHTML += `<div class="menu-group-label">Executive Suite</div>`;
-                menuHTML += createItem('📊', 'Keuangan Global', 'laporan.html', currentPage === 'laporan.html');
-                menuHTML += createItem('📈', 'Statistik', 'statistik.html', currentPage === 'statistik.html');
-            }
-    
-            if (role === 'VIP') {
-                menuHTML += `<div class="menu-group-label" style="color: #ffeb3b; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">👑 VIP Access</div>`;
-                menuHTML += createItem('👥', 'Manajemen User', 'user.html', currentPage === 'user.html');
-                menuHTML += createItem('🔑', 'History Login', 'login_history.html', currentPage === 'login_history.html');
-            }
-            menuContainer.innerHTML = menuHTML;
-        }
+function buildSidebar() {
+    if (localStorage.getItem('sidebarState') === 'small') {
+        document.getElementById('sidebar').classList.add('collapsed');
+        document.getElementById('mainContent').classList.add('expanded');
+    }
+    const role = currentUser.role;
+    const cur  = window.location.pathname.split('/').pop() || 'dashboard.html';
+    const navItem = (icon, label, link) => {
+        const active = cur === link ? 'active' : '';
+        return `<button class="nav-item ${active}" onclick="location.href='${link}'">
+            <span class="nav-icon">${icon}</span>
+            <span class="nav-label">${label}</span>
+        </button>`;
+    };
+    let h = `<div class="nav-group-label">Frontline</div>`;
+    h += navItem('🛒','Kasir','dashboard.html');
+    h += navItem('📄','History Transaksi','history.html');
+    h += navItem('📦','Stok Harian','stok.html');
+    h += navItem('🚚','Restock Barang','restock.html');
+    h += navItem('📊','Laporan Penjualan','laporan_staff.html');
+    if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+        h += `<div class="nav-group-label">Management</div>`;
+        h += navItem('🍱','Master Produk','produk.html');
+        h += navItem('📈','Rekapan Penjualan','rekap.html');
+    }
+    if (['Owner','VIP'].includes(role)) {
+        h += `<div class="nav-group-label">Executive</div>`;
+        h += navItem('📊','Keuangan Global','laporan.html');
+        h += navItem('📈','Statistik','statistik.html');
+        h += navItem('💸','Belanja','belanja.html');
+    }
+    if (role === 'VIP') {
+        h += `<div class="nav-group-label">VIP Access</div>`;
+        h += navItem('👥','Manajemen User','user.html');
+        h += navItem('🔑','History Login','login_history.html');
+    }
+    document.getElementById('sidebarNav').innerHTML = h;
+    const name = currentUser.user || '?';
+    document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
+    document.getElementById('sidebarUserName').innerText   = name;
+    document.getElementById('sidebarUserRole').innerText   = role;
+}
 
-// --- 2. LOGIKA CLOUD DATABASE (MENGGANTIKAN LOCALSTORAGE) ---
+/* ── CLOCK ── */
+function updateClock() {
+    const now = new Date();
+    document.getElementById('realtimeClock').innerText = now.toLocaleTimeString('id-ID');
+    document.getElementById('realtimeDate').innerText  = now.toLocaleDateString('id-ID',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+}
+setInterval(updateClock, 1000);
 
-// --- MANAJEMEN CABANG ---
+/* ── MORE MENU ── */
+function buildMoreMenu() {
+    const role = currentUser.role;
+    const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
+    if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
+        items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
+    }
+    if (['Owner','VIP'].includes(role)) {
+        items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
+        items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
+        items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
+    }
+    if (role === 'VIP') {
+        items.push({icon:'👥',label:'Users',link:'user.html'});
+        items.push({icon:'🔑',label:'Login Log',link:'login_history.html'});
+    }
+    items.push({icon:'🚪',label:'Logout',link:'#',action:'logout()'});
+    document.getElementById('moreGrid').innerHTML = items.map(i =>
+        `<button class="more-btn" onclick="${i.action||`location.href='${i.link}'`}">
+            <span class="more-btn-icon">${i.icon}</span>
+            <span class="more-btn-label">${i.label}</span>
+        </button>`).join('');
+}
+
+function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
+function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
+
+/* ── CUSTOM DROPDOWN ROLE ── */
+function toggleDropdownRole() {
+    document.getElementById('wrapRole').classList.toggle('open');
+}
+
+function pilihRole(value, label) {
+    document.getElementById('uRole').value      = value;
+    document.getElementById('labelRole').innerText = label;
+    document.querySelectorAll('#dropdownRole .dropdown-item').forEach(i => i.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.getElementById('wrapRole').classList.remove('open');
+}
+
+document.addEventListener('click', function(e) {
+    const wrap = document.getElementById('wrapRole');
+    if (wrap && !wrap.contains(e.target)) wrap.classList.remove('open');
+});
+
+/* ── LOGIKA CLOUD (TIDAK BERUBAH) ── */
 async function renderCabang() {
-    const res = await fetch('api.php?action=get_cabang');
-    const cabang = await res.json();
-    const tbody = document.querySelector('#tabelCabang tbody');
-    const containerCeklis = document.getElementById('containerCeklis');
-    
-    tbody.innerHTML = '';
-    containerCeklis.innerHTML = `<label class="check-item"><span>Semua</span><input type="checkbox" name="cabangAkses" value="Semua"></label>`;
-    
-    cabang.forEach((c) => {
-        const nama = c.nama_cabang || c; // Handle format lama/baru
-        const id = c.id;
-        tbody.innerHTML += `<tr><td>${nama}</td><td><button onclick="hapusCabang(${id})" style="color:red; border:none; background:none; cursor:pointer;">x</button></td></tr>`;
-        containerCeklis.innerHTML += `<label class="check-item"><span>${nama}</span><input type="checkbox" name="cabangAkses" value="${nama}"></label>`;
+    const res     = await fetch('api.php?action=get_cabang');
+    const cabang  = await res.json();
+    const tbody   = document.querySelector('#tabelCabang tbody');
+    const ceklis  = document.getElementById('containerCeklis');
+
+    tbody.innerHTML  = '';
+    ceklis.innerHTML = `<label class="check-item"><span>Semua</span><input type="checkbox" name="cabangAkses" value="Semua"></label>`;
+
+    cabang.forEach(c => {
+        const nama = c.nama_cabang || c;
+        const id   = c.id;
+        tbody.innerHTML  += `<tr><td>${nama}</td><td><button class="btn-del-user" onclick="hapusCabang(${id})">✖</button></td></tr>`;
+        ceklis.innerHTML += `<label class="check-item"><span>${nama}</span><input type="checkbox" name="cabangAkses" value="${nama}"></label>`;
     });
 }
 
 async function tambahCabang() {
     const nama = document.getElementById('namaCabang').value.trim();
-    if(!nama) return alert("Isi nama cabang!");
+    if (!nama) return toast.warning('Isi nama cabang!');
     await fetch('api.php?action=save_cabang', { method: 'POST', body: JSON.stringify({ nama }) });
     document.getElementById('namaCabang').value = '';
+    toast.success('Cabang berhasil ditambahkan!');
     renderCabang();
 }
 
 async function hapusCabang(id) {
-    if(confirm("Hapus cabang ini?")) {
-        await fetch(`api.php?action=del_cabang&id=${id}`);
-        renderCabang();
-    }
+    const ok = await showConfirm('Hapus cabang ini?', 'Ya, Hapus', 'Batal', '🗑️');
+    if (!ok) return;
+    await fetch(`api.php?action=del_cabang&id=${id}`);
+    toast.success('Cabang berhasil dihapus!');
+    renderCabang();
 }
 
-// --- MANAJEMEN ROLE ---
 async function renderRole() {
-    const res = await fetch('api.php?action=get_roles');
-    const roles = await res.json();
-    const tbody = document.querySelector('#tabelRole tbody');
-    const selectRole = document.getElementById('uRole');
-    
-    tbody.innerHTML = '';
-    selectRole.innerHTML = '';
-    
-    roles.forEach((r) => {
-        tbody.innerHTML += `<tr><td>${r.nama_role}</td><td><button onclick="hapusRole(${r.id},'${r.nama_role}')" style="color:red; border:none; background:none; cursor:pointer;">x</button></td></tr>`;
-        selectRole.innerHTML += `<option value="${r.nama_role}">${r.nama_role}</option>`;
+    const res      = await fetch('api.php?action=get_roles');
+    const roles    = await res.json();
+    const tbody    = document.querySelector('#tabelRole tbody');
+    const dropdown = document.getElementById('dropdownRole');
+
+    tbody.innerHTML    = '';
+    dropdown.innerHTML = '';
+
+    roles.forEach((r, i) => {
+        tbody.innerHTML += `<tr><td>${r.nama_role}</td><td><button class="btn-del-user" onclick="hapusRole(${r.id},'${r.nama_role}')">✖</button></td></tr>`;
+        const active = i === 0 ? 'active' : '';
+        dropdown.innerHTML += `<div class="dropdown-item ${active}" onclick="pilihRole('${r.nama_role}','${r.nama_role}')"><span class="dd-icon">🛡️</span><span>${r.nama_role}</span></div>`;
     });
+
+    if (roles.length > 0) {
+        document.getElementById('uRole').value       = roles[0].nama_role;
+        document.getElementById('labelRole').innerText = roles[0].nama_role;
+    }
 }
 
 async function tambahRole() {
     const nama = document.getElementById('namaRole').value.trim();
-    if(!nama) return alert("Isi nama role!");
+    if (!nama) return toast.warning('Isi nama role!');
     await fetch('api.php?action=save_role', { method: 'POST', body: JSON.stringify({ nama }) });
     document.getElementById('namaRole').value = '';
+    toast.success('Role berhasil ditambahkan!');
     renderRole();
 }
 
 async function hapusRole(id, nama) {
-    if(nama === 'Owner') return alert("Role Owner tidak bisa dihapus!");
-    if(confirm("Hapus role ini?")) {
-        await fetch(`api.php?action=del_role&id=${id}`);
-        renderRole();
-    }
+    if (nama === 'Owner') return toast.error('Role Owner tidak bisa dihapus!');
+    const ok = await showConfirm(`Hapus role '${nama}'?`, 'Ya, Hapus', 'Batal', '🗑️');
+    if (!ok) return;
+    await fetch(`api.php?action=del_role&id=${id}`);
+    toast.success('Role berhasil dihapus!');
+    renderRole();
 }
 
-// --- MANAJEMEN USER ---
 async function tambahUser() {
     const fullName = document.getElementById('fullName').value;
     const u = document.getElementById('uName').value;
     const p = document.getElementById('uPass').value;
-    const r = document.getElementById('uRole').value;
-    const aks = Array.from(document.querySelectorAll('input[name="cabangAkses"]:checked')).map(c => c.value).join(',');
+    const r        = document.getElementById('uRole').value;
+    const aks      = Array.from(document.querySelectorAll('input[name="cabangAkses"]:checked')).map(c => c.value).join(',');
 
-    if(!u || !p || !fullName) return alert("Lengkapi data!");
+    if (!u || !p || !fullName) return toast.warning('Lengkapi semua data!');
 
-    // Konversi file ke Base64 (Tetap pakai fungsi asli Bos)
     const ktp = await readFile(document.getElementById('fileKTP').files[0]);
-    const kk = await readFile(document.getElementById('fileKK').files[0]);
+    const kk  = await readFile(document.getElementById('fileKK').files[0]);
     const spk = await readFile(document.getElementById('fileSPK').files[0]);
 
-    const dataUser = {
-        fullName, username: u, pass: p, role: r, cabang: aks,
-        docs: { ktp, kk, spk }
-    };
+    const dataUser = { fullName, username: u, pass: p, role: r, cabang: aks, docs: { ktp, kk, spk } };
 
-    const res = await fetch('api.php?action=save_user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dataUser)
-    });
-    
-    const hasil = await res.json();
-    if(hasil.status === 'success') {
-        alert("Pendaftaran Berhasil ke Cloud!");
-        location.reload();
+    try {
+        const res   = await fetch('api.php?action=save_user', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(dataUser)
+        });
+        const hasil = await res.json();
+        if (hasil.status === 'success') {
+            toast.success('Pendaftaran Berhasil!');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            toast.error('Gagal mendaftarkan user!');
+        }
+    } catch (e) {
+        toast.error('Gagal koneksi server!');
     }
 }
 
 async function renderUser() {
-    const res = await fetch('api.php?action=get_users');
+    const res   = await fetch('api.php?action=get_users');
     const users = await res.json();
-    window.allUsersData = users; // Simpan untuk fungsi lihat berkas
+    window.allUsersData = users;
 
     const tbody = document.getElementById('tabelUser');
     tbody.innerHTML = '';
@@ -329,16 +707,16 @@ async function renderUser() {
                 <td><code>${u.password}</code></td>
                 <td>${u.role}</td>
                 <td><button class="btn-view-doc" onclick="lihatDokumen(${i})">👁️</button></td>
-                <td><button onclick="hapusUser(${u.id})" style="color:red; border:none; background:none; cursor:pointer;">x</button></td>
+                <td><button class="btn-del-user" onclick="hapusUser(${u.id})">✖</button></td>
             </tr>`;
     });
 }
 
 function readFile(file) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
         if (!file) resolve(null);
         const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
+        reader.onload  = e => resolve(e.target.result);
         reader.readAsDataURL(file);
     });
 }
@@ -346,32 +724,46 @@ function readFile(file) {
 function lihatDokumen(idx) {
     const user = window.allUsersData[idx];
     const docs = JSON.parse(user.docs_json || '{}');
-    if(!docs.ktp && !docs.kk && !docs.spk) return alert("Tidak ada dokumen.");
-    
-    let win = window.open("", "_blank");
-    win.document.write(`<html><body style="font-family:sans-serif; padding:20px;">
+    if (!docs.ktp && !docs.kk && !docs.spk) return toast.info('Tidak ada dokumen tersimpan.');
+    const win = window.open("", "_blank");
+    win.document.write(`<html><body style="font-family:sans-serif;padding:20px;">
         <h2>Berkas: ${user.fullName}</h2><hr>
         ${docs.ktp ? `<h3>KTP</h3><img src="${docs.ktp}" width="400"><br>` : ''}
-        ${docs.kk ? `<h3>KK</h3><img src="${docs.kk}" width="400"><br>` : ''}
-        ${docs.spk ? `<h3>SPK</h3><img src="${docs.spk}" width="400">` : ''}
+        ${docs.kk  ? `<h3>KK</h3><img src="${docs.kk}" width="400"><br>`  : ''}
+        ${docs.spk ? `<h3>SPK</h3><img src="${docs.spk}" width="400">`    : ''}
     </body></html>`);
 }
 
 async function hapusUser(id) {
-    if(confirm("Hapus akun dari cloud?")) {
+    const ok = await showConfirm('Hapus akun ini secara permanen?', 'Ya, Hapus', 'Batal', '🗑️');
+    if (!ok) return;
+    try {
         await fetch(`api.php?action=del_user&id=${id}`);
+        toast.success('Akun berhasil dihapus!');
         renderUser();
+    } catch (e) {
+        toast.error('Gagal menghapus akun!');
     }
 }
 
-function logout() { if(confirm("Logout?")) { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; } }
+async function logout() {
+    const ok = await showConfirm('Logout dari sistem?', 'Ya, Logout', 'Batal', '🚪');
+    if (ok) {
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('cabangHoki');
+        window.location.href = 'index.html';
+    }
+}
 
-window.onload = () => { 
-    buildSidebar(); 
-    renderCabang(); 
-    renderRole(); 
-    renderUser(); 
+window.onload = () => {
+    buildSidebar();
+    updateClock();
+    renderCabang();
+    renderRole();
+    renderUser();
 };
-    </script>
+</script>
+
+<script src="toast.js"></script>
 </body>
 </html>

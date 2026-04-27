@@ -2,363 +2,586 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hoki POS - Master Produk</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* --- CSS SIDEBAR KONSISTEN & COLLAPSIBLE (IDENTIK DASHBOARD) --- */
-        .sidebar { 
-            width: 220px; background: #d32f2f; color: white; padding: 20px 10px; 
-            transition: 0.3s; display: flex; flex-direction: column; 
-            height: 100vh; position: fixed; left: 0; top: 0; box-sizing: border-box; z-index: 1000;
+
+    /* ── FORM PRODUK ── */
+    .form-produk {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 12px;
+        margin-bottom: 12px;
+        box-shadow: var(--sh-sm);
+    }
+
+    .grid-input {
+        display: grid;
+        grid-template-columns: 0.8fr 1.5fr 1fr 1fr 0.8fr 0.8fr auto;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .grid-input input {
+        margin: 0;
+        padding: 9px 10px;
+        border: 1px solid var(--border);
+        border-radius: var(--r-sm);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 13px;
+        color: var(--text);
+        background: var(--surface);
+        outline: none;
+        transition: border-color var(--ease);
+        width: 100%;
+    }
+
+    .grid-input input:focus {
+        border-color: var(--red);
+    }
+
+    .btn-simpan {
+        background: var(--green);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: var(--r-md);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 700;
+        font-family: 'DM Sans', sans-serif;
+        white-space: nowrap;
+        transition: filter 0.15s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-simpan:hover {
+        filter: brightness(0.9);
+    }
+
+    /* ── TABLE ── */
+    .table-wrap {
+        overflow-x: auto;
+        border-radius: var(--r-lg);
+        border: 1px solid var(--border);
+        box-shadow: var(--sh-sm);
+        background: var(--surface);
+    }
+
+    .table-wrap table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--surface);
+        border-radius: 0;
+        box-shadow: none;
+        border: none;
+    }
+
+    .table-wrap table thead th {
+        background: var(--red);
+        color: white;
+        padding: 10px 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        border: none;
+    }
+
+    .table-wrap table tbody td {
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+        color: var(--text);
+        border-top: none;
+        border-left: none;
+        border-right: none;
+    }
+
+    .table-wrap table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .table-wrap table tbody tr:hover td {
+        background: var(--surface-2);
+    }
+
+    /* ── BADGES ── */
+    .drag-handle {
+        color: var(--text-light);
+        cursor: grab;
+        font-size: 14px;
+        user-select: none;
+    }
+
+    .drag-handle:active {
+        cursor: grabbing;
+    }
+
+    .sku-badge {
+        font-family: 'DM Mono', monospace;
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--text);
+    }
+
+    .harga-text {
+        font-family: 'DM Mono', monospace;
+        font-weight: 700;
+        color: var(--red);
+    }
+
+    .hpp-text {
+        font-family: 'DM Mono', monospace;
+        font-weight: 700;
+        color: var(--text-muted);
+    }
+
+    .margin-badge {
+        font-family: 'DM Mono', monospace;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 99px;
+    }
+
+    .margin-badge.profit {
+        background: var(--green-soft);
+        color: var(--green);
+    }
+
+    .margin-badge.loss {
+        background: var(--red-soft);
+        color: var(--red);
+    }
+
+    .qty-badge {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        padding: 2px 8px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-muted);
+        font-family: 'DM Mono', monospace;
+    }
+
+    /* ── ACTION BUTTONS ── */
+    .btn-edit {
+        background: var(--orange);
+        color: white;
+        border: none;
+        padding: 5px 12px;
+        border-radius: var(--r-sm);
+        font-size: 12px;
+        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
+        cursor: pointer;
+        transition: filter 0.15s;
+    }
+
+    .btn-edit:hover {
+        filter: brightness(0.9);
+    }
+
+    .btn-del {
+        background: none;
+        border: none;
+        color: var(--red);
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 700;
+        padding: 5px 8px;
+        margin-left: 4px;
+        border-radius: var(--r-sm);
+        transition: background 0.15s;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .btn-del:hover {
+        background: var(--red-soft);
+    }
+
+    tr[draggable="true"] {
+        cursor: grab;
+    }
+
+    /* ── RESPONSIVE MOBILE ── */
+    @media (max-width: 844px) {
+
+        .grid-input {
+            grid-template-columns: 1fr 1fr;
         }
-        /* Saat Sidebar Menciut */
-        .sidebar.collapsed { width: 75px; }
-        .sidebar.collapsed .menu-group-label, .sidebar.collapsed li span { display: none; }
-        .sidebar.collapsed li { justify-content: center; padding: 15px 0; }
-        .sidebar.collapsed .brand { font-size: 14px; }
 
-        .brand { font-weight: 800; letter-spacing: 2px; text-align: center; cursor: pointer; margin-bottom: 10px; transition: 0.3s; }
-        
-        .menu-group-label { 
-            font-size: 11px; color: #ff9999; padding: 15px 15px 5px; 
-            text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;
+        .grid-input button {
+            grid-column: span 2;
         }
-        
-        .sidebar ul { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; overflow-x: hidden; }
-        .sidebar ul li { 
-            font-size: 13px; padding: 12px 15px; transition: 0.3s; color: white; 
-            cursor: pointer; display: flex; align-items: center; border-radius: 8px; margin-bottom: 5px;
+
+        table th:nth-child(1),
+        table td:nth-child(1),
+        table th:nth-child(5),
+        table td:nth-child(5),
+        table th:nth-child(6),
+        table td:nth-child(6),
+        table th:nth-child(7),
+        table td:nth-child(7) {
+            display: none;
         }
-        .sidebar ul li:hover { background: rgba(255,255,255,0.1); }
-        .sidebar ul li.active { background: #b71c1c; font-weight: bold; }
-        .sidebar ul li .icon { min-width: 25px; font-size: 16px; text-align: center; }
-        .sidebar ul li span { margin-left: 10px; white-space: nowrap; }
 
-        /* Logout Section di Dasar Sidebar */
-        .logout-section { padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); margin-top: auto; }
-        .btn-logout-sidebar { 
-            width: 100%; background: #333; color: white; border: none; padding: 10px; 
-            border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;
-        }
-        .sidebar.collapsed .btn-logout-sidebar span { display: none; }
+    }
 
-        /* Penyesuaian Konten saat Sidebar menciut */
-        .main-content { margin-left: 220px; padding: 25px; transition: 0.3s; flex: 1; min-height: 100vh; }
-        .main-content.expanded { margin-left: 75px; }
-
-        /* --- CSS HALAMAN PRODUK --- */
-        .form-produk { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .grid-input { display: grid; grid-template-columns: 0.8fr 1.5fr 1fr 0.8fr 0.8fr auto; gap: 10px; }
-        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 8px; width: 100%; box-sizing: border-box; }
-        
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-        th { background: #d32f2f; color: white; font-size: 13px; }
-        .btn-simpan { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        
-        .badge-qty { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; color: #555; }
-
-        /* DRAG & DROP */
-        tr[draggable="true"] { cursor: grab; }
-        .dragging { opacity: 0.5; background-color: #fff5f5 !important; border: 2px dashed #d32f2f; }
     </style>
 </head>
-<body class="dashboard-body" style="display: flex;">
+<body>
 
-    <div class="sidebar" id="sidebar">
-        <h2 class="brand" onclick="toggleSidebar()">HOKI</h2>
-        <nav><ul id="sidebarMenu"></ul></nav>
-        <div class="logout-section">
-            <button class="btn-logout-sidebar" onclick="logout()">
-                <div class="icon">🚪</div> <span>LOGOUT</span>
-            </button>
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand" onclick="toggleSidebar()">
+        <div class="sidebar-logo">
+            <img src="Assets/logobrand.png" alt="Hoki">
+        </div>
+        <div class="sidebar-brand-text">
+            <div class="sidebar-brand-name">Hoki Dimsum</div>
+            <div class="sidebar-brand-sub">POS System v2.0</div>
         </div>
     </div>
+    <button class="sidebar-toggle" onclick="toggleSidebar()">‹</button>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-user">
+        <div class="user-card">
+            <div class="user-avatar" id="userAvatarInitial">?</div>
+            <div class="user-info">
+                <div class="user-name" id="sidebarUserName">Loading...</div>
+                <div class="user-role" id="sidebarUserRole">—</div>
+            </div>
+            <button class="btn-logout-icon" onclick="logout()" title="Logout">🚪</button>
+        </div>
+    </div>
+</aside>
 
-    <div class="main-content" id="mainContent">
-        <h2>🍱 Manajemen Menu & Produk</h2>
-        <p>Atur detail porsi menu Hoki Dimsum. <b>Klik & Tahan baris untuk geser urutan.</b></p>
-        <hr>
+<!-- ── MAIN CONTENT ── -->
+<div class="main-content" id="mainContent">
 
+    <header class="top-header">
+        <div class="header-left">
+            <div class="header-page-title">🍱 Master Produk</div>
+        </div>
+        <div class="header-right">
+            <div class="clock-pill">
+                <div id="realtimeClock">00:00:00</div>
+                <div id="realtimeDate">...</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="page-body">
+
+        <!-- FORM -->
         <div class="form-produk">
             <div class="grid-input">
-                <input type="text" id="pSKU" placeholder="SKU (Cth: MNT)">
-                <input type="text" id="pNama" placeholder="Nama Menu">
-                <input type="number" id="pHarga" placeholder="Harga Jual">
+                <input type="text"   id="pSKU"    placeholder="SKU (Cth: MNT)">
+                <input type="text"   id="pNama"   placeholder="Nama Menu">
+                <input type="number" id="pHarga"  placeholder="Harga Jual">
+                <input type="number" id="pHPP"    placeholder="HPP (Modal)">
                 <input type="number" id="pDimsum" placeholder="Dimsum (Pcs)">
-                <input type="number" id="pAlu" placeholder="Alu Tray (Pcs)">
+                <input type="number" id="pAlu"    placeholder="Alu Tray (Pcs)">
                 <button class="btn-simpan" onclick="tambahProduk()">+ Simpan</button>
             </div>
         </div>
 
-        <table>
-           <thead>
-    <tr>
-        <th style="width: 30px;">#</th> <th>SKU</th>
-        <th>Nama Produk</th>
-        <th>Harga</th>
-        <th>Dms/Pcs</th>
-        <th>Alu/Pcs</th>
-        <th>Aksi</th>
-    </tr>
-</thead>
-            <tbody id="tabelProduk"></tbody>
-        </table>
+        <!-- TABLE -->
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:32px;">#</th>
+                        <th>SKU</th>
+                        <th>Nama Produk</th>
+                        <th>Harga Jual</th>
+                        <th>HPP</th>
+                        <th>Margin</th>
+                        <th>Dms/Pcs</th>
+                        <th>Alu/Pcs</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelProduk"></tbody>
+            </table>
+        </div>
+
+    </div><!-- /.page-body -->
+</div><!-- /.main-content -->
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+    <button class="bn-item" onclick="location.href='dashboard.html'"><span class="bn-icon">🛒</span><span class="bn-label">Kasir</span></button>
+    <button class="bn-item" onclick="location.href='history.html'"><span class="bn-icon">📄</span><span class="bn-label">History</span></button>
+    <button class="bn-item" onclick="location.href='stok.html'"><span class="bn-icon">📦</span><span class="bn-label">Stok</span></button>
+    <button class="bn-item" onclick="location.href='laporan_staff.html'"><span class="bn-icon">📊</span><span class="bn-label">Laporan</span></button>
+    <button class="bn-item active" onclick="openSheet('moreSheet')"><span class="bn-icon">☰</span><span class="bn-label">Lainnya</span></button>
+</nav>
+
+<!-- MORE SHEET -->
+<div class="sheet-overlay" id="moreSheet" onclick="closeSheetOutside(event,'moreSheet')">
+    <div class="bottom-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <p style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Menu Lainnya</p>
+        <div class="more-grid" id="moreGrid"></div>
     </div>
+</div>
 
-    <script>
-        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff'};
+<script>
+    const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff'};
+    if (!currentUser.user) window.location.href = 'index.html';
+    let editModeId = null;
 
-// --- 1. FUNGSI SIDEBAR (TETAP SAMA SEPERTI ASLI) ---
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    sidebar.classList.toggle('collapsed');
-    mainContent.classList.toggle('expanded');
-    localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'small' : 'large');
-}
-
-function buildSidebar() {
-    const menuContainer = document.getElementById('sidebarMenu');
-    const role = currentUser.role;
-    const currentPage = window.location.pathname.split("/").pop() || 'dashboard.html';
-
-    if (localStorage.getItem('sidebarState') === 'small') {
-        document.getElementById('sidebar').classList.add('collapsed');
-        document.getElementById('mainContent').classList.add('expanded');
+    // ── SIDEBAR ──
+    function toggleSidebar() {
+        const sb = document.getElementById('sidebar');
+        const mc = document.getElementById('mainContent');
+        sb.classList.toggle('collapsed');
+        mc.classList.toggle('expanded');
+        localStorage.setItem('sidebarState', sb.classList.contains('collapsed') ? 'small' : 'large');
     }
 
-    let menuHTML = '';
-    const createItem = (icon, label, link, active) => `
-        <li class="${active ? 'active' : ''}" onclick="location.href='${link}'">
-            <div class="icon">${icon}</div> <span>${label}</span>
-        </li>`;
-
-    menuHTML += `<div class="menu-group-label">Frontline Operations</div>`;
-    menuHTML += createItem('🛒', 'Kasir', 'dashboard.html', currentPage === 'dashboard.html');
-    menuHTML += createItem('📄', 'History Transaksi', 'history.html', currentPage === 'history.html');
-    menuHTML += createItem('📦', 'Stok Harian', 'stok.html', currentPage === 'stok.html');
-    menuHTML += createItem('🚚', 'Restock Barang', 'restock.html', currentPage === 'restock.html');
-    menuHTML += createItem('📊', 'Laporan Penjualan', 'laporan_staff.html', currentPage === 'laporan_staff.html');
-
-    if (['Senior Staff', 'SPV', 'Owner', 'VIP'].includes(role)) {
-        menuHTML += `<div class="menu-group-label">Tactical Management</div>`;
-        menuHTML += createItem('🍱', 'Master Produk', 'produk.html', currentPage === 'produk.html');
-        menuHTML += createItem('📈', 'Rekapan Penjualan', 'rekap.html', currentPage === 'rekap.html');
-        menuHTML += createItem('💸', 'Belanja', 'belanja.html', currentPage === 'belanja.html');
-    }
-
-    if (['Owner', 'VIP'].includes(role)) {
-        menuHTML += `<div class="menu-group-label">Executive Suite</div>`;
-        menuHTML += createItem('📊', 'Keuangan Global', 'laporan.html', currentPage === 'laporan.html');
-        menuHTML += createItem('📈', 'Statistik', 'statistik.html', currentPage === 'statistik.html');
-    }
-
-    if (role === 'VIP') {
-        menuHTML += `<div class="menu-group-label" style="color: #ffeb3b; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">👑 VIP Access</div>`;
-        menuHTML += createItem('👥', 'Manajemen User', 'user.html', currentPage === 'user.html');
-        menuHTML += createItem('🔑', 'History Login', 'login_history.html', currentPage === 'login_history.html');
-    }
-    menuContainer.innerHTML = menuHTML;
-}
-
-// --- 2. LOGIKA PRODUK CLOUD (GANTIKAN LOCALSTORAGE) ---
-
-async function muatProduk() {
-    const res = await fetch('api.php?action=get_produk');
-    const produk = await res.json();
-    window.allProduk = produk; // Simpan untuk referensi edit
-
-    const tbody = document.getElementById('tabelProduk');
-    tbody.innerHTML = '';
-
-    produk.forEach((p, index) => {
-        const tr = document.createElement('tr');
-        tr.setAttribute('draggable', 'true');
-        tr.setAttribute('data-id', p.id);
-        tr.innerHTML = `
-            <td style="cursor:move; color:#999;">☰</td>
-            <td><b>${p.sku}</b></td>
-            <td>${p.nama}</td>
-            <td style="color:#d32f2f; font-weight:bold;">Rp ${parseInt(p.harga).toLocaleString()}</td>
-            <td>${p.dimsumPcs} Pcs</td>
-            <td>${p.aluTrayPcs} Pcs</td>
-            <td>
-                <button onclick="siapkanEdit(${index})" style="background:#ffa000; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">✎ Edit</button>
-                <button onclick="hapusProduk(${p.id})" style="color:red; background:none; border:none; cursor:pointer; margin-left:10px;">✖</button>
-            </td>
-        `;
-        
-        // Event Drag & Drop
-        tr.addEventListener('dragstart', handleDragStart);
-        tr.addEventListener('dragover', handleDragOver);
-        tr.addEventListener('drop', handleDrop);
-        tbody.appendChild(tr);
-    });
-}
-
-async function tambahProduk() {
-    const sku = document.getElementById('pSKU').value.toUpperCase();
-    const nama = document.getElementById('pNama').value;
-    const harga = document.getElementById('pHarga').value;
-    const dimsum = document.getElementById('pDimsum').value || 0;
-    const alu = document.getElementById('pAlu').value || 0;
-
-    if(!sku || !nama || !harga) return alert("Data wajib diisi!");
-
-    const data = {
-        sku: sku,
-        nama: nama,
-        harga: harga,
-        dimsumPcs: parseInt(dimsum),
-        aluTrayPcs: parseInt(alu)
-    };
-
-    try {
-        const response = await fetch('api.php?action=save_produk', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        const hasil = await response.json();
-
-        if (hasil.status === 'success') {
-            alert("Produk Berhasil Disimpan di Cloud! ✅");
-            // Reset Form
-            document.getElementById('pSKU').value = '';
-            document.getElementById('pNama').value = '';
-            document.getElementById('pHarga').value = '';
-            document.getElementById('pDimsum').value = '';
-            document.getElementById('pAlu').value = '';
-            muatProduk();
-        } else {
-            alert("Gagal simpan: " + hasil.message);
+    function buildSidebar() {
+        if (localStorage.getItem('sidebarState') === 'small') {
+            document.getElementById('sidebar').classList.add('collapsed');
+            document.getElementById('mainContent').classList.add('expanded');
         }
-    } catch (e) {
-        alert("Gagal koneksi ke server pusat!");
+        const role = currentUser.role;
+        const cur  = window.location.pathname.split('/').pop() || 'dashboard.html';
+        const navItem = (icon, label, link) => {
+            const active = cur === link ? 'active' : '';
+            return `<button class="nav-item ${active}" onclick="location.href='${link}'">
+                <span class="nav-icon">${icon}</span>
+                <span class="nav-label">${label}</span>
+            </button>`;
+        };
+        let h = `<div class="nav-group-label">Frontline</div>`;
+        h += navItem('🛒','Kasir','dashboard.html');
+        h += navItem('📄','History Transaksi','history.html');
+        h += navItem('📦','Stok Harian','stok.html');
+        h += navItem('🚚','Restock Barang','restock.html');
+        h += navItem('📊','Laporan Penjualan','laporan_staff.html');
+        if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+            h += `<div class="nav-group-label">Management</div>`;
+            h += navItem('🍱','Master Produk','produk.html');
+            h += navItem('📈','Rekapan Penjualan','rekap.html');
+        }
+        if (['Owner','VIP'].includes(role)) {
+            h += `<div class="nav-group-label">Executive</div>`;
+            h += navItem('📊','Keuangan Global','laporan.html');
+            h += navItem('📈','Statistik','statistik.html');
+            h += navItem('💸','Belanja','belanja.html');
+        }
+        if (role === 'VIP') {
+            h += `<div class="nav-group-label">VIP Access</div>`;
+            h += navItem('👥','Manajemen User','user.html');
+            h += navItem('🔑','History Login','login_history.html');
+        }
+        document.getElementById('sidebarNav').innerHTML = h;
+        const name = currentUser.user || '?';
+        document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
+        document.getElementById('sidebarUserName').innerText   = name;
+        document.getElementById('sidebarUserRole').innerText   = role;
     }
-}
 
-async function hapusProduk(id) {
-    if(confirm("Hapus menu ini secara permanen dari Cloud?")) {
+    // ── CLOCK ──
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('realtimeClock').innerText = now.toLocaleTimeString('id-ID');
+        document.getElementById('realtimeDate').innerText  = now.toLocaleDateString('id-ID',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+    }
+    setInterval(updateClock, 1000);
+
+    // ── MORE MENU ──
+    function buildMoreMenu() {
+        const role = currentUser.role;
+        const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
+        if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+            items.push({icon:'🍱',label:'Produk',link:'produk.html'});
+            items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
+        }
+        if (['Owner','VIP'].includes(role)) {
+            items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
+            items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
+            items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
+        }
+        if (role === 'VIP') {
+            items.push({icon:'👥',label:'Users',link:'user.html'});
+            items.push({icon:'🔑',label:'Login Log',link:'login_history.html'});
+        }
+        items.push({icon:'🚪',label:'Logout',link:'#',action:'logout()'});
+        document.getElementById('moreGrid').innerHTML = items.map(i =>
+            `<button class="more-btn" onclick="${i.action||`location.href='${i.link}'`}">
+                <span class="more-btn-icon">${i.icon}</span>
+                <span class="more-btn-label">${i.label}</span>
+            </button>`).join('');
+    }
+
+    function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
+    function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
+
+    // ── LOGIKA PRODUK ──
+    async function muatProduk() {
+        const res    = await fetch('api.php?action=get_produk');
+        const produk = await res.json();
+        window.allProduk = produk;
+
+        const tbody = document.getElementById('tabelProduk');
+        tbody.innerHTML = '';
+
+        produk.forEach((p, index) => {
+            const harga  = parseInt(p.harga  || 0);
+            const hpp    = parseInt(p.hpp    || 0);
+            const margin = harga - hpp;
+            const pct    = hpp > 0 ? Math.round((margin / harga) * 100) : null;
+
+            const marginHTML = hpp > 0
+                ? `<span class="margin-badge ${margin >= 0 ? 'profit' : 'loss'}">
+                       ${margin >= 0 ? '+' : ''}${pct}%
+                   </span>`
+                : `<span class="qty-badge">—</span>`;
+
+            const tr = document.createElement('tr');
+            tr.setAttribute('draggable', 'true');
+            tr.setAttribute('data-id', p.id);
+            tr.innerHTML = `
+                <td><span class="drag-handle">☰</span></td>
+                <td><span class="sku-badge">${p.sku}</span></td>
+                <td>${p.nama}</td>
+                <td><span class="harga-text">Rp ${harga.toLocaleString('id-ID')}</span></td>
+                <td><span class="hpp-text">Rp ${hpp > 0 ? hpp.toLocaleString('id-ID') : '—'}</span></td>
+                <td>${marginHTML}</td>
+                <td><span class="qty-badge">${p.dimsumPcs} Pcs</span></td>
+                <td><span class="qty-badge">${p.aluTrayPcs} Pcs</span></td>
+                <td>
+                    <button class="btn-edit" onclick="siapkanEdit(${index})">✎ Edit</button>
+                    <button class="btn-del"  onclick="hapusProduk(${p.id})">✖</button>
+                </td>`;
+            tr.addEventListener('dragstart', handleDragStart);
+            tr.addEventListener('dragover',  handleDragOver);
+            tr.addEventListener('drop',      handleDrop);
+            tr.addEventListener('dragend',   handleDragEnd);
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function tambahProduk() {
+        const data = {
+            id:         editModeId,
+            sku:        document.getElementById('pSKU').value.toUpperCase(),
+            nama:       document.getElementById('pNama').value,
+            harga:      document.getElementById('pHarga').value,
+            hpp:        document.getElementById('pHPP').value    || 0,
+            dimsumPcs:  document.getElementById('pDimsum').value || 0,
+            aluTrayPcs: document.getElementById('pAlu').value    || 0
+        };
+
+        if (!data.sku || !data.nama || !data.harga) return toast.warning('Lengkapi data produk!');
+
+        try {
+            const res   = await fetch('api.php?action=save_produk', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(data)
+            });
+            const hasil = await res.json();
+            if (hasil.status === 'success') {
+                toast.success(editModeId ? 'Menu berhasil diupdate!' : 'Menu baru berhasil ditambah!');
+                editModeId = null;
+                document.querySelector('.btn-simpan').innerText = '+ Simpan';
+                ['pSKU','pNama','pHarga','pHPP','pDimsum','pAlu'].forEach(id => document.getElementById(id).value = '');
+                muatProduk();
+            }
+        } catch(e) {
+            toast.error('Gagal menyimpan ke server!');
+        }
+    }
+
+    function siapkanEdit(idx) {
+        const p = window.allProduk[idx];
+        editModeId = p.id;
+        document.getElementById('pSKU').value    = p.sku;
+        document.getElementById('pNama').value   = p.nama;
+        document.getElementById('pHarga').value  = p.harga;
+        document.getElementById('pHPP').value    = p.hpp || 0;
+        document.getElementById('pDimsum').value = p.dimsumPcs;
+        document.getElementById('pAlu').value    = p.aluTrayPcs;
+        document.querySelector('.btn-simpan').innerText = '💾 UPDATE MENU';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function hapusProduk(id) {
+        const ok = await showConfirm('Hapus produk ini secara permanen?', 'Ya, Hapus', 'Batal', '🗑️');
+        if (!ok) return;
         try {
             await fetch(`api.php?action=del_produk&id=${id}`);
+            toast.success('Produk berhasil dihapus!');
             muatProduk();
-        } catch (e) {
-            alert("Gagal menghapus produk.");
+        } catch(e) {
+            toast.error('Gagal menghapus produk!');
         }
     }
-}
 
-function logout() { 
-    if(confirm("Logout?")) { 
-        localStorage.removeItem('currentUser'); 
-        window.location.href = 'index.html'; 
-    } 
-}
+    // ── DRAG & DROP ──
+    let dragSrcEl = null;
 
-window.onload = function() {
-    buildSidebar();
-    muatProduk();
-};
-
-    // --- FUNGSI EDIT ---
-function siapkanEdit(idx) {
-    const p = window.allProduk[idx];
-    editModeId = p.id;
-    
-    document.getElementById('pSKU').value = p.sku;
-    document.getElementById('pNama').value = p.nama;
-    document.getElementById('pHarga').value = p.harga;
-    document.getElementById('pDimsum').value = p.dimsumPcs;
-    document.getElementById('pAlu').value = p.aluTrayPcs;
-
-    const btn = document.querySelector('button[onclick="tambahProduk()"]');
-    btn.innerText = "💾 UPDATE MENU";
-    btn.style.background = "#2e7d32";
-    
-    // Scroll ke atas biar Bos nggak bingung
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-async function tambahProduk() {
-    const data = {
-        id: editModeId, // Jika null berarti tambah baru, jika ada ID berarti update
-        sku: document.getElementById('pSKU').value.toUpperCase(),
-        nama: document.getElementById('pNama').value,
-        harga: document.getElementById('pHarga').value,
-        dimsumPcs: document.getElementById('pDimsum').value || 0,
-        aluTrayPcs: document.getElementById('pAlu').value || 0
-    };
-
-    if(!data.sku || !data.nama || !data.harga) return alert("Lengkapi data!");
-
-    const res = await fetch('api.php?action=save_produk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
-
-    const hasil = await res.json();
-    if(hasil.status === 'success') {
-        alert(editModeId ? "Menu berhasil diupdate! ✅" : "Menu baru berhasil ditambah! ✅");
-        location.reload(); 
+    function handleDragStart(e) {
+        dragSrcEl = this;
+        e.dataTransfer.effectAllowed = 'move';
+        this.style.opacity = '0.4';
     }
-}
 
-// --- FUNGSI DRAG & DROP CLOUD ---
-let dragSrcEl = null;
+    function handleDragOver(e) {
+        if (e.preventDefault) e.preventDefault();
+        return false;
+    }
 
-function handleDragStart(e) {
-    dragSrcEl = this;
-    e.dataTransfer.effectAllowed = 'move';
-    this.style.opacity = '0.4';
-}
-
-function handleDragOver(e) {
-    if (e.preventDefault) e.preventDefault();
-    return false;
-}
-
-async function handleDrop(e) {
-    if (e.stopPropagation) e.stopPropagation();
-    
-    if (dragSrcEl !== this) {
-        // Tukar posisi di layar
-        const tbody = document.getElementById('tabelProduk');
-        const rows = Array.from(tbody.querySelectorAll('tr'));
-        const fromIdx = rows.indexOf(dragSrcEl);
-        const toIdx = rows.indexOf(this);
-
-        if (fromIdx < toIdx) {
-            this.after(dragSrcEl);
-        } else {
-            this.before(dragSrcEl);
+    async function handleDrop(e) {
+        if (e.stopPropagation) e.stopPropagation();
+        if (dragSrcEl !== this) {
+            const tbody   = document.getElementById('tabelProduk');
+            const rows    = Array.from(tbody.querySelectorAll('tr'));
+            const fromIdx = rows.indexOf(dragSrcEl);
+            const toIdx   = rows.indexOf(this);
+            if (fromIdx < toIdx) { this.after(dragSrcEl); }
+            else { this.before(dragSrcEl); }
+            const newOrderIds = Array.from(tbody.querySelectorAll('tr')).map(tr => tr.getAttribute('data-id'));
+            await fetch('api.php?action=update_urutan', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ ids: newOrderIds })
+            });
         }
-
-        // Ambil urutan ID baru
-        const newOrderIds = Array.from(tbody.querySelectorAll('tr')).map(tr => tr.getAttribute('data-id'));
-        
-        // Simpan ke Cloud
-        await fetch('api.php?action=update_urutan', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ids: newOrderIds })
-        });
+        return false;
     }
-    return false;
-}
 
-function handleDragEnd() { this.style.opacity = '1'; }
+    function handleDragEnd() { this.style.opacity = '1'; }
 
-async function hapusProduk(id) {
-    if(confirm("Hapus permanen dari Cloud?")) {
-        await fetch(`api.php?action=del_produk&id=${id}`);
+    async function logout() {
+        const ok = await showConfirm('Logout dari sistem?', 'Ya, Logout', 'Batal', '🚪');
+        if (ok) {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('cabangHoki');
+            window.location.href = 'index.html';
+        }
+    }
+
+    // ── SINGLE window.onload ──
+    window.onload = function() {
+        buildSidebar();
+        updateClock();
         muatProduk();
-    }
-}
+    };
+</script>
 
-window.onload = () => { buildSidebar(); muatProduk(); };
-    </script>
+<script src="toast.js"></script>
 </body>
 </html>

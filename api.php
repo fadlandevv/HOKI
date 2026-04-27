@@ -1,14 +1,4 @@
 <?php
-/**
- * =====================================================
- *  HOKI POS — api_local.php
- *  Mode   : LOCAL DEVELOPMENT (tanpa database)
- *  Gunakan: Ganti nama file ini jadi api.php saat
- *           development di XAMPP/Laragon lokal.
- *  JANGAN upload file ini ke server production!
- * =====================================================
- */
-
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -19,216 +9,384 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
+// ── KONEKSI DATABASE ──────────────────────────────────
+$conn = new mysqli("localhost", "u173485424_kurniarp", "Alpukat19#", "u173485424_hoki");
+if ($conn->connect_error) {
+    die(json_encode(["status"=>"error","message"=>"Koneksi gagal: ".$conn->connect_error]));
+}
+$conn->set_charset("utf8mb4");
+
+$input  = json_decode(file_get_contents('php://input'), true);
 $action = $_GET['action'] ?? '';
 
-// ─── DUMMY DATA ───────────────────────────────────────
-$dummyUsers = [
-    ['user' => 'admin',  'pass' => 'admin',  'role' => 'VIP',          'cabang' => 'Semua'],
-    ['user' => 'owner',  'pass' => 'owner',  'role' => 'Owner',        'cabang' => 'Semua'],
-    ['user' => 'spv1',   'pass' => 'spv1',   'role' => 'SPV',          'cabang' => 'Pusat'],
-    ['user' => 'senior', 'pass' => 'senior', 'role' => 'Senior Staff', 'cabang' => 'Pusat,Cabang A'],
-    ['user' => 'staff1', 'pass' => 'staff1', 'role' => 'Staff',        'cabang' => 'Pusat,Cabang A,Cabang B'],
-];
-
-$dummyCabang = [
-    ['id' => 1, 'nama_cabang' => 'Pusat'],
-    ['id' => 2, 'nama_cabang' => 'Cabang A'],
-    ['id' => 3, 'nama_cabang' => 'Cabang B'],
-];
-
-$dummyProduk = [
-    ['id'=>1, 'sku'=>'DMS', 'nama'=>'Dimsum Ayam',    'harga'=>15000, 'dimsumPcs'=>4, 'aluTrayPcs'=>2, 'urutan'=>1],
-    ['id'=>2, 'sku'=>'SIW', 'nama'=>'Siomay',         'harga'=>15000, 'dimsumPcs'=>4, 'aluTrayPcs'=>2, 'urutan'=>2],
-    ['id'=>3, 'sku'=>'HAK', 'nama'=>'Hakau',          'harga'=>18000, 'dimsumPcs'=>3, 'aluTrayPcs'=>2, 'urutan'=>3],
-    ['id'=>4, 'sku'=>'CSP', 'nama'=>'Ceker Spesial',  'harga'=>20000, 'dimsumPcs'=>2, 'aluTrayPcs'=>1, 'urutan'=>4],
-    ['id'=>5, 'sku'=>'BKO', 'nama'=>'Bakso Goreng',   'harga'=>12000, 'dimsumPcs'=>5, 'aluTrayPcs'=>2, 'urutan'=>5],
-    ['id'=>6, 'sku'=>'LWT', 'nama'=>'Lumpia Wartel',  'harga'=>13000, 'dimsumPcs'=>3, 'aluTrayPcs'=>2, 'urutan'=>6],
-    ['id'=>7, 'sku'=>'NAS', 'nama'=>'Nasi Putih',     'harga'=>5000,  'dimsumPcs'=>0, 'aluTrayPcs'=>0, 'urutan'=>7],
-    ['id'=>8, 'sku'=>'TCH', 'nama'=>'Teh Manis',      'harga'=>5000,  'dimsumPcs'=>0, 'aluTrayPcs'=>0, 'urutan'=>8],
-];
-
-$dummyHistory = [
-    ['id'=>1, 'waktu'=>date('Y-m-d H:i:s', strtotime('-1 hour')),  'petugas'=>'staff1', 'cabang'=>'Pusat',    'items_json'=>json_encode([['nama'=>'Dimsum Ayam'],['nama'=>'Teh Manis']]), 'total'=>20000, 'metode'=>'CASH'],
-    ['id'=>2, 'waktu'=>date('Y-m-d H:i:s', strtotime('-2 hours')), 'petugas'=>'staff1', 'cabang'=>'Pusat',    'items_json'=>json_encode([['nama'=>'Hakau'],['nama'=>'Siomay']]),          'total'=>33000, 'metode'=>'QRIS'],
-    ['id'=>3, 'waktu'=>date('Y-m-d H:i:s', strtotime('-3 hours')), 'petugas'=>'senior', 'cabang'=>'Cabang A', 'items_json'=>json_encode([['nama'=>'Ceker Spesial']]),                      'total'=>20000, 'metode'=>'GF'],
-];
-
-$dummyLogs = [
-    ['id'=>1, 'waktu'=>date('Y-m-d H:i:s', strtotime('-10 minutes')), 'username'=>'admin',  'role'=>'VIP',   'cabang'=>'Semua'],
-    ['id'=>2, 'waktu'=>date('Y-m-d H:i:s', strtotime('-1 hour')),     'username'=>'staff1', 'role'=>'Staff', 'cabang'=>'Pusat'],
-];
-
-// ─── SWITCH ───────────────────────────────────────────
 switch ($action) {
 
+    // ── AUTH ──────────────────────────────────────────
     case 'login':
-        $u = $input['user'] ?? '';
-        $p = $input['pass'] ?? '';
-        $found = null;
-        foreach ($dummyUsers as $user) {
-            if ($user['user'] === $u && $user['pass'] === $p) {
-                $found = $user;
-                break;
-            }
-        }
-        if ($found) {
-            echo json_encode([
-                'status' => 'success',
-                'user'   => ['user' => $found['user'], 'role' => $found['role'], 'cabang' => $found['cabang']]
-            ]);
+        $u = $conn->real_escape_string($input['user'] ?? '');
+        $p = $conn->real_escape_string($input['pass'] ?? '');
+        $res = $conn->query("SELECT id, username, role, cabang FROM users WHERE username='$u' AND password='$p'");
+        if ($res && $res->num_rows > 0) {
+            $user = $res->fetch_assoc();
+            echo json_encode(["status"=>"success","user"=>["user"=>$user['username'],"role"=>$user['role'],"cabang"=>$user['cabang']]]);
         } else {
-            echo json_encode(['status' => 'error', 'message' => 'Username atau Password salah! (Mode lokal)']);
+            echo json_encode(["status"=>"error","message"=>"Username atau Password salah!"]);
         }
         break;
 
+    // ── CABANG ────────────────────────────────────────
     case 'get_cabang':
     case 'get_branches':
-        echo json_encode($dummyCabang);
-        break;
-
-    case 'get_produk':
-        echo json_encode($dummyProduk);
-        break;
-
-    case 'save_produk':
-        echo json_encode(['status' => 'success']);
-        break;
-
-    case 'del_produk':
-        echo json_encode(['status' => 'success']);
-        break;
-
-    case 'update_urutan':
-        echo json_encode(['status' => 'success']);
-        break;
-
-    case 'save_transaksi':
-        echo json_encode(['status' => 'success', 'id' => rand(100, 999)]);
-        break;
-
-    case 'get_history':
-        echo json_encode($dummyHistory);
-        break;
-
-    case 'del_transaksi':
-        echo json_encode(['status' => 'success']);
-        break;
-
-    case 'clear_history':
-        echo json_encode(['status' => 'success']);
-        break;
-
-    case 'add_log':
-        echo json_encode(['status' => 'success']);
-        break;
-
-    case 'get_logs':
-        echo json_encode($dummyLogs);
-        break;
-
-    case 'clear_logs':
-        echo json_encode(['status' => 'success']);
-        break;
-
-    case 'get_users':
-        $out = array_map(fn($u) => [
-            'id' => array_search($u, $dummyUsers) + 1,
-            'username' => $u['user'], 'role' => $u['role'],
-            'cabang' => $u['cabang'], 'fullName' => ucfirst($u['user']),
-            'docs_json' => '[]'
-        ], $dummyUsers);
-        echo json_encode($out);
-        break;
-
-    case 'save_user':
-    case 'del_user':
-        echo json_encode(['status' => 'success']);
-        break;
-
-    case 'get_master_stok':
-        echo json_encode([
-            ['id'=>1,'nama_item'=>'Tepung'],
-            ['id'=>2,'nama_item'=>'Ayam'],
-            ['id'=>3,'nama_item'=>'Udang'],
-        ]);
-        break;
-
-    case 'save_master_stok':
-    case 'del_master_stok':
-        echo json_encode(['status' => 'success']);
-        break;
-
-    case 'get_laporan_stok':
-        echo json_encode([]);
-        break;
-
-    case 'save_laporan_stok':
-    case 'del_laporan_stok':
-        echo json_encode(['status' => 'success']);
-        break;
-
-    case 'get_laporan_restock':
-        echo json_encode([]);
-        break;
-
-    case 'save_laporan_restock':
-    case 'del_laporan_restock':
-        echo json_encode(['status' => 'success']);
-        break;
-
-    case 'get_kas_jenis':
-        echo json_encode([
-            ['nama_jenis' => 'Penjualan'],
-            ['nama_jenis' => 'Belanja Bahan'],
-            ['nama_jenis' => 'Operasional'],
-        ]);
-        break;
-
-    case 'save_kas_jenis':
-    case 'del_kas_jenis':
-        echo json_encode(['status' => 'success']);
-        break;
-
-    case 'get_kas_data':
-        echo json_encode([]);
-        break;
-
-    case 'save_kas_data':
-    case 'del_kas_data':
-        echo json_encode(['status' => 'success']);
-        break;
-
-    case 'get_laporan_history':
-        echo json_encode([]);
-        break;
-
-    case 'save_laporan':
-        echo json_encode(['status' => 'success']);
-        break;
-
-    case 'get_roles':
-        echo json_encode([
-            ['id'=>1,'nama_role'=>'VIP'],
-            ['id'=>2,'nama_role'=>'Owner'],
-            ['id'=>3,'nama_role'=>'SPV'],
-            ['id'=>4,'nama_role'=>'Senior Staff'],
-            ['id'=>5,'nama_role'=>'Staff'],
-        ]);
-        break;
-
-    case 'save_role':
-    case 'del_role':
-        echo json_encode(['status' => 'success']);
+        $res = $conn->query("SELECT id, nama_cabang FROM hoki_cabang ORDER BY nama_cabang ASC");
+        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
         break;
 
     case 'save_cabang':
-    case 'del_cabang':
-        echo json_encode(['status' => 'success']);
+        $nama = $conn->real_escape_string($input['nama'] ?? '');
+        if (!empty($nama)) {
+            $conn->query("INSERT IGNORE INTO hoki_cabang (nama_cabang) VALUES ('$nama')");
+            echo json_encode(["status"=>"success"]);
+        } else {
+            echo json_encode(["status"=>"error","message"=>"Nama cabang kosong"]);
+        }
         break;
 
+    case 'del_cabang':
+        $id = (int)($_GET['id'] ?? 0);
+        $conn->query("DELETE FROM hoki_cabang WHERE id=$id");
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    // ── ROLES ─────────────────────────────────────────
+    case 'get_roles':
+        $res = $conn->query("SELECT * FROM hoki_roles ORDER BY nama_role ASC");
+        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        break;
+
+    case 'save_role':
+        $nama = $conn->real_escape_string($input['nama'] ?? '');
+        if (!empty($nama)) {
+            $conn->query("INSERT IGNORE INTO hoki_roles (nama_role) VALUES ('$nama')");
+            echo json_encode(["status"=>"success"]);
+        } else {
+            echo json_encode(["status"=>"error","message"=>"Nama role kosong"]);
+        }
+        break;
+
+    case 'del_role':
+        $id = (int)($_GET['id'] ?? 0);
+        $conn->query("DELETE FROM hoki_roles WHERE id=$id");
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    // ── USERS ─────────────────────────────────────────
+    case 'get_users':
+        $res = $conn->query("SELECT * FROM users ORDER BY id DESC");
+        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        break;
+
+    case 'save_user':
+        $u    = $conn->real_escape_string($input['username'] ?? '');
+        $p    = $conn->real_escape_string($input['pass'] ?? '');
+        $r    = $conn->real_escape_string($input['role'] ?? '');
+        $fn   = $conn->real_escape_string($input['fullName'] ?? '');
+        $cb   = $conn->real_escape_string($input['cabang'] ?? '');
+        $docs = $conn->real_escape_string(json_encode($input['docs'] ?? []));
+        $sql  = "REPLACE INTO users (username, password, role, fullName, cabang, docs_json) VALUES ('$u','$p','$r','$fn','$cb','$docs')";
+        echo $conn->query($sql)
+            ? json_encode(["status"=>"success"])
+            : json_encode(["status"=>"error","message"=>$conn->error]);
+        break;
+
+    case 'del_user':
+        $id = (int)($_GET['id'] ?? 0);
+        $conn->query("DELETE FROM users WHERE id=$id");
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    // ── PRODUK ────────────────────────────────────────
+    case 'get_produk':
+        $res = $conn->query("SELECT * FROM produk ORDER BY urutan ASC, nama ASC");
+        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        break;
+
+    case 'save_produk':
+        $id     = (int)($input['id'] ?? 0);
+        $sku    = $conn->real_escape_string($input['sku']    ?? '');
+        $nama   = $conn->real_escape_string($input['nama']   ?? '');
+        $harga  = (int)($input['harga']     ?? 0);
+        $hpp    = (int)($input['hpp']       ?? 0);
+        $dimsum = (int)($input['dimsumPcs'] ?? 0);
+        $alu    = (int)($input['aluTrayPcs'] ?? 0);
+        if ($id > 0) {
+            $sql = "UPDATE produk SET sku='$sku', nama='$nama', harga=$harga, hpp=$hpp, dimsumPcs=$dimsum, aluTrayPcs=$alu WHERE id=$id";
+        } else {
+            $sql = "INSERT INTO produk (sku, nama, harga, hpp, dimsumPcs, aluTrayPcs) VALUES ('$sku','$nama',$harga,$hpp,$dimsum,$alu)";
+        }
+        $conn->query($sql);
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    case 'del_produk':
+        $id = (int)($_GET['id'] ?? 0);
+        $conn->query("DELETE FROM produk WHERE id=$id");
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    case 'update_urutan':
+        $ids = $input['ids'] ?? [];
+        foreach ($ids as $urutan => $id) {
+            $id = (int)$id;
+            $ur = (int)$urutan + 1;
+            $conn->query("UPDATE produk SET urutan=$ur WHERE id=$id");
+        }
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    // ── TRANSAKSI ─────────────────────────────────────
+    case 'save_transaksi':
+        $cb = $conn->real_escape_string($input['cabang'] ?? '');
+        $pt = $conn->real_escape_string($input['petugas'] ?? '');
+        $tt = (int)($input['total'] ?? 0);
+        $mt = $conn->real_escape_string($input['metode'] ?? '');
+        $it = $conn->real_escape_string(json_encode($input['items'] ?? []));
+        $sql = "INSERT INTO transaksi (cabang, petugas, total, metode, items_json) VALUES ('$cb','$pt',$tt,'$mt','$it')";
+        echo $conn->query($sql)
+            ? json_encode(["status"=>"success","id"=>$conn->insert_id])
+            : json_encode(["status"=>"error","message"=>$conn->error]);
+        break;
+
+    case 'get_history':
+        $res = $conn->query("SELECT * FROM transaksi ORDER BY waktu DESC");
+        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        break;
+
+    case 'del_transaksi':
+        $id = (int)($_GET['id'] ?? 0);
+        $conn->query("DELETE FROM transaksi WHERE id=$id");
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    case 'clear_history':
+        $conn->query("TRUNCATE TABLE transaksi");
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    // ── OMSET HARIAN (dashboard) ──────────────────────
+    case 'get_omset_harian':
+        $cabang = $conn->real_escape_string($_GET['cabang'] ?? '');
+        $today  = date('Y-m-d');
+        if (empty($cabang) || $cabang === 'Semua') {
+            $sql = "SELECT SUM(total) as total, COUNT(*) as jumlah FROM transaksi WHERE DATE(waktu)='$today'";
+        } else {
+            $sql = "SELECT SUM(total) as total, COUNT(*) as jumlah FROM transaksi WHERE DATE(waktu)='$today' AND cabang='$cabang'";
+        }
+        $res  = $conn->query($sql);
+        $data = $res->fetch_assoc();
+        echo json_encode(["total"=>(int)($data['total']??0),"jumlah"=>(int)($data['jumlah']??0)]);
+        break;
+
+    // ── LOGIN LOG ─────────────────────────────────────
+    case 'add_log':
+        $u = $conn->real_escape_string($input['user'] ?? '');
+        $r = $conn->real_escape_string($input['role'] ?? '');
+        $c = $conn->real_escape_string($input['cabang'] ?? '');
+        $conn->query("INSERT INTO logs_login (username, role, cabang) VALUES ('$u','$r','$c')");
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    case 'get_logs':
+        $res = $conn->query("SELECT * FROM logs_login ORDER BY waktu DESC LIMIT 200");
+        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        break;
+
+    case 'clear_logs':
+        echo $conn->query("TRUNCATE TABLE logs_login")
+            ? json_encode(["status"=>"success"])
+            : json_encode(["status"=>"error","message"=>$conn->error]);
+        break;
+
+    // ── MASTER STOK ───────────────────────────────────
+    case 'get_master_stok':
+        $res = $conn->query("SELECT * FROM stok_master ORDER BY nama_item ASC");
+        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        break;
+
+    case 'save_master_stok':
+        $nama = $conn->real_escape_string($input['nama'] ?? '');
+        $conn->query("INSERT IGNORE INTO stok_master (nama_item) VALUES ('$nama')");
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    case 'del_master_stok':
+        $id = (int)($_GET['id'] ?? 0);
+        $conn->query("DELETE FROM stok_master WHERE id=$id");
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    // ── LAPORAN STOK ──────────────────────────────────
+    case 'get_laporan_stok':
+        $role  = $_GET['role'] ?? 'Staff';
+        $akses = $_GET['cabang'] ?? '';
+        if ($role === 'Owner' || $role === 'VIP' || $akses === 'Semua') {
+            $sql = "SELECT * FROM stok_history ORDER BY waktu DESC LIMIT 100";
+        } elseif (empty($akses)) {
+            echo json_encode([]); break;
+        } else {
+            $cabangArr  = explode(',', $akses);
+            $cleanCabang = array_map(fn($i) => "'".$conn->real_escape_string(trim($i))."'", $cabangArr);
+            $cabangList  = implode(',', $cleanCabang);
+            $sql = "SELECT * FROM stok_history WHERE cabang IN ($cabangList) ORDER BY waktu DESC LIMIT 50";
+        }
+        $res = $conn->query($sql);
+        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        break;
+
+    case 'save_laporan_stok':
+        $rid = $conn->real_escape_string($input['report_id'] ?? '');
+        $pt  = $conn->real_escape_string($input['petugas'] ?? '');
+        $cb  = $conn->real_escape_string($input['cabang'] ?? '');
+        $it  = $conn->real_escape_string(json_encode($input['items'] ?? []));
+        $sql = "INSERT INTO stok_history (report_id, petugas, cabang, items_json) VALUES ('$rid','$pt','$cb','$it')";
+        echo $conn->query($sql)
+            ? json_encode(["status"=>"success"])
+            : json_encode(["status"=>"error","message"=>$conn->error]);
+        break;
+
+    case 'del_laporan_stok':
+        $id = (int)($_GET['id'] ?? 0);
+        $conn->query("DELETE FROM stok_history WHERE id=$id");
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    // ── LAPORAN RESTOCK ───────────────────────────────
+    case 'get_laporan_restock':
+        $role  = $_GET['role'] ?? 'Staff';
+        $akses = $_GET['cabang'] ?? '';
+        if ($role === 'Owner' || $role === 'VIP' || $akses === 'Semua') {
+            $sql = "SELECT * FROM restock_history ORDER BY id DESC LIMIT 100";
+        } else {
+            $cabangArr  = explode(',', $akses);
+            $cleanCabang = array_map(fn($i) => "'".$conn->real_escape_string(trim($i))."'", $cabangArr);
+            $cabangList  = implode(',', $cleanCabang);
+            $sql = "SELECT * FROM restock_history WHERE cabang IN ($cabangList) ORDER BY id DESC LIMIT 50";
+        }
+        $res = $conn->query($sql);
+        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        break;
+
+    case 'save_laporan_restock':
+        $rid = $conn->real_escape_string($input['id'] ?? '');
+        $wkt = $conn->real_escape_string($input['waktu'] ?? '');
+        $pt  = $conn->real_escape_string($input['petugas'] ?? '');
+        $cb  = $conn->real_escape_string($input['cabang'] ?? '');
+        $it  = $conn->real_escape_string(json_encode($input['items'] ?? []));
+        $sql = "INSERT INTO restock_history (report_id, waktu_teks, petugas, cabang, items_json) VALUES ('$rid','$wkt','$pt','$cb','$it')";
+        $conn->query($sql);
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    case 'del_laporan_restock':
+        $id = (int)($_GET['id'] ?? 0);
+        $conn->query("DELETE FROM restock_history WHERE id=$id");
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    // ── BUKU KAS / BELANJA ────────────────────────────
+    case 'get_kas_jenis':
+        $res = $conn->query("SELECT nama_jenis FROM hoki_kas_jenis ORDER BY nama_jenis ASC");
+        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        break;
+
+    case 'save_kas_jenis':
+        $nama = $conn->real_escape_string($input['nama'] ?? '');
+        $conn->query("INSERT IGNORE INTO hoki_kas_jenis (nama_jenis) VALUES ('$nama')");
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    case 'del_kas_jenis':
+        $nama = $conn->real_escape_string($_GET['nama'] ?? '');
+        $conn->query("DELETE FROM hoki_kas_jenis WHERE nama_jenis='$nama'");
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    case 'get_kas_data':
+        $role  = $_GET['role'] ?? '';
+        $akses = $_GET['cabang'] ?? '';
+        if ($role === 'Owner' || $role === 'VIP' || $akses === 'Semua') {
+            $sql = "SELECT * FROM hoki_kas_data ORDER BY waktu DESC LIMIT 200";
+        } else {
+            $cabangArr  = explode(',', $akses);
+            $cleanCabang = array_map(fn($i) => "'".$conn->real_escape_string(trim($i))."'", $cabangArr);
+            $cabangList  = implode(',', $cleanCabang);
+            $sql = "SELECT * FROM hoki_kas_data WHERE cabang IN ($cabangList) ORDER BY waktu DESC LIMIT 100";
+        }
+        $res = $conn->query($sql);
+        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        break;
+
+    case 'save_kas_data':
+        $wkt = $conn->real_escape_string($input['waktu'] ?? '');
+        $usr = $conn->real_escape_string($input['user'] ?? '');
+        $jns = $conn->real_escape_string($input['jenis'] ?? '');
+        $nam = $conn->real_escape_string($input['nama'] ?? '');
+        $qty = (int)($input['qty'] ?? 1);
+        $mod = $conn->real_escape_string($input['mode'] ?? '');
+        $nom = (int)($input['nominal'] ?? 0);
+        $ket = $conn->real_escape_string($input['ket'] ?? '');
+        $cab = $conn->real_escape_string($input['cabang'] ?? '');
+        $conn->query("INSERT INTO hoki_kas_data (waktu, user, jenis, nama, qty, mode, nominal, ket, cabang) VALUES ('$wkt','$usr','$jns','$nam',$qty,'$mod',$nom,'$ket','$cab')");
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    case 'del_kas_data':
+        $id = (int)($_GET['id'] ?? 0);
+        $conn->query("DELETE FROM hoki_kas_data WHERE id=$id");
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    // ── LAPORAN SETTLEMENT / KEUANGAN ─────────────────
+    case 'get_laporan_history':
+        $role  = $_GET['role'] ?? 'Staff';
+        $akses = $_GET['cabang'] ?? '';
+        if ($role === 'Owner' || $role === 'VIP' || $akses === 'Semua') {
+            $sql = "SELECT * FROM laporan_settlement ORDER BY waktu DESC";
+        } else {
+            $cabangArr  = explode(',', $akses);
+            $cleanCabang = array_map(fn($i) => "'".$conn->real_escape_string(trim($i))."'", $cabangArr);
+            $cabangList  = implode(',', $cleanCabang);
+            $sql = "SELECT * FROM laporan_settlement WHERE cabang IN ($cabangList) ORDER BY waktu DESC";
+        }
+        $res = $conn->query($sql);
+        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        break;
+
+    case 'save_laporan':
+        // FIX: pakai $input bukan $json yang tidak terdefinisi
+        $rid     = $conn->real_escape_string($input['report_id'] ?? '');
+        $petugas = $conn->real_escape_string($input['petugas'] ?? '');
+        $cb      = $conn->real_escape_string($input['cabang'] ?? '');
+        $mt      = $conn->real_escape_string(json_encode($input['metode'] ?? []));
+        $au      = $conn->real_escape_string(json_encode($input['audit'] ?? []));
+        $ex      = $conn->real_escape_string(json_encode($input['expens'] ?? []));
+        $tt      = (int)($input['total'] ?? 0);
+        $sql = "REPLACE INTO laporan_settlement (report_id, petugas, cabang, metode_json, audit_json, pengeluaran_json, grand_total) VALUES ('$rid','$petugas','$cb','$mt','$au','$ex',$tt)";
+        echo $conn->query($sql)
+            ? json_encode(["status"=>"success"])
+            : json_encode(["status"=>"error","message"=>$conn->error]);
+        break;
+
+    case 'del_laporan':
+        $rid = $conn->real_escape_string($_GET['id'] ?? '');
+        $conn->query("DELETE FROM laporan_settlement WHERE id='$rid'");
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    // ─────────────────────────────────────────────────
     default:
-        echo json_encode(['status' => 'error', 'message' => "Action '$action' tidak dikenali di mode lokal."]);
+        echo json_encode(["status"=>"error","message"=>"Action '$action' tidak dikenali."]);
         break;
 }
+
+$conn->close();
 ?>

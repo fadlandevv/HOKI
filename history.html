@@ -1,316 +1,551 @@
-s<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hoki POS - History Transaksi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* --- CSS SIDEBAR KONSISTEN & COLLAPSIBLE --- */
-        .sidebar { 
-            width: 220px; background: #d32f2f; color: white; padding: 20px 10px; 
-            transition: 0.3s; display: flex; flex-direction: column; 
-            height: 100vh; position: fixed; left: 0; top: 0; box-sizing: border-box; z-index: 1000;
-        }
-        .sidebar.collapsed { width: 75px; }
-        .sidebar.collapsed .menu-group-label, .sidebar.collapsed li span { display: none; }
-        .sidebar.collapsed li { justify-content: center; padding: 15px 0; }
-        .sidebar.collapsed .brand { font-size: 14px; }
 
-        .brand { font-weight: 800; letter-spacing: 2px; text-align: center; cursor: pointer; margin-bottom: 10px; transition: 0.3s; }
-        
-        .menu-group-label { 
-            font-size: 11px; color: #ff9999; padding: 15px 15px 5px; 
-            text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;
-        }
-        
-        .sidebar ul { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; overflow-x: hidden; }
-        .sidebar ul li { 
-            font-size: 13px; padding: 12px 15px; transition: 0.3s; color: white; 
-            cursor: pointer; display: flex; align-items: center; border-radius: 8px; margin-bottom: 5px;
-        }
-        .sidebar ul li:hover { background: rgba(255,255,255,0.1); }
-        .sidebar ul li.active { background: #b71c1c; font-weight: bold; }
-        .sidebar ul li .icon { min-width: 25px; font-size: 16px; text-align: center; }
-        .sidebar ul li span { margin-left: 10px; white-space: nowrap; }
+    /* ── FILTER BAR ── */
+    .filter-bar {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: flex-end;
+        gap: 12px;
+    }
 
-        .logout-section { padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); margin-top: auto; }
-        .btn-logout-sidebar { 
-            width: 100%; background: #333; color: white; border: none; padding: 10px; 
-            border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        flex: 2;
+        min-width: 0;
+    }
+
+    .filter-group label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        white-space: nowrap;
+    }
+
+    .filter-group input {
+        height: 40px;
+        padding: 0 12px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--r-md);
+        font-size: 13px;
+        color: var(--text);
+        background: var(--surface);
+        outline: none;
+        width: 100%;
+        font-family: 'DM Sans', sans-serif;
+        transition: border-color var(--ease);
+    }
+
+    .filter-group input:focus {
+        border-color: var(--red);
+        box-shadow: 0 0 0 3px rgba(211,47,47,0.08);
+    }
+
+    /* ── CUSTOM DROPDOWN OVERRIDE ── */
+    .filter-group .custom-select-wrap {
+        margin-bottom: 0;
+    }
+
+    .filter-group .custom-select-btn {
+        height: 40px;
+        padding: 0 12px;
+        border-radius: var(--r-md);
+        border-width: 1.5px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    /* ── FILTER BUTTONS ── */
+    .btn-cari,
+    .btn-hari-ini,
+    .btn-kosongkan {
+        flex: 0 0 auto;
+        height: 40px;  
+        padding: 6px 14px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--r-md);
+        font-size: 13px;
+        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
+        color: var(--text);
+        background: var(--surface-2);
+        cursor: pointer;
+        display: 100%;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        white-space: nowrap;
+        transition: border-color 0.2s, color 0.2s, background 0.2s;
+        align-self: flex-end;
+    }
+
+    .btn-cari:hover {
+        border-color: var(--red);
+        color: var(--red);
+        background: var(--red-soft);
+        filter: none;
+    }
+
+    .btn-hari-ini:hover {
+        border-color: var(--red);
+        color: var(--red);
+        background: var(--red-soft);
+        filter: none;
+    }
+
+    .btn-kosongkan:hover {
+        border-color: var(--orange);
+        color: var(--orange);
+        filter: none;
+    }
+
+    /* ── TABLE ── */
+    .table-wrap {
+        background: var(--surface);
+        border-radius: var(--r-lg);
+        border: 1px solid var(--border);
+        box-shadow: var(--sh-sm);
+        overflow: hidden;
+    }
+
+    .table-wrap table {
+        border-radius: 0;
+        box-shadow: none;
+        border: none;
+    }
+
+    .waktu-text  { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); }
+    .total-text  { font-family: 'DM Mono', monospace; font-weight: 700; color: var(--red); }
+    .item-text   { font-size: 12px; color: var(--text-muted); }
+    .cabang-text { font-weight: 700; color: var(--text); }
+
+    .tag-metode {
+        background: var(--surface-2);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+        padding: 3px 10px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .btn-hapus {
+        background: var(--red-soft);
+        color: var(--red);
+        border: 1px solid var(--red-border);
+        padding: 4px 12px;
+        border-radius: var(--r-sm);
+        font-size: 12px;
+        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+    .btn-hapus:hover {
+        background: var(--red);
+        color: white;
+        filter: none;
+    }
+
+    /* ── RESPONSIVE MOBILE ── */
+    @media (max-width: 844px) {
+
+        .filter-bar {
+            flex-wrap: wrap;
         }
-        .sidebar.collapsed .btn-logout-sidebar span { display: none; }
 
-        /* Penyesuaian Konten */
-        .main-content { margin-left: 220px; padding: 25px; transition: 0.3s; flex: 1; min-height: 100vh; }
-        .main-content.expanded { margin-left: 75px; }
-
-        /* --- CSS HALAMAN HISTORY --- */
-        .filter-section {
-            background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;
+        .filter-group {
+            flex: 1 1 40%;
         }
-        .filter-group { display: flex; flex-direction: column; gap: 5px; }
-        label { font-size: 12px; font-weight: bold; color: #666; }
-        input[type="date"], select { padding: 8px; border: 1px solid #ddd; border-radius: 5px; outline: none; }
-        
-        .btn-filter { background: #d32f2f; color: white; border: none; padding: 9px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-quick { background: #f0f0f0; border: 1px solid #ddd; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; }
 
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-        th { background: #d32f2f; color: white; }
-        tr:hover { background: #fff9f9; }
-        
-        .tag-metode { background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .filter-group .custom-select-wrap {
+            flex: 1 1 100%;
+        }
+
+        .btn-cari,
+        .btn-hari-ini,
+        .btn-kosongkan {
+            flex: 1;
+            width: 100%;
+        }
+
+        table th:nth-child(2),
+        table td:nth-child(2),
+        table th:nth-child(4),
+        table td:nth-child(4) {
+            display: none;
+        }
+
+    }
+
     </style>
 </head>
-<body class="dashboard-body" style="display: flex;">
+<body>
 
-    <div class="sidebar" id="sidebar">
-        <h2 class="brand" onclick="toggleSidebar()">HOKI</h2>
-        <nav><ul id="sidebarMenu"></ul></nav>
-        <div class="logout-section">
-            <button class="btn-logout-sidebar" onclick="logout()">
-                <div class="icon">🚪</div> <span>LOGOUT</span>
-            </button>
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand" onclick="toggleSidebar()">
+        <div class="sidebar-logo">
+            <img src="Assets/logobrand.png" alt="Hoki">
+        </div>
+        <div class="sidebar-brand-text">
+            <div class="sidebar-brand-name">Hoki Dimsum</div>
+            <div class="sidebar-brand-sub">POS System v2.0</div>
         </div>
     </div>
-
-    <div class="main-content" id="mainContent">
-        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div>
-                <h2 style="margin:0;">📄 History Transaksi</h2>
-                <p style="font-size: 14px; color: #666;">Pantau performa penjualan cabang harian.</p>
+    <button class="sidebar-toggle" onclick="toggleSidebar()">‹</button>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-user">
+        <div class="user-card">
+            <div class="user-avatar" id="userAvatarInitial">?</div>
+            <div class="user-info">
+                <div class="user-name" id="sidebarUserName">Loading...</div>
+                <div class="user-role" id="sidebarUserRole">—</div>
             </div>
-        </header>
+            <button class="btn-logout-icon" onclick="logout()" title="Logout">🚪</button>
+        </div>
+    </div>
+</aside>
 
-        <div class="filter-section">
+<!-- ── MAIN CONTENT ── -->
+<div class="main-content" id="mainContent">
+
+    <header class="top-header">
+        <div class="header-left">
+            <div class="header-page-title">📄 History Transaksi</div>
+        </div>
+        <div class="header-right">
+            <div class="clock-pill">
+                <div id="realtimeClock">00:00:00</div>
+                <div id="realtimeDate">...</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="page-body">
+
+        <!-- FILTER -->
+        <div class="filter-bar">
             <div class="filter-group">
-                <label>Mulai:</label>
+                <label>Mulai</label>
                 <input type="date" id="tglMulai">
             </div>
             <div class="filter-group">
-                <label>Sampai:</label>
+                <label>Sampai</label>
                 <input type="date" id="tglSelesai">
             </div>
             <div class="filter-group">
-                <label>Cabang:</label>
-                <select id="filterCabang">
-                    <option value="Semua">Semua Cabang</option>
-                </select>
+                <label>Cabang</label>
+                <div class="custom-select-wrap" id="selectCabangWrap">
+                    <button class="custom-select-btn" onclick="toggleDropdownCabang()">
+                        <span id="selectedCabangLabel">Semua Cabang</span>
+                        <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+                            <path d="M1 1l5 5 5-5" stroke="#d32f2f" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                    <div class="custom-dropdown" id="dropdownCabang"></div>
+                </div>
             </div>
-            <button class="btn-filter" onclick="renderHistory()">Cari Data</button>
-            <button class="btn-quick" onclick="filterHariIni()">Hari Ini</button>
-            
-            <button onclick="hapusSemuaHistory()" style="background:#333; color:white; border:none; padding:9px 15px; border-radius:5px; cursor:pointer; margin-left:auto; font-weight:bold;">⚠️ Kosongkan</button>
+            <button class="btn-cari"      onclick="renderHistory()">🔍 Cari</button>
+            <button class="btn-hari-ini"  onclick="filterHariIni()">📅 Hari Ini</button>
+            <button class="btn-kosongkan" id="btnKosongkan" onclick="kosongkanFilter()">⚠️ Reset</button>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Waktu</th>
-                    <th>Petugas</th>
-                    <th>Cabang</th>
-                    <th>Item</th>
-                    <th>Total</th>
-                    <th>Metode</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="tabelHistory"></tbody>
-        </table>
+        <!-- TABLE -->
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Waktu</th>
+                        <th>Petugas</th>
+                        <th>Cabang</th>
+                        <th>Item</th>
+                        <th>Total</th>
+                        <th>Metode</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelHistory">
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <span class="icon">📄</span>
+                                <p>Belum ada data transaksi</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
     </div>
+</div>
 
-    <script>
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-const cabangLogin = localStorage.getItem('cabangHoki'); // Cabang yang dipilih saat login
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+    <button class="bn-item" onclick="location.href='dashboard.html'"><span class="bn-icon">🛒</span><span class="bn-label">Kasir</span></button>
+    <button class="bn-item active"><span class="bn-icon">📄</span><span class="bn-label">History</span></button>
+    <button class="bn-item" onclick="location.href='stok.html'"><span class="bn-icon">📦</span><span class="bn-label">Stok</span></button>
+    <button class="bn-item" onclick="location.href='laporan_staff.html'"><span class="bn-icon">📊</span><span class="bn-label">Laporan</span></button>
+    <button class="bn-item" onclick="openSheet('moreSheet')"><span class="bn-icon">☰</span><span class="bn-label">Lainnya</span></button>
+</nav>
 
-if (!currentUser) { window.location.href = 'index.html'; }
+<!-- MORE SHEET -->
+<div class="sheet-overlay" id="moreSheet" onclick="closeSheetOutside(event,'moreSheet')">
+    <div class="bottom-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <p style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Menu Lainnya</p>
+        <div class="more-grid" id="moreGrid"></div>
+    </div>
+</div>
 
-// --- 1. SIDEBAR & UI (TETAP KONSISTEN) ---
+<script>
+const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+const cabangLogin = localStorage.getItem('cabangHoki');
+if (!currentUser) window.location.href = 'index.html';
+
+let selectedCabang = 'Semua';
+
+/* ── CUSTOM DROPDOWN CABANG ── */
+function toggleDropdownCabang() {
+    document.getElementById('selectCabangWrap').classList.toggle('open');
+}
+
+function pilihCabang(nama, label) {
+    selectedCabang = nama;
+    document.getElementById('selectedCabangLabel').innerText = label;
+    document.querySelectorAll('#dropdownCabang .dropdown-item').forEach(el => el.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.getElementById('selectCabangWrap').classList.remove('open');
+}
+
+document.addEventListener('click', function(e) {
+    const wrap = document.getElementById('selectCabangWrap');
+    if (wrap && !wrap.contains(e.target)) wrap.classList.remove('open');
+});
+
+/* ── SIDEBAR ── */
 function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    sidebar.classList.toggle('collapsed');
-    mainContent.classList.toggle('expanded');
-    localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'small' : 'large');
+    const sb = document.getElementById('sidebar');
+    const mc = document.getElementById('mainContent');
+    sb.classList.toggle('collapsed');
+    mc.classList.toggle('expanded');
+    localStorage.setItem('sidebarState', sb.classList.contains('collapsed') ? 'small' : 'large');
 }
 
 function buildSidebar() {
-    const menuContainer = document.getElementById('sidebarMenu');
-    const role = currentUser.role;
-    const currentPage = window.location.pathname.split("/").pop() || 'dashboard.html';
-
-    // Pulihkan status minimize dari memori
     if (localStorage.getItem('sidebarState') === 'small') {
         document.getElementById('sidebar').classList.add('collapsed');
         document.getElementById('mainContent').classList.add('expanded');
     }
-
-    let menuHTML = '';
-    const createItem = (icon, label, link, active) => `
-        <li class="${active ? 'active' : ''}" onclick="location.href='${link}'">
-            <div class="icon">${icon}</div> <span>${label}</span>
-        </li>`;
-
-    // --- GROUP 1: FRONTLINE OPERATIONS (Semua Role) ---
-    menuHTML += `<div class="menu-group-label">Frontline Operations</div>`;
-    menuHTML += createItem('🛒', 'Kasir', 'dashboard.html', currentPage === 'dashboard.html');
-    menuHTML += createItem('📄', 'History Transaksi', 'history.html', currentPage === 'history.html');
-    menuHTML += createItem('📦', 'Stok Harian', 'stok.html', currentPage === 'stok.html');
-    menuHTML += createItem('🚚', 'Restock Barang', 'restock.html', currentPage === 'restock.html');
-    menuHTML += createItem('📊', 'Laporan Penjualan', 'laporan_staff.html', currentPage === 'laporan_staff.html');
-
-    // --- GROUP 2: TACTICAL MANAGEMENT (Senior Staff, SPV, Owner, VIP) ---
-    if (['Senior Staff', 'SPV', 'Owner', 'VIP'].includes(role)) {
-        menuHTML += `<div class="menu-group-label">Tactical Management</div>`;
-        menuHTML += createItem('🍱', 'Master Produk', 'produk.html', currentPage === 'produk.html');
-        menuHTML += createItem('📈', 'Rekapan Penjualan', 'rekap.html', currentPage === 'rekap.html');
-        menuHTML += createItem('💸', 'Belanja', 'belanja.html', currentPage === 'belanja.html');
+    const role = currentUser.role;
+    const cur  = window.location.pathname.split('/').pop() || 'dashboard.html';
+    const navItem = (icon, label, link) => {
+        const active = cur === link ? 'active' : '';
+        return `<button class="nav-item ${active}" onclick="location.href='${link}'">
+            <span class="nav-icon">${icon}</span>
+            <span class="nav-label">${label}</span>
+        </button>`;
+    };
+    let h = `<div class="nav-group-label">Frontline</div>`;
+    h += navItem('🛒','Kasir','dashboard.html');
+    h += navItem('📄','History Transaksi','history.html');
+    h += navItem('📦','Stok Harian','stok.html');
+    h += navItem('🚚','Restock Barang','restock.html');
+    h += navItem('📊','Laporan Penjualan','laporan_staff.html');
+    if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+        h += `<div class="nav-group-label">Management</div>`;
+        h += navItem('🍱','Master Produk','produk.html');
+        h += navItem('📈','Rekapan Penjualan','rekap.html');
     }
-
-    // --- GROUP 3: EXECUTIVE SUITE (Owner & VIP) ---
-    if (['Owner', 'VIP'].includes(role)) {
-        menuHTML += `<div class="menu-group-label">Executive Suite</div>`;
-        menuHTML += createItem('📊', 'Keuangan Global', 'laporan.html', currentPage === 'laporan.html');
-        menuHTML += createItem('📈', 'Statistik', 'statistik.html', currentPage === 'statistik.html');
+    if (['Owner','VIP'].includes(role)) {
+        h += `<div class="nav-group-label">Executive</div>`;
+        h += navItem('📊','Keuangan Global','laporan.html');
+        h += navItem('📈','Statistik','statistik.html');
+        h += navItem('💸','Belanja','belanja.html');
     }
-
-    // --- GROUP 4: VIP ACCESS (KHUSUS ROLE VIP SAAT INI) ---
     if (role === 'VIP') {
-        menuHTML += `
-            <div class="menu-group-label" style="color: #ffeb3b; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
-                👑 VIP Access
-            </div>`;
-        menuHTML += createItem('👥', 'Manajemen User', 'user.html', currentPage === 'user.html');
-        menuHTML += createItem('🔑', 'History Login', 'login_history.html', currentPage === 'login_history.html');
+        h += `<div class="nav-group-label">VIP Access</div>`;
+        h += navItem('👥','Manajemen User','user.html');
+        h += navItem('🔑','History Login','login_history.html');
     }
-
-    menuContainer.innerHTML = menuHTML;
+    document.getElementById('sidebarNav').innerHTML = h;
+    const name = currentUser.user || '?';
+    document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
+    document.getElementById('sidebarUserName').innerText   = name;
+    document.getElementById('sidebarUserRole').innerText   = role;
 }
 
-// --- 2. LOGIKA HISTORY CLOUD ---
+/* ── CLOCK ── */
+function updateClock() {
+    const now = new Date();
+    document.getElementById('realtimeClock').innerText = now.toLocaleTimeString('id-ID');
+    document.getElementById('realtimeDate').innerText  = now.toLocaleDateString('id-ID',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+}
+setInterval(updateClock, 1000);
+
+/* ── MORE MENU ── */
+function buildMoreMenu() {
+    const role = currentUser.role;
+    const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
+    if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
+        items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
+    }
+    if (['Owner','VIP'].includes(role)) {
+        items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
+        items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
+        items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
+    }
+    if (role === 'VIP') {
+        items.push({icon:'👥',label:'Users',link:'user.html'});
+        items.push({icon:'🔑',label:'Login Log',link:'login_history.html'});
+    }
+    items.push({icon:'🚪',label:'Logout',link:'#',action:'logout()'});
+    document.getElementById('moreGrid').innerHTML = items.map(i =>
+        `<button class="more-btn" onclick="${i.action||`location.href='${i.link}'`}">
+            <span class="more-btn-icon">${i.icon}</span>
+            <span class="more-btn-label">${i.label}</span>
+        </button>`).join('');
+}
+
+function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
+function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
+
+/* ── LOGIKA (TIDAK BERUBAH) ── */
+async function loadCabang() {
+    try {
+        const res      = await fetch('api.php?action=get_branches');
+        const cabangDB = await res.json();
+        const dropdown = document.getElementById('dropdownCabang');
+        const role     = currentUser.role;
+
+        let html = `<div class="dropdown-item active" onclick="pilihCabang('Semua','Semua Cabang')">🏪 Semua Cabang</div>`;
+        cabangDB.forEach(c => {
+            html += `<div class="dropdown-item" onclick="pilihCabang('${c.nama_cabang}','${c.nama_cabang}')">📍 ${c.nama_cabang}</div>`;
+        });
+        dropdown.innerHTML = html;
+
+        if (['Staff','Senior Staff','SPV'].includes(role)) {
+            selectedCabang = cabangLogin;
+            document.getElementById('selectedCabangLabel').innerText          = cabangLogin;
+            document.getElementById('selectCabangWrap').style.pointerEvents   = 'none';
+            document.getElementById('selectCabangWrap').style.opacity         = '0.6';
+            document.getElementById('btnKosongkan').style.display             = 'none';
+        }
+    } catch(e) { console.error('Gagal load cabang'); }
+}
 
 async function renderHistory() {
     try {
-        const res = await fetch('api.php?action=get_history');
+        const res     = await fetch('api.php?action=get_history');
         const history = await res.json();
-        
-        const filterCab = document.getElementById('filterCabang').value;
-        const tglMulai = document.getElementById('tglMulai').value;
+        const tglMulai   = document.getElementById('tglMulai').value;
         const tglSelesai = document.getElementById('tglSelesai').value;
-        
-        const tbody = document.getElementById('tabelHistory');
-        tbody.innerHTML = '';
+        const tbody      = document.getElementById('tabelHistory');
+        const role       = currentUser.role;
+        tbody.innerHTML  = '';
+        let count = 0;
 
-        history.forEach((t) => {
-            const dateTrx = t.waktu.split(' ')[0]; 
-            const role = currentUser.role;
-
-            // 1. FILTER BERDASARKAN ROLE & CABANG LOGIN (PROTEKSI UTAMA)
-            if (['Staff', 'Senior Staff', 'SPV'].includes(role)) {
-                // Paksa hanya tampilkan data cabangnya sendiri
+        history.forEach(t => {
+            const dateTrx = t.waktu.split(' ')[0];
+            if (['Staff','Senior Staff','SPV'].includes(role)) {
                 if (t.cabang !== cabangLogin) return;
             } else {
-                // Owner/VIP baru boleh pakai filter dropdown
-                if (filterCab !== "Semua" && t.cabang !== filterCab) return;
+                if (selectedCabang !== 'Semua' && t.cabang !== selectedCabang) return;
             }
+            if (tglMulai   && dateTrx < tglMulai)   return;
+            if (tglSelesai && dateTrx > tglSelesai)  return;
 
-            // 2. Filter Tanggal (Tetap berfungsi untuk semua)
-            if (tglMulai && dateTrx < tglMulai) return;
-            if (tglSelesai && dateTrx > tglSelesai) return;
-
-            const items = JSON.parse(t.items_json || '[]');
+            const items     = JSON.parse(t.items_json || '[]');
             const namaItems = items.map(it => it.nama).join(', ');
+            const canDelete = role === 'VIP' || role === 'Owner';
 
-            tbody.innerHTML += `
-                <tr>
-                    <td><small>${t.waktu}</small></td>
-                    <td>${t.petugas}</td>
-                    <td><b>${t.cabang}</b></td>
-                    <td><small>${namaItems}</small></td>
-                    <td style="font-weight:bold; color:#d32f2f;">Rp ${parseInt(t.total).toLocaleString()}</td>
-                    <td><span class="tag-metode">${t.metode}</span></td>
-                    <td>
-                        ${role === 'VIP' || role === 'Owner' ? 
-                          `<button style="background:#f44336; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;" onclick="hapusTransaksi(${t.id})">Hapus</button>` 
-                          : `-`}
-                    </td>
-                </tr>
-            `;
+            tbody.innerHTML += `<tr>
+                <td><span class="waktu-text">${t.waktu}</span></td>
+                <td>${t.petugas}</td>
+                <td><span class="cabang-text">${t.cabang}</span></td>
+                <td><span class="item-text">${namaItems}</span></td>
+                <td><span class="total-text">Rp ${parseInt(t.total).toLocaleString('id-ID')}</span></td>
+                <td><span class="tag-metode">${t.metode}</span></td>
+                <td>${canDelete ? `<button class="btn-hapus" onclick="hapusTransaksi(${t.id})">Hapus</button>` : '—'}</td>
+            </tr>`;
+            count++;
         });
-    } catch (e) {
-        console.error("Gagal muat history");
+
+        if (count === 0) {
+            tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="icon">📄</span><p>Tidak ada data transaksi</p></div></td></tr>`;
+        }
+    } catch(e) {
+        toast.error('Gagal memuat history!');
     }
 }
 
 async function hapusTransaksi(id) {
-    if(confirm("Hapus transaksi ini secara permanen dari Cloud?")) {
+    const ok = await showConfirm('Hapus transaksi ini secara permanen?', 'Ya, Hapus', 'Batal', '🗑️');
+    if (!ok) return;
+    try {
         await fetch(`api.php?action=del_transaksi&id=${id}`);
+        toast.success('Transaksi berhasil dihapus!');
         renderHistory();
-    }
-}
-
-async function hapusSemuaHistory() {
-    if(confirm("⚠️ PERINGATAN! Ini akan menghapus SELURUH data penjualan di database cloud. Lanjutkan?")) {
-        await fetch('api.php?action=clear_history');
-        renderHistory();
+    } catch(e) {
+        toast.error('Gagal menghapus transaksi!');
     }
 }
 
 function filterHariIni() {
     const today = new Date().toISOString().split('T')[0];
-    document.getElementById('tglMulai').value = today;
+    document.getElementById('tglMulai').value   = today;
     document.getElementById('tglSelesai').value = today;
     renderHistory();
 }
 
-async function loadCabang() {
-    try {
-        const res = await fetch('api.php?action=get_branches');
-        const cabangDB = await res.json();
-        const select = document.getElementById('filterCabang');
-        
-        // Bersihkan dropdown dulu (kecuali opsi "Semua")
-        select.innerHTML = '<option value="Semua">Semua Cabang</option>';
+function kosongkanFilter() {
+    document.getElementById('tglMulai').value   = '';
+    document.getElementById('tglSelesai').value = '';
+    selectedCabang = 'Semua';
+    document.getElementById('selectedCabangLabel').innerText = 'Semua Cabang';
+    document.querySelectorAll('#dropdownCabang .dropdown-item').forEach((el, i) => {
+        el.classList.toggle('active', i === 0);
+    });
+    renderHistory();
+}
 
-        cabangDB.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c.nama_cabang;
-            opt.innerText = c.nama_cabang;
-            select.appendChild(opt);
-        });
-
-        // --- LOGIKA PEMBATASAN AKSES (REVISI) ---
-        const role = currentUser.role;
-        
-        if (['Staff', 'Senior Staff', 'SPV'].includes(role)) {
-            // Jika bukan Owner/VIP, kunci dropdown ke cabang tempat dia login
-            select.value = cabangLogin;
-            select.disabled = true; // User tidak bisa ganti cabang
-            
-            // Sembunyikan tombol "Hapus Semua" untuk keamanan
-            const btnClear = document.querySelector('button[onclick="hapusSemuaHistory()"]');
-            if(btnClear) btnClear.style.display = 'none';
-        } else {
-            // Owner & VIP bebas pilih
-            select.disabled = false;
-        }
-
-    } catch (e) {
-        console.error("Gagal load daftar cabang");
+async function logout() {
+    const ok = await showConfirm('Logout dari sistem?', 'Ya, Logout', 'Batal', '🚪');
+    if (ok) {
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('cabangHoki');
+        window.location.href = 'index.html';
     }
 }
 
-function logout() { 
-    if(confirm("Logout?")) { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; } 
-}
-
-window.onload = async () => { 
-    buildSidebar(); 
-    await loadCabang(); // Load cabang dulu baru render data
-    renderHistory(); 
+window.onload = async function() {
+    buildSidebar();
+    updateClock();
+    await loadCabang();
+    renderHistory();
 };
-    </script>
+</script>
+
+<script src="toast.js"></script>
 </body>
 </html>

@@ -3,209 +3,707 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hoki POS 2026 - Login VIP</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Hoki POS 2026 — Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --green: #d32f2f;
+            --green-dark: #b71c1c;
+            --green-light: #e53935;
+            --green-soft: #fff0f0;
+            --green-glow: rgba(211,47,47,0.12);
+            --accent: #ff6b6b;
+            --bg: #f4f4ef;
+            --surface: #ffffff;
+            --surface2: #f9f9f6;
+            --text: #1c1c1a;
+            --text-muted: #888880;
+            --border: #e8e8e2;
+            --shadow: rgba(211,47,47,0.08);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: stretch;
+            overflow: hidden;
+        }
+
+        /* ── LEFT PANEL ── */
+        .left-panel {
+            width: 44%;
+            background: var(--green-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 40px;
+            position: relative;
+            overflow: hidden;
+            animation: panelIn 0.7s cubic-bezier(0.22,1,0.36,1) both;
+        }
+
+        @keyframes panelIn {
+            from { transform: translateX(-40px); opacity: 0; }
+            to   { transform: translateX(0); opacity: 1; }
+        }
+
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 30% 20%, rgba(255,107,107,0.18) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 80%, rgba(183,28,28,0.4) 0%, transparent 55%);
+        }
+
+        .deco-circle {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+        .deco-circle-1 { width: 340px; height: 340px; top: -120px; right: -120px; }
+        .deco-circle-2 { width: 220px; height: 220px; bottom: -60px; left: -60px; }
+        .deco-circle-3 { width: 140px; height: 140px; top: 45%; right: 20px; border-color: rgba(255,255,255,0.04); }
+
+        .left-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+
+        .left-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            width: 100%;
+        }
+
+        .logo-box {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+        }
+
+        .logo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .brand-name {
+            font-size: 30px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            line-height: 1.1;
+        }
+        .brand-name span { color: var(--accent); }
+
+        .brand-tagline {
+            font-size: 11px;
+            color: rgba(255,255,255,0.45);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-top: 6px;
+            margin-bottom: 36px;
+        }
+
+        .clock-block {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 18px;
+            padding: 20px 28px;
+            margin-bottom: 36px;
+            backdrop-filter: blur(8px);
+        }
+        .clock-time {
+            font-family: 'DM Mono', monospace;
+            font-size: 38px;
+            font-weight: 500;
+            color: #ffffff;
+            letter-spacing: 3px;
+            line-height: 1;
+        }
+        .clock-date {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .info-pills { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        .info-pill {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 12px 16px;
+        }
+        .info-pill-icon {
+            width: 34px; height: 34px;
+            background: rgba(255,107,107,0.15);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+        .info-pill-text { text-align: left; }
+        .info-pill-label { font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
+        .info-pill-value { font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 600; margin-top: 1px; }
+
+        .left-footer {
+            position: absolute;
+            bottom: 24px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.25);
+            letter-spacing: 0.5px;
+        }
+
+        /* ── RIGHT PANEL ── */
+        .right-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 40px;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        .right-panel::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(circle at 1px 1px, #ccd8d1 1px, transparent 0);
+            background-size: 28px 28px;
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        .login-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 380px;
+            animation: fadeUp 0.65s cubic-bezier(0.22,1,0.36,1) 0.2s both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-heading { margin-bottom: 28px; }
+        .login-heading h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-heading p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 28px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 24px var(--shadow), 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .card.hidden { display: none; }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 6px;
+        }
+        .input-wrap { position: relative; }
+        .input-icon {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 15px;
+            pointer-events: none;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 11px 14px 11px 40px;
+            border: 1.5px solid var(--border);
+            border-radius: 11px;
+            font-size: 14px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text);
+            background: var(--surface2);
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            outline: none;
+        }
+        .form-group input:focus {
+            border-color: var(--green);
+            background: var(--surface);
+            box-shadow: 0 0 0 3px var(--green-glow);
+        }
+        .form-group input::placeholder { color: #a8b8b1; }
+
+        .toggle-pass {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            padding: 2px;
+            border-radius: 6px;
+            transition: color 0.2s, background 0.2s;
+        }
+        .toggle-pass:hover { color: var(--green); background: var(--green-soft); }
+
+        /* Error message */
+        .error-msg {
+            background: #fff0f0;
+            border: 1px solid #ffd5d5;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #d32f2f;
+            margin-bottom: 12px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+        .error-msg.show { display: flex; }
+
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            background: var(--green);
+            color: white;
+            border: none;
+            border-radius: 11px;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            cursor: pointer;
+            margin-top: 6px;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 4px 16px var(--green-glow);
+            letter-spacing: 0.2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-login:hover { background: var(--green-light); }
+        .btn-login:active { transform: scale(0.98); }
+        .btn-login:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 16px 0;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .quick-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+        .chip {
+            flex: 1;
+            min-width: 70px;
+            text-align: center;
+            padding: 8px 10px;
+            background: var(--green-soft);
+            border: 1px solid #ffcccc;
+            border-radius: 9px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--green);
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            white-space: nowrap;
+        }
+        .chip:hover { background: #ffe0e0; transform: translateY(-1px); }
+
+        .user-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--green-soft);
+            border: 1px solid #ffcccc;
+            border-radius: 99px;
+            padding: 4px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--green);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .step-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+        .step-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
+
+        select#cabangPilihan {
+            width: 100%;
+            padding: 11px 40px 11px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 11px;
+            font-size: 14px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text);
+            background: var(--surface2);
+            outline: none;
+            cursor: pointer;
+            margin-bottom: 14px;
+            transition: border-color 0.2s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23d32f2f' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+        }
+        select#cabangPilihan:focus {
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px var(--green-glow);
+        }
+
+        .login-note { text-align: center; margin-top: 18px; font-size: 11px; color: var(--text-muted); }
+        .login-note span { color: var(--green); font-weight: 600; }
+
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 14px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .secure-dot {
+            width: 7px; height: 7px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            body { flex-direction: column; overflow: hidden; height: 100dvh; }
+            .left-panel { width: 100%; flex-shrink: 0; padding: 20px 20px 18px; justify-content: center; min-height: 35dvh; }
+            .left-content { display: flex; flex-direction: column; align-items: center; }
+            .logo-box { width: 80px; height: 80px; margin-bottom: 6px; }
+            .brand-name { font-size: 18px; }
+            .brand-tagline { font-size: 9px; margin-top: 2px; margin-bottom: 10px; }
+            .clock-block { padding: 8px 20px; margin-bottom: 0; border-radius: 12px; }
+            .clock-time { font-size: 22px; letter-spacing: 2px; }
+            .clock-date { font-size: 9px; margin-top: 3px; }
+            .info-pills { display: none; }
+            .left-footer { display: none; }
+            .deco-circle-1, .deco-circle-2, .deco-circle-3 { display: none; }
+            .right-panel { flex: 1; padding: 16px 20px 20px; overflow-y: auto; align-items: flex-start; }
+            .login-wrapper { max-width: 100%; }
+            .login-heading { margin-bottom: 14px; }
+            .login-heading h1 { font-size: 20px; }
+            .card { padding: 18px; border-radius: 16px; }
+            .form-group { margin-bottom: 10px; }
+            .quick-chips { flex-wrap: nowrap; gap: 6px; }
+            .chip { font-size: 10px; padding: 6px 8px; }
+        }
+    </style>
 </head>
 <body>
 
-    <div class="login-container">
-        <div class="card" id="loginCard">
-            <h2 class="brand" style="color:#d32f2f; margin-bottom:0; font-weight: 800; letter-spacing: 0px;">HOKI DIMSUM</h2>
-            <p style="font-size: 13px; color: #666; margin-top: 2px;">Sistem Keuangan Terpusat</p>
+    <!-- ── LEFT PANEL ── -->
+    <div class="left-panel">
+        <div class="deco-circle deco-circle-1"></div>
+        <div class="deco-circle deco-circle-2"></div>
+        <div class="deco-circle deco-circle-3"></div>
+        <div class="left-content">
+            <div class="logo-box">
+                <img src="Assets/logobrand.png" alt="Hoki Dimsum">
+            </div>
+            <div class="brand-name">Hoki <span>Dimsum</span></div>
+            <div class="brand-tagline">Sistem Keuangan Terpusat</div>
+            <div class="clock-block">
+                <div class="clock-time" id="clockTime">00:00:00</div>
+                <div class="clock-date" id="clockDate"></div>
+            </div>
+            <div class="info-pills">
+                <div class="info-pill">
+                    <div class="info-pill-icon">🏪</div>
+                    <div class="info-pill-text">
+                        <div class="info-pill-label">Sistem</div>
+                        <div class="info-pill-value">POS v2.0</div>
+                    </div>
+                </div>
+                <div class="info-pill">
+                    <div class="info-pill-icon">📍</div>
+                    <div class="info-pill-text">
+                        <div class="info-pill-label">Status</div>
+                        <div class="info-pill-value">Online</div>
+                    </div>
+                </div>
+                <div class="info-pill">
+                    <div class="info-pill-icon">📅</div>
+                    <div class="info-pill-text">
+                        <div class="info-pill-label">Shift</div>
+                        <div class="info-pill-value" id="shiftInfo">Pagi</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="left-footer">© 2026 Hoki Dimsum · All rights reserved</div>
+    </div>
 
-            <!-- DEV MODE BANNER — hapus tag ini saat production -->
-            <div id="devBanner" style="display:none; background:#fff8e1; border:1px solid #ffe082; border-radius:8px; padding:8px 12px; margin:12px 0; font-size:11px; color:#795548; text-align:left;">
-                <b>🛠 DEV MODE</b> — tidak butuh api.php<br>
-                <span style="color:#555;">admin/admin · owner/owner · spv1/spv1 · senior/senior · staff1/staff1</span>
+    <!-- ── RIGHT PANEL ── -->
+    <div class="right-panel">
+        <div class="login-wrapper">
+            <div class="login-heading">
+                <h1>Selamat Datang 👋</h1>
+                <p>Masuk untuk mengakses sistem kasir</p>
             </div>
 
-            <input type="text" id="username" placeholder="Username" style="margin-top:14px;">
-            <p style="margin-top: 6px;"></p>
-            <input type="password" id="password" placeholder="Password">
-            <p style="margin-top: 12px;"></p>
-            <button onclick="cekAksesLogin()">Login Account</button>
-        </div>
+            <!-- Step 1: Login -->
+            <div class="card" id="loginCard">
+                <!-- Error message (ganti alert) -->
+                <div class="error-msg" id="errorMsg">
+                    <span>⚠️</span>
+                    <span id="errorText">Username atau Password salah!</span>
+                </div>
 
-        <div class="card hidden" id="nextStepCard">
-            <div id="userBadge" style="background:#eee; padding:5px 12px; border-radius:20px; font-size:11px; margin-bottom:15px; display:inline-block; font-weight: bold; color: #d32f2f;"></div>
-            <h3 style="margin-bottom: 5px;">Pilih Lokasi Cabang</h3>
-            <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Cabang tempat kamu bertugas hari ini:</p>
-            <select id="cabangPilihan"></select>
-            <button onclick="finalMasuk()" style="margin-top:14px;">Buka Kasir Sekarang</button>
+                <div class="form-group">
+                    <label for="username">Nama Petugas</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">👤</span>
+                        <input type="text" id="username" placeholder="Masukkan username..." autocomplete="username">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="password" placeholder="Masukkan password..."
+                            autocomplete="current-password"
+                            onkeydown="if(event.key==='Enter') cekAksesLogin()">
+                        <button type="button" class="toggle-pass" onclick="togglePassword()" title="Lihat password">
+                            <svg id="eyeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <svg id="eyeOffIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+                                <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
+                                <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn-login" id="btnLogin" onclick="cekAksesLogin()">
+                    <span>Masuk ke Sistem</span>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            </div>
+
+            <!-- Step 2: Pilih Cabang -->
+            <div class="card hidden" id="nextStepCard">
+                <div id="userBadge" class="user-badge"></div>
+                <div class="step-title">Pilih Lokasi Cabang</div>
+                <div class="step-sub">Cabang tempat kamu bertugas hari ini</div>
+                <select id="cabangPilihan"></select>
+                <button class="btn-login" onclick="finalMasuk()">
+                    <span>Buka Kasir Sekarang</span>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            </div>
+
+            <div class="secure-badge">
+                <span class="secure-dot"></span>
+                Koneksi Aman · Hoki POS System
+            </div>
+            <div class="login-note">Masalah akses? Hubungi <span>Admin Sistem</span></div>
         </div>
     </div>
 
     <script>
-    // ─────────────────────────────────────────────────────────
-    //  DEV MODE CONFIG
-    //  Set DEV_MODE = true  → login pakai data dummy, tanpa api.php
-    //  Set DEV_MODE = false → login pakai api.php (production)
-    // ─────────────────────────────────────────────────────────
-    const DEV_MODE = true;
+    function showError(msg) {
+        const el = document.getElementById('errorMsg');
+        document.getElementById('errorText').innerText = msg;
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 4000);
+    }
 
-    const DEV_USERS = [
-        { user: 'admin',  pass: 'admin',  role: 'VIP',          cabang: 'Semua' },
-        { user: 'owner',  pass: 'owner',  role: 'Owner',        cabang: 'Semua' },
-        { user: 'spv1',   pass: 'spv1',   role: 'SPV',          cabang: 'Pusat' },
-        { user: 'senior', pass: 'senior', role: 'Senior Staff', cabang: 'Pusat,Cabang A' },
-        { user: 'staff1', pass: 'staff1', role: 'Staff',        cabang: 'Pusat,Cabang A,Cabang B' },
-    ];
+    function togglePassword() {
+        const input  = document.getElementById('password');
+        const eyeOn  = document.getElementById('eyeIcon');
+        const eyeOff = document.getElementById('eyeOffIcon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            eyeOn.style.display  = 'none';
+            eyeOff.style.display = 'block';
+        } else {
+            input.type = 'password';
+            eyeOn.style.display  = 'block';
+            eyeOff.style.display = 'none';
+        }
+    }
 
-    const DEV_CABANG = ['Pusat', 'Cabang A', 'Cabang B'];
+    /* ── CLOCK ── */
+    function updateClock() {
+        const now  = new Date();
+        const jam  = now.toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+        const hari = now.toLocaleDateString('id-ID', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+        document.getElementById('clockTime').innerText = jam;
+        document.getElementById('clockDate').innerText = hari;
+        const h = now.getHours();
+        const shiftEl = document.getElementById('shiftInfo');
+        if (h >= 6 && h < 14)       shiftEl.innerText = 'Pagi (06:00–14:00)';
+        else if (h >= 14 && h < 22) shiftEl.innerText = 'Sore (14:00–22:00)';
+        else                         shiftEl.innerText = 'Malam (22:00–06:00)';
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
 
-    // Tampilkan banner dev mode
-    if (DEV_MODE) document.getElementById('devBanner').style.display = 'block';
-
-    // ─────────────────────────────────────────────────────────
-    //  FUNGSI LOGIN UTAMA
-    // ─────────────────────────────────────────────────────────
+    /* ── LOGIN ── */
     async function cekAksesLogin() {
         const userIn = document.getElementById('username').value.trim();
         const passIn = document.getElementById('password').value.trim();
 
-        if (!userIn || !passIn) return alert("Username dan Password harus diisi!");
-
-        if (DEV_MODE) {
-            // ── JALUR DEV: cek dari array dummy ──
-            const ketemu = DEV_USERS.find(u => u.user === userIn && u.pass === passIn);
-            if (ketemu) {
-                prosesHasilLogin(ketemu, true);
-            } else {
-                alert("Username atau Password salah! (Dev Mode)\n\nCoba: admin/admin, owner/owner, staff1/staff1");
-            }
+        if (!userIn || !passIn) {
+            showError('Username dan Password harus diisi!');
             return;
         }
 
-        // ── JALUR PRODUCTION: fetch ke api.php ──
+        const btn = document.getElementById('btnLogin');
+        btn.disabled = true;
+        btn.innerHTML = '<span>Memverifikasi...</span>';
+
         try {
             const response = await fetch('api.php?action=login', {
-                method: 'POST',
+                method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user: userIn, pass: passIn })
+                body:    JSON.stringify({ user: userIn, pass: passIn })
             });
 
-            if (!response.ok) throw new Error("Server api.php bermasalah (HTTP " + response.status + ")");
-
+            if (!response.ok) throw new Error('Server bermasalah');
             const hasil = await response.json();
 
             if (hasil.status === 'success') {
-                prosesHasilLogin(hasil.user, false);
-            } else {
-                alert(hasil.message || "Username atau Password salah!");
-            }
-        } catch (err) {
-            alert("Terjadi Kesalahan: " + err.message);
-        }
-    }
+                const ketemu = hasil.user;
 
-    // ─────────────────────────────────────────────────────────
-    //  PROSES SETELAH LOGIN BERHASIL (sama untuk dev & prod)
-    // ─────────────────────────────────────────────────────────
-    async function prosesHasilLogin(ketemu, isDevMode) {
+                if (ketemu.role === 'VIP' || ketemu.role === 'Owner') {
+                    localStorage.setItem('currentUser', JSON.stringify({user:ketemu.user, role:ketemu.role, cabang:'Semua'}));
+                    localStorage.setItem('cabangHoki', 'Semua');
+                    await catatLogLogin(ketemu.user, ketemu.role, 'Semua');
+                    window.location.href = 'dashboard.html';
 
-        // A. VIP & OWNER → langsung ke dashboard
-        if (ketemu.role === 'VIP' || ketemu.role === 'Owner') {
-            localStorage.setItem('currentUser', JSON.stringify({
-                user: ketemu.user, role: ketemu.role, cabang: 'Semua'
-            }));
-            localStorage.setItem('cabangHoki', 'Semua');
-            if (!isDevMode) await catatLogLogin(ketemu.user, ketemu.role, 'Semua');
-            alert(ketemu.role === 'VIP' ? "👑 AKSES VIP DITERIMA!" : "Halo Bos Besar!");
-            window.location.href = 'dashboard.html';
-        }
+                } else if (ketemu.role === 'SPV') {
+                    const lokasi = ketemu.cabang;
+                    if (!lokasi) { showError('Error: Cabang SPV belum ditentukan!'); return; }
+                    localStorage.setItem('currentUser', JSON.stringify({user:ketemu.user, role:ketemu.role, cabang:ketemu.cabang}));
+                    localStorage.setItem('cabangHoki', lokasi);
+                    await catatLogLogin(ketemu.user, ketemu.role, lokasi);
+                    window.location.href = 'dashboard.html';
 
-        // B. SPV → langsung ke dashboard dengan cabang tetap
-        else if (ketemu.role === 'SPV') {
-            const lokasi = ketemu.cabang;
-            if (!lokasi) return alert("Error: Cabang SPV belum ditentukan!");
-            localStorage.setItem('currentUser', JSON.stringify({
-                user: ketemu.user, role: ketemu.role, cabang: ketemu.cabang
-            }));
-            localStorage.setItem('cabangHoki', lokasi);
-            if (!isDevMode) await catatLogLogin(ketemu.user, ketemu.role, lokasi);
-            alert(`Halo SPV ${ketemu.user}!`);
-            window.location.href = 'dashboard.html';
-        }
+                } else {
+                    // Staff / Senior Staff — pilih cabang dulu
+                    localStorage.setItem('tempUser', JSON.stringify(ketemu));
+                    document.getElementById('loginCard').classList.add('hidden');
+                    document.getElementById('nextStepCard').classList.remove('hidden');
+                    document.getElementById('userBadge').innerText = 'ROLE: ' + ketemu.role;
 
-        // C. STAFF / SENIOR STAFF → pilih cabang dulu
-        else {
-            localStorage.setItem('tempUser', JSON.stringify(ketemu));
-            document.getElementById('loginCard').classList.add('hidden');
-            document.getElementById('nextStepCard').classList.remove('hidden');
-            document.getElementById('userBadge').innerText = "ROLE: " + ketemu.role;
+                    const select = document.getElementById('cabangPilihan');
+                    select.innerHTML = '<option value="">-- Pilih Cabang --</option>';
 
-            const select = document.getElementById('cabangPilihan');
-            select.innerHTML = '<option value="">-- Pilih Cabang --</option>';
-
-            if (isDevMode) {
-                // Dev mode: isi dari DEV_CABANG
-                DEV_CABANG.forEach(c => {
-                    select.innerHTML += `<option value="${c}">${c}</option>`;
-                });
-            } else {
-                // Production: ambil dari api.php
-                let daftarCabang = ketemu.cabang;
-                if (!daftarCabang) {
-                    try {
-                        const resCab = await fetch('api.php?action=get_cabang');
-                        const globalCabang = await resCab.json();
-                        globalCabang.forEach(c => {
-                            let nama = c.nama_cabang || c;
+                    if (ketemu.cabang) {
+                        ketemu.cabang.split(',').forEach(cab => {
+                            select.innerHTML += `<option value="${cab.trim()}">${cab.trim()}</option>`;
+                        });
+                    } else {
+                        const resCab     = await fetch('api.php?action=get_cabang');
+                        const globalCab  = await resCab.json();
+                        globalCab.forEach(c => {
+                            const nama = c.nama_cabang || c;
                             select.innerHTML += `<option value="${nama}">${nama}</option>`;
                         });
-                    } catch(e) { console.error("Gagal load cabang"); }
-                } else {
-                    daftarCabang.split(',').forEach(cab => {
-                        select.innerHTML += `<option value="${cab.trim()}">${cab.trim()}</option>`;
-                    });
+                    }
                 }
+            } else {
+                showError(hasil.message || 'Username atau Password salah!');
             }
+        } catch (err) {
+            showError('Terjadi kesalahan: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<span>Masuk ke Sistem</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         }
     }
 
-    // ─────────────────────────────────────────────────────────
-    //  MASUK SETELAH PILIH CABANG (Staff)
-    // ─────────────────────────────────────────────────────────
     async function finalMasuk() {
-        const user = JSON.parse(localStorage.getItem('tempUser'));
+        const user          = JSON.parse(localStorage.getItem('tempUser'));
         const cabangPilihan = document.getElementById('cabangPilihan').value;
-        if (!cabangPilihan) return alert("Pilih cabang dulu!");
-
-        localStorage.setItem('currentUser', JSON.stringify({
-            user: user.user, role: user.role, cabang: user.cabang
-        }));
+        if (!cabangPilihan) { showError('Pilih cabang dulu!'); return; }
+        localStorage.setItem('currentUser', JSON.stringify({user:user.user, role:user.role, cabang:user.cabang}));
         localStorage.setItem('cabangHoki', cabangPilihan);
-
-        if (!DEV_MODE) await catatLogLogin(user.user, user.role, cabangPilihan);
-        alert(`Login Berhasil! Selamat bertugas di ${cabangPilihan}`);
-
+        await catatLogLogin(user.user, user.role, cabangPilihan);
         localStorage.removeItem('tempUser');
         window.location.href = 'dashboard.html';
     }
 
-    // ─────────────────────────────────────────────────────────
-    //  CATAT LOG (hanya production)
-    // ─────────────────────────────────────────────────────────
     async function catatLogLogin(username, role, cabang) {
         try {
             await fetch('api.php?action=add_log', {
-                method: 'POST',
+                method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user: username, role: role, cabang: cabang })
+                body:    JSON.stringify({user:username, role:role, cabang:cabang})
             });
-        } catch (e) {
-            console.error("Gagal mencatat log login ke server.");
-        }
+        } catch (e) { console.error('Gagal mencatat log login'); }
     }
-
-    // Enter key support
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Enter') {
-            const nextCard = document.getElementById('nextStepCard');
-            if (nextCard.classList.contains('hidden')) cekAksesLogin();
-            else finalMasuk();
-        }
-    });
     </script>
 </body>
 </html>
