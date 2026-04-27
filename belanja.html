@@ -2,29 +2,308 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Hoki POS - Pemasukan & Pengeluaran</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hoki POS - Belanja</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-</head>
-<body class="dashboard-body" style="display: flex;">
+    <style>
 
-    <div class="sidebar" id="sidebar">
-        <h2 class="brand" onclick="toggleSidebar()">HOKI</h2>
-        <nav><ul id="sidebarMenu"></ul></nav>
-        <div class="logout-section">
-            <button class="btn-logout-sidebar" onclick="logout()">🚪 <span>LOGOUT</span></button>
+    /* ── FORM BELANJA ── */
+    .form-belanja {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: var(--sh-sm);
+    }
+
+    .grid-input {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        align-items: end;
+    }
+
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .input-group label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin: 0;
+    }
+
+    /* Jenis + tombol tambah */
+    .jenis-wrap {
+        display: flex;
+        gap: 6px;
+    }
+
+    .jenis-wrap select {
+        flex: 1;
+    }
+
+    .btn-plus-jenis {
+        background: #1c1c1a;
+        color: white;
+        border: none;
+        padding: 0 14px;
+        border-radius: var(--r-md);
+        font-size: 18px;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: filter 0.15s;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .btn-plus-jenis:hover {
+        filter: brightness(1.2);
+    }
+
+    /* Tombol simpan */
+    .btn-action {
+        grid-column: span 4;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .btn-simpan-kas {
+        background: var(--green);
+        color: white;
+        border: none;
+        padding: 11px 24px;
+        border-radius: var(--r-md);
+        font-size: 13px;
+        font-weight: 700;
+        font-family: 'DM Sans', sans-serif;
+        cursor: pointer;
+        transition: filter 0.15s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-simpan-kas:hover {
+        filter: brightness(0.9);
+    }
+
+    /* ── STAT CARDS ── */
+    .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 20px;
+        box-shadow: var(--sh-sm);
+        text-align: center;
+    }
+
+    .stat-card h3 {
+        margin: 0;
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border: none;
+        padding: 0;
+    }
+
+    .stat-card p {
+        margin: 8px 0 0;
+        font-size: 20px;
+        font-weight: 700;
+        font-family: 'DM Mono', monospace;
+    }
+
+    .stat-card.credit { border-top: 3px solid var(--green); }
+    .stat-card.debit  { border-top: 3px solid var(--red); }
+    .stat-card.saldo  { border-top: 3px solid var(--text); background: #fffcf0; }
+
+    /* ── FILTER BOX ── */
+    .filter-box {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 16px 20px;
+        margin-bottom: 20px;
+    }
+
+    .filter-box h4 {
+        margin: 0 0 12px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border: none;
+        padding: 0;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 10px;
+    }
+
+    .btn-reset {
+        margin-top: 10px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        padding: 6px 14px;
+        border-radius: var(--r-md);
+        font-size: 12px;
+        font-family: 'DM Sans', sans-serif;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+    .btn-reset:hover {
+        background: var(--border);
+        filter: none;
+    }
+
+    /* ── TABLE ── */
+    .table-wrap {
+        overflow-x: auto;
+    }
+
+    .table-wrap table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--surface);
+        border-radius: var(--r-lg);
+        overflow: hidden;
+        box-shadow: var(--sh-sm);
+        border: 1px solid var(--border);
+    }
+
+    .table-wrap table thead th {
+        background: var(--red);
+        color: white;
+        padding: 10px 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        border: none;
+    }
+
+    .table-wrap table tbody td {
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+        color: var(--text);
+        border-top: none;
+        border-left: none;
+        border-right: none;
+    }
+
+    .table-wrap table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .table-wrap table tbody tr:hover td {
+        background: var(--surface-2);
+    }
+
+    .btn-del-kas {
+        background: none;
+        border: none;
+        color: var(--red);
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: var(--r-sm);
+        transition: background 0.15s;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .btn-del-kas:hover {
+        background: var(--red-soft);
+    }
+
+    /* ── RESPONSIVE MOBILE ── */
+    @media (max-width: 844px) {
+
+        .grid-input {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .btn-action {
+            grid-column: span 2;
+        }
+
+        .grid-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+    }
+
+    </style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand" onclick="toggleSidebar()">
+        <div class="sidebar-logo">
+            <img src="Assets/logobrand.png" alt="Hoki">
+        </div>
+        <div class="sidebar-brand-text">
+            <div class="sidebar-brand-name">Hoki Dimsum</div>
+            <div class="sidebar-brand-sub">POS System v2.0</div>
         </div>
     </div>
+    <button class="sidebar-toggle" onclick="toggleSidebar()">‹</button>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-user">
+        <div class="user-card">
+            <div class="user-avatar" id="userAvatarInitial">?</div>
+            <div class="user-info">
+                <div class="user-name" id="sidebarUserName">Loading...</div>
+                <div class="user-role" id="sidebarUserRole">—</div>
+            </div>
+            <button class="btn-logout-icon" onclick="logout()" title="Logout">🚪</button>
+        </div>
+    </div>
+</aside>
 
-    <div class="main-content" id="mainContent">
-        <h2>💰 Pemasukan & Pengeluaran (Buku Kas)</h2>
-        <p style="color: #666; font-size: 14px;">Catat semua arus kas masuk dan keluar cabang secara mendetail.</p>
-        <hr>
-    
+<!-- ── MAIN CONTENT ── -->
+<div class="main-content" id="mainContent">
+
+    <header class="top-header">
+        <div class="header-left">
+            <div class="header-page-title">💸 Belanja</div>
+        </div>
+        <div class="header-right">
+            <div class="clock-pill">
+                <div id="realtimeClock">00:00:00</div>
+                <div id="realtimeDate">...</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="page-body">
+
+        <!-- FORM -->
         <div class="form-belanja">
             <div class="grid-input">
                 <div class="input-group">
                     <label>Username</label>
-                    <input type="text" id="fUser" readonly style="background: #f0f0f0;">
+                    <input type="text" id="fUser" readonly>
                 </div>
                 <div class="input-group">
                     <label>Tanggal & Jam</label>
@@ -32,9 +311,17 @@
                 </div>
                 <div class="input-group">
                     <label>Jenis Transaksi</label>
-                    <div style="display:flex; gap:5px;">
-                        <select id="fJenis"></select>
-                        <button onclick="manageJenis()" style="cursor:pointer; border:none; background:#333; color:white; border-radius:5px; padding:0 10px;">+</button>
+                    <div style="display:flex;gap:6px;">
+                        <div class="custom-select-wrap" id="wrapJenis" style="flex:1;margin-bottom:0;">
+                            <button class="custom-select-btn" onclick="toggleDropdown('wrapJenis')" style="border-radius:var(--r-md);">
+                                <span id="iconJenis">📂</span>
+                                <span id="labelJenis">Pilih Jenis</span>
+                                <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1l5 5 5-5" stroke="#d32f2f" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            </button>
+                            <div class="custom-dropdown" id="dropdownJenis"></div>
+                            <input type="hidden" id="fJenis" value="">
+                        </div>
+                        <button class="btn-plus-jenis" onclick="manageJenis()">+</button>
                     </div>
                 </div>
                 <div class="input-group">
@@ -48,10 +335,18 @@
                 </div>
                 <div class="input-group">
                     <label>Credit / Debit</label>
-                    <select id="fMode">
-                        <option value="Credit">Pemasukan (Credit)</option>
-                        <option value="Debit">Pengeluaran (Debit)</option>
-                    </select>
+                    <div class="custom-select-wrap" id="wrapMode" style="margin-bottom:0;">
+                        <button class="custom-select-btn" onclick="toggleDropdown('wrapMode')" style="border-radius:var(--r-md);">
+                            <span id="iconMode">💰</span>
+                            <span id="labelMode">Pemasukan (Credit)</span>
+                            <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1l5 5 5-5" stroke="#d32f2f" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        </button>
+                        <div class="custom-dropdown" id="dropdownMode">
+                            <div class="dropdown-item active" onclick="pilihMode('Credit','💰','Pemasukan (Credit)',this)"><span class="dd-icon">💰</span><span>Pemasukan (Credit)</span></div>
+                            <div class="dropdown-item" onclick="pilihMode('Debit','💸','Pengeluaran (Debit)',this)"><span class="dd-icon">💸</span><span>Pengeluaran (Debit)</span></div>
+                        </div>
+                        <input type="hidden" id="fMode" value="Credit">
+                    </div>
                 </div>
                 <div class="input-group">
                     <label>Nominal (Rp)</label>
@@ -62,31 +357,32 @@
                     <input type="text" id="fKet" list="listKet" placeholder="Catatan tambahan...">
                     <datalist id="listKet"></datalist>
                 </div>
-    
                 <div class="btn-action">
-                    <button class="btn-save" onclick="simpanTransaksi()">💾 Simpan Transaksi</button>
+                    <button class="btn-simpan-kas" onclick="simpanTransaksi()">💾 Simpan Transaksi</button>
                 </div>
             </div>
         </div>
-    
-        <div class="grid-stats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
-            <div class="stat-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border-bottom: 4px solid #2e7d32;">
-                <h3 style="margin:0; font-size: 10px; color: #999; text-transform: uppercase;">Total Credit (Masuk)</h3>
-                <p id="totalDebit" style="margin: 5px 0 0; font-size: 20px; font-weight: 800; color: #2e7d32;">Rp 0</p>
+
+        <!-- STAT CARDS -->
+        <div class="grid-stats">
+            <div class="stat-card credit">
+                <h3>Total Credit (Masuk)</h3>
+                <p id="totalDebit" style="color:var(--green);">Rp 0</p>
             </div>
-            <div class="stat-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border-bottom: 4px solid #d32f2f;">
-                <h3 style="margin:0; font-size: 10px; color: #999; text-transform: uppercase;">Total Debit (Keluar)</h3>
-                <p id="totalCredit" style="margin: 5px 0 0; font-size: 20px; font-weight: 800; color: #d32f2f;">Rp 0</p>
+            <div class="stat-card debit">
+                <h3>Total Debit (Keluar)</h3>
+                <p id="totalCredit" style="color:var(--red);">Rp 0</p>
             </div>
-            <div class="stat-card" style="background: #fffcf0; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border-bottom: 4px solid #333;">
-                <h3 style="margin:0; font-size: 10px; color: #999; text-transform: uppercase;">Saldo Bersih</h3>
-                <p id="totalNet" style="margin: 5px 0 0; font-size: 20px; font-weight: 800; color: #333;">Rp 0</p>
+            <div class="stat-card saldo">
+                <h3>Saldo Bersih</h3>
+                <p id="totalNet" style="color:var(--text);">Rp 0</p>
             </div>
         </div>
-    
-        <div class="form-belanja" style="background: #f8f8f8; border: 1px solid #ddd; margin-bottom: 20px;">
-            <h4 style="margin: 0 0 15px 0; font-size: 12px; color: #333;">🔍 Filter Data History</h4>
-            <div class="grid-input" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));">
+
+        <!-- FILTER -->
+        <div class="filter-box">
+            <h4>🔍 Filter Data History</h4>
+            <div class="filter-grid">
                 <div class="input-group">
                     <label>Dari Tanggal</label>
                     <input type="date" id="filterTglMulai" onchange="muatTabel()">
@@ -101,9 +397,17 @@
                 </div>
                 <div class="input-group">
                     <label>Pilih Jenis</label>
-                    <select id="filterJenis" onchange="muatTabel()">
-                        <option value="">Semua Jenis</option>
-                    </select>
+                    <div class="custom-select-wrap" id="wrapFJenis" style="margin-bottom:0;">
+                        <button class="custom-select-btn" onclick="toggleDropdown('wrapFJenis')" style="border-radius:var(--r-md);">
+                            <span id="iconFJenis">📂</span>
+                            <span id="labelFJenis">Semua Jenis</span>
+                            <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1l5 5 5-5" stroke="#d32f2f" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        </button>
+                        <div class="custom-dropdown" id="dropdownFJenis">
+                            <div class="dropdown-item active" onclick="pilihFJenis('','📂','Semua Jenis',this)"><span class="dd-icon">📂</span><span>Semua Jenis</span></div>
+                        </div>
+                        <input type="hidden" id="filterJenis" value="">
+                    </div>
                 </div>
                 <div class="input-group">
                     <label>Nama Transaksi</label>
@@ -111,291 +415,422 @@
                 </div>
                 <div class="input-group">
                     <label>Mode (In/Out)</label>
-                   <select id="filterMode" onchange="muatTabel()">
-                        <option value="">Semua</option>
-                        <option value="Credit">Credit (Masuk)</option>
-                        <option value="Debit">Debit (Keluar)</option>
-                    </select>
+                    <div class="custom-select-wrap" id="wrapFMode" style="margin-bottom:0;">
+                        <button class="custom-select-btn" onclick="toggleDropdown('wrapFMode')" style="border-radius:var(--r-md);">
+                            <span id="iconFMode">🔄</span>
+                            <span id="labelFMode">Semua</span>
+                            <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1l5 5 5-5" stroke="#d32f2f" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        </button>
+                        <div class="custom-dropdown" id="dropdownFMode">
+                            <div class="dropdown-item active" onclick="pilihFMode('','🔄','Semua',this)"><span class="dd-icon">🔄</span><span>Semua</span></div>
+                            <div class="dropdown-item" onclick="pilihFMode('Credit','💰','Credit (Masuk)',this)"><span class="dd-icon">💰</span><span>Credit (Masuk)</span></div>
+                            <div class="dropdown-item" onclick="pilihFMode('Debit','💸','Debit (Keluar)',this)"><span class="dd-icon">💸</span><span>Debit (Keluar)</span></div>
+                        </div>
+                        <input type="hidden" id="filterMode" value="">
+                    </div>
                 </div>
                 <div class="input-group">
                     <label>Keterangan</label>
                     <input type="text" id="filterKet" placeholder="Cari catatan..." onkeyup="muatTabel()">
                 </div>
             </div>
-            <button onclick="resetSemuaFilter()" style="margin-top:10px; border:none; background:#eee; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:11px;">Reset Filter</button>
+            <button class="btn-reset" onclick="resetSemuaFilter()">Reset Filter</button>
         </div>
-    
-        <table>
-            <thead>
-                <tr>
-                    <th>Waktu</th>
-                    <th>User</th>
-                    <th>Jenis</th>
-                    <th>Transaksi</th>
-                    <th>Qty</th>
-                    <th>In/Out</th>
-                    <th>Nominal</th>
-                    <th>Keterangan</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="tabelArusKas"></tbody>
-        </table>
+
+        <!-- TABLE -->
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Waktu</th>
+                        <th>User</th>
+                        <th>Jenis</th>
+                        <th>Transaksi</th>
+                        <th>Qty</th>
+                        <th>In/Out</th>
+                        <th>Nominal</th>
+                        <th>Keterangan</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelArusKas"></tbody>
+            </table>
+        </div>
+
     </div>
+</div>
 
-    <script>
-        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff', cabang:''};
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+    <button class="bn-item" onclick="location.href='dashboard.html'"><span class="bn-icon">🛒</span><span class="bn-label">Kasir</span></button>
+    <button class="bn-item" onclick="location.href='history.html'"><span class="bn-icon">📄</span><span class="bn-label">History</span></button>
+    <button class="bn-item" onclick="location.href='stok.html'"><span class="bn-icon">📦</span><span class="bn-label">Stok</span></button>
+    <button class="bn-item" onclick="location.href='laporan_staff.html'"><span class="bn-icon">📊</span><span class="bn-label">Laporan</span></button>
+    <button class="bn-item active" onclick="openSheet('moreSheet')"><span class="bn-icon">☰</span><span class="bn-label">Lainnya</span></button>
+</nav>
 
-        // --- 1. SIDEBAR SINKRON (TETAP) ---
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-            localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'small' : 'large');
-        }
-    
-        function buildSidebar() {
-            const menuContainer = document.getElementById('sidebarMenu');
-            const role = currentUser.role;
-            const currentPage = window.location.pathname.split("/").pop() || 'dashboard.html';
-    
-            if (localStorage.getItem('sidebarState') === 'small') {
-                document.getElementById('sidebar').classList.add('collapsed');
-                document.getElementById('mainContent').classList.add('expanded');
-            }
-    
-            let menuHTML = '';
-            const createItem = (icon, label, link, active) => `
-                <li class="${active ? 'active' : ''}" onclick="location.href='${link}'">
-                    <div class="icon">${icon}</div> <span>${label}</span>
-                </li>`;
-    
-            menuHTML += `<div class="menu-group-label">Frontline Operations</div>`;
-            menuHTML += createItem('🛒', 'Kasir', 'dashboard.html', currentPage === 'dashboard.html');
-            menuHTML += createItem('📄', 'History Transaksi', 'history.html', currentPage === 'history.html');
-            menuHTML += createItem('📦', 'Stok Harian', 'stok.html', currentPage === 'stok.html');
-            menuHTML += createItem('🚚', 'Restock Barang', 'restock.html', currentPage === 'restock.html');
-            menuHTML += createItem('📊', 'Laporan Penjualan', 'laporan_staff.html', currentPage === 'laporan_staff.html');
-    
-            if (['Senior Staff', 'SPV', 'Owner', 'VIP'].includes(role)) {
-                menuHTML += `<div class="menu-group-label">Tactical Management</div>`;
-                menuHTML += createItem('🍱', 'Master Produk', 'produk.html', currentPage === 'produk.html');
-                menuHTML += createItem('📈', 'Rekapan Penjualan', 'rekap.html', currentPage === 'rekap.html');
-                menuHTML += createItem('💸', 'Belanja', 'belanja.html', currentPage === 'belanja.html');
-            }
-    
-            if (['Owner', 'VIP'].includes(role)) {
-                menuHTML += `<div class="menu-group-label">Executive Suite</div>`;
-                menuHTML += createItem('📊', 'Keuangan Global', 'laporan.html', currentPage === 'laporan.html');
-                menuHTML += createItem('📈', 'Statistik', 'statistik.html', currentPage === 'statistik.html');
-            }
-    
-            if (role === 'VIP') {
-                menuHTML += `<div class="menu-group-label" style="color: #ffeb3b; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">👑 VIP Access</div>`;
-                menuHTML += createItem('👥', 'Manajemen User', 'user.html', currentPage === 'user.html');
-                menuHTML += createItem('🔑', 'History Login', 'login_history.html', currentPage === 'login_history.html');
-            }
-            menuContainer.innerHTML = menuHTML;
-        }
-    
-        // --- 2. LOGIKA KAS (CLOUD) ---
-        async function initForm() {
-            document.getElementById('fUser').value = currentUser.user;
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById('fWaktu').value = now.toISOString().slice(0, 16);
-            
-            await muatJenis();
-            await muatTabel();
-        }
-    
-        async function muatJenis() {
-            try {
-                const res = await fetch('api.php?action=get_kas_jenis');
-                const types = await res.json();
-                const select = document.getElementById('fJenis');
-                select.innerHTML = '';
-                types.forEach(t => {
-                    select.innerHTML += `<option value="${t.nama_jenis}">${t.nama_jenis}</option>`;
-                });
-            } catch (e) { console.error("Gagal muat jenis kas"); }
-        }
-    
-        async function manageJenis() {
-            const action = confirm("Klik OK untuk TAMBAH jenis, klik CANCEL untuk HAPUS jenis saat ini.");
-            const target = document.getElementById('fJenis').value;
-    
-            if (action) {
-                const baru = prompt("Masukkan nama jenis baru:");
-                if (baru) {
-                    await fetch('api.php?action=save_kas_jenis', { method: 'POST', body: JSON.stringify({ nama: baru }) });
-                }
-            } else {
-                if (confirm(`Hapus jenis '${target}'?`)) {
-                    await fetch(`api.php?action=del_kas_jenis&nama=${encodeURIComponent(target)}`);
-                }
-            }
-            muatJenis();
-        }
-    
-        async function muatSaran(data) {
-            const listNama = document.getElementById('listNama');
-            const listKet = document.getElementById('listKet');
-            
-            const unikNama = [...new Set(data.map(d => d.nama))];
-            const unikKet = [...new Set(data.map(d => d.ket))];
-    
-            listNama.innerHTML = unikNama.map(n => `<option value="${n}">`).join('');
-            listKet.innerHTML = unikKet.map(k => `<option value="${k}">`).join('');
-        }
-    
-        async function simpanTransaksi() {
-            const payload = {
-                waktu: document.getElementById('fWaktu').value,
-                user: currentUser.user,
-                jenis: document.getElementById('fJenis').value,
-                nama: document.getElementById('fNama').value,
-                qty: document.getElementById('fQty').value,
-                mode: document.getElementById('fMode').value,
-                nominal: document.getElementById('fNominal').value,
-                ket: document.getElementById('fKet').value,
-                cabang: localStorage.getItem('cabangHoki') || 'Pusat'
-            };
-    
-            if (!payload.nama || !payload.nominal) return alert("Nama transaksi dan Nominal wajib diisi!");
-    
-            try {
-                const res = await fetch('api.php?action=save_kas_data', {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                const hasil = await res.json();
-                if (hasil.status === 'success') {
-                    document.getElementById('fNama').value = '';
-                    document.getElementById('fNominal').value = '';
-                    document.getElementById('fKet').value = '';
-                    alert("Data Kas Berhasil Disimpan ke Cloud!");
-                    muatTabel();
-                }
-            } catch (e) { alert("Gagal simpan ke Cloud"); }
-        }
-    
-        let cacheDataKas = []; // Penampung data asli dari cloud
+<!-- MORE SHEET -->
+<div class="sheet-overlay" id="moreSheet" onclick="closeSheetOutside(event,'moreSheet')">
+    <div class="bottom-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <p style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Menu Lainnya</p>
+        <div class="more-grid" id="moreGrid"></div>
+    </div>
+</div>
 
-        async function muatTabel() {
-            try {
-                // Ambil data dari server hanya jika cache kosong
-                if (cacheDataKas.length === 0) {
-                    const url = `api.php?action=get_kas_data&role=${currentUser.role}&cabang=${encodeURIComponent(currentUser.cabang)}`;
-                    const res = await fetch(url);
-                    cacheDataKas = await res.json();
-                }
-        
-                // Ambil nilai filter
-                const fMulai = document.getElementById('filterTglMulai').value;
-                const fSelesai = document.getElementById('filterTglSelesai').value;
-                const fUser = document.getElementById('filterUser').value.toLowerCase();
-                const fJenis = document.getElementById('filterJenis').value;
-                const fNama = document.getElementById('filterNama').value.toLowerCase();
-                const fMode = document.getElementById('filterMode').value;
-                const fKet = document.getElementById('filterKet').value.toLowerCase();
-        
-                // Proses Filter
-                const filtered = cacheDataKas.filter(d => {
-                    const tgl = d.waktu.split(' ')[0] || d.waktu.split('T')[0];
-                    return (!fMulai || tgl >= fMulai) &&
-                           (!fSelesai || tgl <= fSelesai) &&
-                           (!fUser || d.user.toLowerCase().includes(fUser)) &&
-                           (!fJenis || d.jenis === fJenis) &&
-                           (!fNama || d.nama.toLowerCase().includes(fNama)) &&
-                           (!fMode || d.mode === fMode) &&
-                           (!fKet || (d.ket && d.ket.toLowerCase().includes(fKet)));
-                });
-        
-                // Hitung Total & Render Tabel
-                let debit = 0; let credit = 0;
-                const tbody = document.getElementById('tabelArusKas');
-                tbody.innerHTML = '';
-        
-                // Cari bagian ini di dalam fungsi muatTabel()
-                filtered.forEach(d => {
-                    const nom = parseInt(d.nominal || 0);
-                    
-                    // LOGIKA BARU: Credit Masuk (+), Debit Keluar (-)
-                    if (d.mode === 'Credit') credit += nom; 
-                    else debit += nom;
-                
-                    const badge = d.mode === 'Credit' ? 'badge-in' : 'badge-out';
-                    const sign = d.mode === 'Credit' ? '+' : '-';
-                    
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${d.waktu.replace('T', ' ')}</td>
-                            <td>${d.user}</td>
-                            <td>${d.jenis}</td>
-                            <td><b>${d.nama}</b></td>
-                            <td>${d.qty}</td>
-                            <td><span class="${badge}">${d.mode}</span></td>
-                            <td style="font-weight:bold; color:${d.mode === 'Credit' ? 'green' : 'red'};">
-                                ${sign} Rp ${nom.toLocaleString()}
-                            </td>
-                            <td><small>${d.ket || '-'}</small></td>
-                            <td><button onclick="hapusKas(${d.id})" ...>✖</button></td>
-                        </tr>`;
-                });
-                
-                // Update Kartu Statistik (Rumus Saldo: Credit dikurangi Debit)
-                document.getElementById('totalDebit').innerText = `Rp ${debit.toLocaleString()}`;
-                document.getElementById('totalCredit').innerText = `Rp ${credit.toLocaleString()}`;
-                document.getElementById('totalNet').innerText = `Rp ${(credit - debit).toLocaleString()}`;
-                
-                // Update pilihan filter jenis (otomatis mengikuti data yang ada)
-                updateDropdownJenisFilter();
-        
-            } catch (e) { console.error("Gagal muat data cloud"); }
+<script>
+const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff', cabang:''};
+if (!currentUser.user) window.location.href = 'index.html';
+
+/* ── SIDEBAR ── */
+function toggleSidebar() {
+    const sb = document.getElementById('sidebar');
+    const mc = document.getElementById('mainContent');
+    sb.classList.toggle('collapsed');
+    mc.classList.toggle('expanded');
+    localStorage.setItem('sidebarState', sb.classList.contains('collapsed') ? 'small' : 'large');
+}
+
+function buildSidebar() {
+    if (localStorage.getItem('sidebarState') === 'small') {
+        document.getElementById('sidebar').classList.add('collapsed');
+        document.getElementById('mainContent').classList.add('expanded');
+    }
+    const role = currentUser.role;
+    const cur  = window.location.pathname.split('/').pop() || 'dashboard.html';
+    const navItem = (icon, label, link) => {
+        const active = cur === link ? 'active' : '';
+        return `<button class="nav-item ${active}" onclick="location.href='${link}'">
+            <span class="nav-icon">${icon}</span>
+            <span class="nav-label">${label}</span>
+        </button>`;
+    };
+    let h = `<div class="nav-group-label">Frontline</div>`;
+    h += navItem('🛒','Kasir','dashboard.html');
+    h += navItem('📄','History Transaksi','history.html');
+    h += navItem('📦','Stok Harian','stok.html');
+    h += navItem('🚚','Restock Barang','restock.html');
+    h += navItem('📊','Laporan Penjualan','laporan_staff.html');
+    if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+        h += `<div class="nav-group-label">Management</div>`;
+        h += navItem('🍱','Master Produk','produk.html');
+        h += navItem('📈','Rekapan Penjualan','rekap.html');
+    }
+    if (['Owner','VIP'].includes(role)) {
+        h += `<div class="nav-group-label">Executive</div>`;
+        h += navItem('📊','Keuangan Global','laporan.html');
+        h += navItem('📈','Statistik','statistik.html');
+        h += navItem('💸','Belanja','belanja.html');
+    }
+    if (role === 'VIP') {
+        h += `<div class="nav-group-label">VIP Access</div>`;
+        h += navItem('👥','Manajemen User','user.html');
+        h += navItem('🔑','History Login','login_history.html');
+    }
+    document.getElementById('sidebarNav').innerHTML = h;
+    const name = currentUser.user || '?';
+    document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
+    document.getElementById('sidebarUserName').innerText   = name;
+    document.getElementById('sidebarUserRole').innerText   = role;
+}
+
+/* ── CLOCK ── */
+function updateClock() {
+    const now = new Date();
+    document.getElementById('realtimeClock').innerText = now.toLocaleTimeString('id-ID');
+    document.getElementById('realtimeDate').innerText  = now.toLocaleDateString('id-ID',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+}
+setInterval(updateClock, 1000);
+
+/* ── MORE MENU ── */
+function buildMoreMenu() {
+    const role = currentUser.role;
+    const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
+    if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
+        items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
+    }
+    if (['Owner','VIP'].includes(role)) {
+        items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
+        items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
+        items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
+    }
+    if (role === 'VIP') {
+        items.push({icon:'👥',label:'Users',link:'user.html'});
+        items.push({icon:'🔑',label:'Login Log',link:'login_history.html'});
+    }
+    items.push({icon:'🚪',label:'Logout',link:'#',action:'logout()'});
+    document.getElementById('moreGrid').innerHTML = items.map(i =>
+        `<button class="more-btn" onclick="${i.action||`location.href='${i.link}'`}">
+            <span class="more-btn-icon">${i.icon}</span>
+            <span class="more-btn-label">${i.label}</span>
+        </button>`).join('');
+}
+
+function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
+function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
+
+/* ── CUSTOM DROPDOWN HELPERS ── */
+function toggleDropdown(wrapId) {
+    document.querySelectorAll('.custom-select-wrap.open').forEach(w => {
+        if (w.id !== wrapId) w.classList.remove('open');
+    });
+    document.getElementById(wrapId).classList.toggle('open');
+}
+
+function pilihJenis(value, icon, label, el) {
+    document.getElementById('fJenis').value = value;
+    document.getElementById('iconJenis').innerText = icon;
+    document.getElementById('labelJenis').innerText = label;
+    document.querySelectorAll('#dropdownJenis .dropdown-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('wrapJenis').classList.remove('open');
+}
+
+function pilihMode(value, icon, label, el) {
+    document.getElementById('fMode').value = value;
+    document.getElementById('iconMode').innerText = icon;
+    document.getElementById('labelMode').innerText = label;
+    document.querySelectorAll('#dropdownMode .dropdown-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('wrapMode').classList.remove('open');
+}
+
+function pilihFJenis(value, icon, label, el) {
+    document.getElementById('filterJenis').value = value;
+    document.getElementById('iconFJenis').innerText = icon;
+    document.getElementById('labelFJenis').innerText = label;
+    document.querySelectorAll('#dropdownFJenis .dropdown-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('wrapFJenis').classList.remove('open');
+    muatTabel();
+}
+
+function pilihFMode(value, icon, label, el) {
+    document.getElementById('filterMode').value = value;
+    document.getElementById('iconFMode').innerText = icon;
+    document.getElementById('labelFMode').innerText = label;
+    document.querySelectorAll('#dropdownFMode .dropdown-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('wrapFMode').classList.remove('open');
+    muatTabel();
+}
+
+document.addEventListener('click', function(e) {
+    document.querySelectorAll('.custom-select-wrap').forEach(wrap => {
+        if (!wrap.contains(e.target)) wrap.classList.remove('open');
+    });
+});
+
+/* ── LOGIKA KAS (TIDAK BERUBAH) ── */
+async function initForm() {
+    document.getElementById('fUser').value = currentUser.user;
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('fWaktu').value = now.toISOString().slice(0, 16);
+    await muatJenis();
+    await muatTabel();
+}
+
+async function muatJenis() {
+    try {
+        const res      = await fetch('api.php?action=get_kas_jenis');
+        const types    = await res.json();
+        const dropdown = document.getElementById('dropdownJenis');
+        dropdown.innerHTML = '';
+        types.forEach((t, i) => {
+            const active = i === 0 ? 'active' : '';
+            dropdown.innerHTML += `<div class="dropdown-item ${active}" onclick="pilihJenis('${t.nama_jenis}','📂','${t.nama_jenis}',this)"><span class="dd-icon">📂</span><span>${t.nama_jenis}</span></div>`;
+        });
+        if (types.length > 0) {
+            document.getElementById('fJenis').value     = types[0].nama_jenis;
+            document.getElementById('labelJenis').innerText = types[0].nama_jenis;
         }
-        
-        // Fungsi untuk me-refresh data (dipakai setelah simpan/hapus)
-        function refreshDataCloud() {
-            cacheDataKas = []; // Kosongkan cache agar tarik data baru
-            muatTabel();
-        }
-        
-        function resetSemuaFilter() {
-            document.getElementById('filterTglMulai').value = '';
-            document.getElementById('filterTglSelesai').value = '';
-            document.getElementById('filterUser').value = '';
-            document.getElementById('filterJenis').value = '';
-            document.getElementById('filterNama').value = '';
-            document.getElementById('filterMode').value = '';
-            document.getElementById('filterKet').value = '';
-            muatTabel();
-        }
-        
-        function updateDropdownJenisFilter() {
-            const select = document.getElementById('filterJenis');
-            if (select.options.length > 1) return; // Sudah diisi
-            const jenisUnik = [...new Set(cacheDataKas.map(d => d.jenis))];
-            jenisUnik.sort().forEach(j => {
-                select.innerHTML += `<option value="${j}">${j}</option>`;
+    } catch (e) { console.error("Gagal muat jenis kas"); }
+}
+
+async function manageJenis() {
+    const ok = await showConfirm(
+        'Mau tambah atau hapus jenis?',
+        'Tambah Jenis',
+        'Hapus Jenis',
+        '📂',
+        'green'
+    );
+    const target = document.getElementById('fJenis').value;
+    if (ok) {
+        const baru = prompt("Masukkan nama jenis baru:");
+        if (baru) {
+            await fetch('api.php?action=save_kas_jenis', {
+                method: 'POST',
+                body: JSON.stringify({ nama: baru })
             });
+            toast.success('Jenis berhasil ditambahkan!');
         }
-    
-        async function hapusKas(id) {
-            if(confirm("Hapus catatan ini secara permanen dari Cloud?")) {
-                await fetch(`api.php?action=del_kas_data&id=${id}`);
-                muatTabel();
-            }
+    } else {
+        const konfirm = await showConfirm(`Hapus jenis '${target}'?`, 'Ya, Hapus', 'Batal', '🗑️');
+        if (konfirm) {
+            await fetch(`api.php?action=del_kas_jenis&nama=${encodeURIComponent(target)}`);
+            toast.success('Jenis berhasil dihapus!');
         }
-    
-        function logout() { if(confirm("Logout?")) { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; } }
-    
-        window.onload = function() {
-            buildSidebar();
-            initForm();
-        };
-    </script>
+    }
+    muatJenis();
+}
+
+async function muatSaran(data) {
+    const listNama = document.getElementById('listNama');
+    const listKet  = document.getElementById('listKet');
+    const unikNama = [...new Set(data.map(d => d.nama))];
+    const unikKet  = [...new Set(data.map(d => d.ket))];
+    listNama.innerHTML = unikNama.map(n => `<option value="${n}">`).join('');
+    listKet.innerHTML  = unikKet.map(k => `<option value="${k}">`).join('');
+}
+
+async function simpanTransaksi() {
+    const payload = {
+        waktu:   document.getElementById('fWaktu').value,
+        user:    currentUser.user,
+        jenis:   document.getElementById('fJenis').value,
+        nama:    document.getElementById('fNama').value,
+        qty:     document.getElementById('fQty').value,
+        mode:    document.getElementById('fMode').value,
+        nominal: document.getElementById('fNominal').value,
+        ket:     document.getElementById('fKet').value,
+        cabang:  localStorage.getItem('cabangHoki') || 'Pusat'
+    };
+    if (!payload.nama || !payload.nominal) return toast.warning('Nama transaksi dan Nominal wajib diisi!');
+    try {
+        const res   = await fetch('api.php?action=save_kas_data', {
+            method: 'POST',
+            body:   JSON.stringify(payload)
+        });
+        const hasil = await res.json();
+        if (hasil.status === 'success') {
+            document.getElementById('fNama').value    = '';
+            document.getElementById('fNominal').value = '';
+            document.getElementById('fKet').value     = '';
+            toast.success('Data Kas Berhasil Disimpan!');
+            refreshDataCloud();
+        }
+    } catch (e) {
+        toast.error('Gagal simpan ke server!');
+    }
+}
+
+let cacheDataKas = [];
+
+async function muatTabel() {
+    try {
+        if (cacheDataKas.length === 0) {
+            const url = `api.php?action=get_kas_data&role=${currentUser.role}&cabang=${encodeURIComponent(currentUser.cabang)}`;
+            const res = await fetch(url);
+            cacheDataKas = await res.json();
+        }
+
+        const fMulai   = document.getElementById('filterTglMulai').value;
+        const fSelesai = document.getElementById('filterTglSelesai').value;
+        const fUser    = document.getElementById('filterUser').value.toLowerCase();
+        const fJenis   = document.getElementById('filterJenis').value;
+        const fNama    = document.getElementById('filterNama').value.toLowerCase();
+        const fMode    = document.getElementById('filterMode').value;
+        const fKet     = document.getElementById('filterKet').value.toLowerCase();
+
+        const filtered = cacheDataKas.filter(d => {
+            const tgl = d.waktu.split(' ')[0] || d.waktu.split('T')[0];
+            return (!fMulai   || tgl >= fMulai) &&
+                   (!fSelesai || tgl <= fSelesai) &&
+                   (!fUser    || d.user.toLowerCase().includes(fUser)) &&
+                   (!fJenis   || d.jenis === fJenis) &&
+                   (!fNama    || d.nama.toLowerCase().includes(fNama)) &&
+                   (!fMode    || d.mode === fMode) &&
+                   (!fKet     || (d.ket && d.ket.toLowerCase().includes(fKet)));
+        });
+
+        let debit = 0, credit = 0;
+        const tbody = document.getElementById('tabelArusKas');
+        tbody.innerHTML = '';
+
+        filtered.forEach(d => {
+            const nom   = parseInt(d.nominal || 0);
+            if (d.mode === 'Credit') credit += nom;
+            else debit += nom;
+
+            const badge = d.mode === 'Credit' ? 'badge-in' : 'badge-out';
+            const sign  = d.mode === 'Credit' ? '+' : '-';
+            const color = d.mode === 'Credit' ? 'var(--green)' : 'var(--red)';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td style="font-size:12px;font-family:'DM Mono',monospace;color:var(--text-muted);">${d.waktu.replace('T',' ')}</td>
+                    <td>${d.user}</td>
+                    <td>${d.jenis}</td>
+                    <td><b>${d.nama}</b></td>
+                    <td>${d.qty}</td>
+                    <td><span class="${badge}">${d.mode}</span></td>
+                    <td style="font-family:'DM Mono',monospace;font-weight:700;color:${color};">${sign} Rp ${nom.toLocaleString()}</td>
+                    <td><small style="color:var(--text-muted);">${d.ket || '-'}</small></td>
+                    <td><button class="btn-del-kas" onclick="hapusKas(${d.id})">✖</button></td>
+                </tr>`;
+        });
+
+        document.getElementById('totalDebit').innerText  = `Rp ${debit.toLocaleString()}`;
+        document.getElementById('totalCredit').innerText = `Rp ${credit.toLocaleString()}`;
+        document.getElementById('totalNet').innerText    = `Rp ${(credit - debit).toLocaleString()}`;
+        updateDropdownJenisFilter();
+        await muatSaran(cacheDataKas);
+    } catch (e) { console.error("Gagal muat data cloud"); }
+}
+
+function refreshDataCloud() {
+    cacheDataKas = [];
+    muatTabel();
+}
+
+function resetSemuaFilter() {
+    ['filterTglMulai','filterTglSelesai','filterUser','filterNama','filterKet'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+    pilihFJenis('', '📂', 'Semua Jenis', document.querySelector('#dropdownFJenis .dropdown-item'));
+    pilihFMode('', '🔄', 'Semua', document.querySelector('#dropdownFMode .dropdown-item'));
+}
+
+function updateDropdownJenisFilter() {
+    const dropdown = document.getElementById('dropdownFJenis');
+    if (dropdown.children.length > 1) return;
+    const jenisUnik = [...new Set(cacheDataKas.map(d => d.jenis))].sort();
+    jenisUnik.forEach(j => {
+        dropdown.innerHTML += `<div class="dropdown-item" onclick="pilihFJenis('${j}','📂','${j}',this)"><span class="dd-icon">📂</span><span>${j}</span></div>`;
+    });
+}
+
+async function hapusKas(id) {
+    const ok = await showConfirm('Hapus catatan ini secara permanen?', 'Ya, Hapus', 'Batal', '🗑️');
+    if (!ok) return;
+    try {
+        await fetch(`api.php?action=del_kas_data&id=${id}`);
+        toast.success('Catatan berhasil dihapus!');
+        refreshDataCloud();
+    } catch (e) {
+        toast.error('Gagal menghapus data!');
+    }
+}
+
+async function logout() {
+    const ok = await showConfirm('Logout dari sistem?', 'Ya, Logout', 'Batal', '🚪');
+    if (ok) {
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('cabangHoki');
+        window.location.href = 'index.html';
+    }
+}
+
+window.onload = () => {
+    buildSidebar();
+    updateClock();
+    initForm();
+};
+</script>
+
+<script src="toast.js"></script>
 </body>
 </html>
-

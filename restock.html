@@ -2,334 +2,869 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hoki POS - Restock Barang</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* --- CSS SIDEBAR KONSISTEN & COLLAPSIBLE (FIXED POSITION) --- */
-        .sidebar { 
-            width: 220px; background: #d32f2f; color: white; padding: 20px 10px; 
-            transition: 0.3s; display: flex; flex-direction: column; 
-            height: 100vh; position: fixed; left: 0; top: 0; box-sizing: border-box; z-index: 1000;
-        }
-        .sidebar.collapsed { width: 75px; }
-        .sidebar.collapsed .menu-group-label, .sidebar.collapsed li span { display: none; }
-        .sidebar.collapsed li { justify-content: center; padding: 15px 0; }
-        .sidebar.collapsed .brand { font-size: 14px; }
 
-        .brand { font-weight: 800; letter-spacing: 2px; text-align: center; cursor: pointer; margin-bottom: 10px; transition: 0.3s; }
-        
-        .menu-group-label { 
-            font-size: 11px; color: #ff9999; padding: 15px 15px 5px; 
-            text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;
-        }
-        
-        .sidebar ul { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; overflow-x: hidden; }
-        .sidebar ul li { 
-            font-size: 13px; padding: 12px 15px; transition: 0.3s; color: white; 
-            cursor: pointer; display: flex; align-items: center; border-radius: 8px; margin-bottom: 5px;
-        }
-        .sidebar ul li:hover { background: rgba(255,255,255,0.1); }
-        .sidebar ul li.active { background: #b71c1c; font-weight: bold; }
-        .sidebar ul li .icon { min-width: 25px; font-size: 16px; text-align: center; }
-        .sidebar ul li span { margin-left: 10px; white-space: nowrap; }
+    /* ── GRID LAYOUT ── */
+    .grid-stok {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: 20px;
+        width: 100%;
+        box-sizing: border-box;
+    }
 
-        .logout-section { padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); margin-top: auto; }
-        .btn-logout-sidebar { 
-            width: 100%; background: #333; color: white; border: none; padding: 10px; 
-            border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;
-        }
-        .sidebar.collapsed .btn-logout-sidebar span { display: none; }
+    /* ── CARDS ── */
+    .card-stok {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 20px;
+        box-shadow: var(--sh-sm);
+        box-sizing: border-box;
+        width: 100%;
+        overflow: visible;
+    }
 
-        /* Penyesuaian Konten */
-        .main-content { margin-left: 220px; padding: 25px; transition: 0.3s; flex: 1; min-height: 100vh; }
-        .main-content.expanded { margin-left: 75px; }
+    .card-stok h4 {
+        margin: 0 0 4px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text);
+        border: none;
+        padding: 0;
+    }
 
-        /* --- CSS HALAMAN RESTOCK --- */
-        .grid-stok { display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
-        .card-stok { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-        th { background: #d32f2f; color: white; }
-        
-        .btn-add { background: #2e7d32; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
-        .btn-save { background: #d32f2f; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 15px; }
-        
-        #detailOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #f4f7f6; z-index: 1000; display: none; padding: 40px; box-sizing: border-box;
+    .card-stok .sub {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin: 0 0 16px;
+    }
+
+    /* ── FORM ── */
+    .form-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--r-md);
+        font-size: 13px;
+        font-family: 'DM Sans', sans-serif;
+        background: var(--surface);
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.2s;
+        margin-bottom: 12px;
+    }
+
+    .form-input:focus {
+        border-color: var(--red);
+        box-shadow: 0 0 0 3px rgba(211,47,47,0.08);
+    }
+
+    /* ── CUSTOM DROPDOWN ── */
+    .custom-select-wrap {
+        position: relative;
+        margin-bottom: 12px;
+    }
+
+    .custom-select-btn {
+        width: 100%;
+        height: 40px;
+        padding: 0 12px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--r-md);
+        font-size: 13px;
+        font-weight: 500;
+        font-family: 'DM Sans', sans-serif;
+        color: var(--text);
+        background: var(--surface);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: border-color 0.2s;
+    }
+
+    .custom-select-btn:hover {
+        border-color: var(--red);
+    }
+
+    .custom-select-btn svg {
+        margin-left: auto;
+        flex-shrink: 0;
+        transition: transform 0.2s;
+    }
+
+    .custom-select-wrap.open .custom-select-btn svg {
+        transform: rotate(180deg);
+    }
+
+    .custom-select-wrap.open .custom-select-btn {
+        border-color: var(--red);
+        box-shadow: 0 0 0 3px rgba(211,47,47,0.08);
+    }
+
+    .custom-dropdown {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: var(--r-md);
+        overflow: hidden;
+        z-index: 200;
+        box-shadow: var(--sh-md);
+        max-height: 200px;
+        overflow-y: auto;
+        animation: dropIn 0.15s ease;
+    }
+
+    @keyframes dropIn {
+        from { opacity: 0; transform: translateY(-6px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .custom-select-wrap.open .custom-dropdown {
+        display: block;
+    }
+
+    .dropdown-item {
+        padding: 10px 14px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text);
+        cursor: pointer;
+        transition: background 0.12s;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .dropdown-item:hover {
+        background: var(--bg);
+    }
+
+    .dropdown-item.active {
+        background: var(--red-soft);
+        color: var(--red);
+        font-weight: 700;
+    }
+
+    /* ── DRAFT TABLE ── */
+    .draft-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 12px 0;
+        font-size: 13px;
+        border-radius: var(--r-md);
+        overflow: hidden;
+        border: 1px solid var(--border);
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .draft-table th {
+        background: var(--red);
+        color: white;
+        padding: 8px 12px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: none;
+    }
+
+    .draft-table td {
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--border);
+        color: var(--text);
+        border-top: none;
+        border-left: none;
+        border-right: none;
+    }
+
+    .draft-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .draft-table tr:hover td {
+        background: var(--red-soft);
+    }
+
+    /* ── BUTTONS ── */
+    .btn-add-draft {
+        width: 100%;
+        padding: 11px;
+        background: var(--green);
+        color: white;
+        border: none;
+        border-radius: var(--r-md);
+        font-size: 13px;
+        font-weight: 700;
+        font-family: 'DM Sans', sans-serif;
+        cursor: pointer;
+        transition: filter 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .btn-add-draft:hover {
+        filter: brightness(0.9);
+    }
+
+    .btn-save-restock {
+        width: 100%;
+        padding: 12px;
+        background: var(--red);
+        color: white;
+        border: none;
+        border-radius: var(--r-md);
+        font-size: 13px;
+        font-weight: 700;
+        font-family: 'DM Sans', sans-serif;
+        cursor: pointer;
+        transition: filter 0.15s;
+        margin-top: 12px;
+        box-shadow: 0 4px 12px rgba(211,47,47,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .btn-save-restock:hover {
+        filter: brightness(0.9);
+    }
+
+    .btn-detail {
+        background: var(--red-soft);
+        color: var(--red);
+        border: 1px solid var(--red-border);
+        padding: 4px 10px;
+        border-radius: var(--r-sm);
+        font-size: 12px;
+        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+    .btn-detail:hover {
+        background: var(--red);
+        color: white;
+        filter: none;
+    }
+
+    .btn-del {
+        background: var(--surface-2);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+        padding: 4px 10px;
+        border-radius: var(--r-sm);
+        font-size: 12px;
+        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
+        cursor: pointer;
+        margin-left: 4px;
+        transition: background 0.15s;
+    }
+
+    .btn-del:hover {
+        background: #1c1c1a;
+        color: white;
+        filter: none;
+    }
+
+    /* ── HISTORY TABLE ── */
+    .history-wrap {
+        overflow-x: auto;
+    }
+
+    .history-wrap table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        border-radius: var(--r-md);
+        overflow: hidden;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        box-shadow: none;
+    }
+
+    .history-wrap table th {
+        background: var(--red);
+        color: white;
+        padding: 8px 12px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: none;
+    }
+
+    .history-wrap table td {
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--border);
+        color: var(--text);
+        border-top: none;
+        border-left: none;
+        border-right: none;
+    }
+
+    .history-wrap table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .history-wrap table tr:hover td {
+        background: var(--red-soft);
+    }
+
+    /* ── DETAIL OVERLAY ── */
+    #detailOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(244,244,239,0.96);
+        backdrop-filter: blur(4px);
+        z-index: 2000;
+        display: none;
+        padding: 40px;
+        box-sizing: border-box;
+        overflow-y: auto;
+    }
+
+    .detail-container {
+        max-width: 560px;
+        margin: auto;
+        background: var(--surface);
+        padding: 28px;
+        border-radius: var(--r-xl);
+        box-shadow: var(--sh-lg);
+        border: 1px solid var(--border);
+    }
+
+    .detail-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .btn-back {
+        background: #1c1c1a;
+        color: rgba(255,255,255,0.88);
+        border: none;
+        padding: 9px 18px;
+        border-radius: var(--r-md);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
+        transition: filter 0.15s;
+    }
+
+    .btn-back:hover {
+        filter: brightness(1.2);
+    }
+
+    .btn-wa {
+        background: #25d366;
+        color: white;
+        border: none;
+        padding: 9px 18px;
+        border-radius: var(--r-md);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
+        transition: filter 0.15s;
+    }
+
+    .btn-wa:hover {
+        filter: brightness(0.9);
+    }
+
+    .detail-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-row td {
+        text-align: center;
+        padding: 32px;
+        color: var(--text-light);
+        font-size: 13px;
+    }
+
+    /* ── RESPONSIVE MOBILE ── */
+    @media (max-width: 844px) {
+
+        .page-body {
+            padding: 12px !important;
+            padding-bottom: 80px !important;
         }
-        .detail-container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .btn-back { background: #333; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 20px; font-weight: bold; }
-        .btn-wa { background: #25d366; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; float: right; }
+
+        .grid-stok {
+            grid-template-columns: 1fr;
+        }
+
+        .card-stok {
+            overflow: hidden;
+        }
+
+        .history-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #detailOverlay { padding: 16px; }
+        .detail-container { padding: 20px; }
+        .detail-meta { flex-direction: column; gap: 4px; }
+
+    }
+
     </style>
 </head>
-<body class="dashboard-body" style="display: flex;">
+<body>
 
-    <div class="sidebar" id="sidebar">
-        <h2 class="brand" onclick="toggleSidebar()">HOKI</h2>
-        <nav><ul id="sidebarMenu"></ul></nav>
-        <div class="logout-section">
-            <button class="btn-logout-sidebar" onclick="logout()">
-                <div class="icon">🚪</div> <span>LOGOUT</span>
-            </button>
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand" onclick="toggleSidebar()">
+        <div class="sidebar-logo">
+            <img src="Assets/logobrand.png" alt="Hoki">
+        </div>
+        <div class="sidebar-brand-text">
+            <div class="sidebar-brand-name">Hoki Dimsum</div>
+            <div class="sidebar-brand-sub">POS System v2.0</div>
         </div>
     </div>
+    <button class="sidebar-toggle" onclick="toggleSidebar()">‹</button>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-user">
+        <div class="user-card">
+            <div class="user-avatar" id="userAvatarInitial">?</div>
+            <div class="user-info">
+                <div class="user-name" id="sidebarUserName">Loading...</div>
+                <div class="user-role" id="sidebarUserRole">—</div>
+            </div>
+            <button class="btn-logout-icon" onclick="logout()" title="Logout">🚪</button>
+        </div>
+    </div>
+</aside>
 
-    <div class="main-content" id="mainContent">
-        <h2>🚚 Laporan Restock Barang: <span id="displayCabang" style="color: #d32f2f;">...</span></h2>
-        <p style="font-size: 14px; color: #666;">Pencatatan pengiriman material dari Pusat ke Cabang.</p>
-        <hr>
+<!-- ── MAIN CONTENT ── -->
+<div class="main-content" id="mainContent">
 
+    <header class="top-header">
+        <div class="header-left">
+            <div class="header-page-title">🚚 Restock Barang</div>
+        </div>
+        <div class="header-right">
+            <div class="clock-pill">
+                <div id="realtimeClock">00:00:00</div>
+                <div id="realtimeDate">...</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="page-body">
         <div class="grid-stok">
-            <div class="left-col">
-                <div class="card-stok">
-                    <h4 style="margin-top:0;">📝 Input Laporan Restock</h4>
-                    <p style="font-size: 11px; color: #888; margin-bottom: 15px;">*List barang mengikuti Master Data di menu Stok Harian.</p>
-                    
-                    <label style="font-size: 11px; font-weight: bold;">Pilih Barang:</label>
-                    <select id="selectItemLaporan"></select>
-                    
-                    <label style="font-size: 11px; font-weight: bold;">Jumlah (Qty):</label>
-                    <input type="number" id="qtyItemLaporan" placeholder="0">
-                    
-                    <button class="btn-add" onclick="tambahKeDraft()">+ Tambah ke Daftar</button>
 
-                    <table>
-                        <thead><tr><th>Item</th><th>Qty</th><th>Aksi</th></tr></thead>
-                        <tbody id="tabelDraft"></tbody>
+            <!-- KOLOM KIRI: Input -->
+            <div class="card-stok">
+                <h4>📝 Input Laporan Restock</h4>
+                <p class="sub">*List barang mengikuti Master Data di menu Stok Harian.</p>
+
+                <label class="form-label">Pilih Barang</label>
+                <div class="custom-select-wrap" id="wrapBarang">
+                    <button class="custom-select-btn" onclick="toggleDropdownBarang()">
+                        <span id="labelBarang">Pilih Barang...</span>
+                        <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+                            <path d="M1 1l5 5 5-5" stroke="#d32f2f" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                    <div class="custom-dropdown" id="dropdownBarang"></div>
+                    <input type="hidden" id="selectItemLaporan" value="">
+                </div>
+
+                <label class="form-label">Jumlah (Qty)</label>
+                <input type="number" id="qtyItemLaporan" placeholder="0" class="form-input">
+
+                <button class="btn-add-draft" onclick="tambahKeDraft()">+ Tambah ke Daftar</button>
+
+                <table class="draft-table">
+                    <thead><tr><th>Item</th><th>Qty</th><th>Aksi</th></tr></thead>
+                    <tbody id="tabelDraft"></tbody>
+                </table>
+
+                <button class="btn-save-restock" onclick="simpanLaporanFinal()">💾 Simpan Laporan Restock</button>
+            </div>
+
+            <!-- KOLOM KANAN: History -->
+            <div class="card-stok">
+                <h4 style="margin-bottom:14px;">📄 History Laporan Restock</h4>
+                <div class="history-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+                    <table style="min-width:480px;">
+                        <thead>
+                            <tr>
+                                <th>ID Laporan</th>
+                                <th>Tanggal Jam</th>
+                                <th>Petugas</th>
+                                <th>Cabang</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelHistoryStok">
+                            <tr class="empty-row"><td colspan="5">Belum ada data</td></tr>
+                        </tbody>
                     </table>
-
-                    <button class="btn-save" onclick="simpanLaporanFinal()">💾 Simpan Laporan Restock</button>
                 </div>
             </div>
 
-            <div class="card-stok">
-                <h4 style="margin-top:0;">📄 History Laporan Restock</h4>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID Laporan</th>
-                            <th>Tanggal Jam</th>
-                            <th>Petugas</th>
-                            <th>Cabang</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabelHistoryStok"></tbody>
-                </table>
-            </div>
         </div>
     </div>
+</div>
 
-    <div id="detailOverlay">
-        <div class="detail-container">
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+    <button class="bn-item" onclick="location.href='dashboard.html'"><span class="bn-icon">🛒</span><span class="bn-label">Kasir</span></button>
+    <button class="bn-item" onclick="location.href='history.html'"><span class="bn-icon">📄</span><span class="bn-label">History</span></button>
+    <button class="bn-item" onclick="location.href='stok.html'"><span class="bn-icon">📦</span><span class="bn-label">Stok</span></button>
+    <button class="bn-item" onclick="location.href='laporan_staff.html'"><span class="bn-icon">📊</span><span class="bn-label">Laporan</span></button>
+    <button class="bn-item active" onclick="openSheet('moreSheet')"><span class="bn-icon">☰</span><span class="bn-label">Lainnya</span></button>
+</nav>
+
+<!-- MORE SHEET -->
+<div class="sheet-overlay" id="moreSheet" onclick="closeSheetOutside(event,'moreSheet')">
+    <div class="bottom-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <p style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Menu Lainnya</p>
+        <div class="more-grid" id="moreGrid"></div>
+    </div>
+</div>
+
+<!-- DETAIL OVERLAY -->
+<div id="detailOverlay">
+    <div class="detail-container">
+        <div class="detail-actions">
             <button class="btn-back" onclick="tutupDetail()">← Kembali</button>
             <button class="btn-wa" id="btnKirimWA">📲 Kirim ke WA</button>
-            
-            <h2 id="detID" style="margin:10px 0 0; color: #d32f2f;">ID: RSTK-000</h2>
-            <p id="detWaktu" style="color: #888; font-size: 14px; margin-bottom: 20px;"></p>
-            <hr>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px;">
-                <span><b>Petugas:</b> <span id="detUser"></span></span>
-                <span><b>Cabang:</b> <span id="detCabang"></span></span>
-            </div>
-            <table style="width: 100%; border: 1px solid #eee;">
-                <thead style="background: #f9f9f9;">
-                    <tr><th>Nama Material</th><th>Qty</th></tr>
-                </thead>
-                <tbody id="detTabelItems"></tbody>
-            </table>
         </div>
+        <h2 id="detID" style="margin:0 0 4px;color:var(--red);font-size:16px;">ID: RSTK-000</h2>
+        <p id="detWaktu" style="color:var(--text-muted);font-size:13px;margin-bottom:16px;"></p>
+        <hr>
+        <div class="detail-meta" style="margin-top:14px;">
+            <span><b>Petugas:</b> <span id="detUser"></span></span>
+            <span><b>Cabang:</b> <span id="detCabang"></span></span>
+        </div>
+        <table style="width:100%;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;border-collapse:collapse;">
+            <thead>
+                <tr>
+                    <th style="background:var(--red);color:white;padding:8px 12px;font-size:11px;text-align:left;font-weight:700;text-transform:uppercase;border:none;">Nama Material</th>
+                    <th style="background:var(--red);color:white;padding:8px 12px;font-size:11px;text-align:left;font-weight:700;text-transform:uppercase;border:none;">Qty</th>
+                </tr>
+            </thead>
+            <tbody id="detTabelItems"></tbody>
+        </table>
     </div>
+</div>
 
-    <script>
-        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff', cabang:''};
-        const role = currentUser.role;
-        const cabangAktif = localStorage.getItem('cabangHoki') || 'Pusat';
-        document.getElementById('displayCabang').innerText = cabangAktif;
-        let draftItem = [];
-        let historyRestockCloud = []; // Penampung data dari cloud
-    
-        // --- 1. SIDEBAR KONSISTEN & COLLAPSIBLE ---
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-            localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'small' : 'large');
+<script>
+const currentUser     = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff', cabang:''};
+const cabangAktif     = localStorage.getItem('cabangHoki') || 'Pusat';
+let draftItem         = [];
+let historyRestockCloud = [];
+let selectedBarang    = '';
+
+if (!currentUser.user) window.location.href = 'index.html';
+
+/* ── SIDEBAR ── */
+function toggleSidebar() {
+    const sb = document.getElementById('sidebar');
+    const mc = document.getElementById('mainContent');
+    sb.classList.toggle('collapsed');
+    mc.classList.toggle('expanded');
+    localStorage.setItem('sidebarState', sb.classList.contains('collapsed') ? 'small' : 'large');
+}
+
+function buildSidebar() {
+    if (localStorage.getItem('sidebarState') === 'small') {
+        document.getElementById('sidebar').classList.add('collapsed');
+        document.getElementById('mainContent').classList.add('expanded');
+    }
+    const role = currentUser.role;
+    const cur  = window.location.pathname.split('/').pop() || 'dashboard.html';
+    const navItem = (icon, label, link) => {
+        const active = cur === link ? 'active' : '';
+        return `<button class="nav-item ${active}" onclick="location.href='${link}'">
+            <span class="nav-icon">${icon}</span>
+            <span class="nav-label">${label}</span>
+        </button>`;
+    };
+    let h = `<div class="nav-group-label">Frontline</div>`;
+    h += navItem('🛒','Kasir','dashboard.html');
+    h += navItem('📄','History Transaksi','history.html');
+    h += navItem('📦','Stok Harian','stok.html');
+    h += navItem('🚚','Restock Barang','restock.html');
+    h += navItem('📊','Laporan Penjualan','laporan_staff.html');
+    if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+        h += `<div class="nav-group-label">Management</div>`;
+        h += navItem('🍱','Master Produk','produk.html');
+        h += navItem('📈','Rekapan Penjualan','rekap.html');
+    }
+    if (['Owner','VIP'].includes(role)) {
+        h += `<div class="nav-group-label">Executive</div>`;
+        h += navItem('📊','Keuangan Global','laporan.html');
+        h += navItem('📈','Statistik','statistik.html');
+        h += navItem('💸','Belanja','belanja.html');
+    }
+    if (role === 'VIP') {
+        h += `<div class="nav-group-label">VIP Access</div>`;
+        h += navItem('👥','Manajemen User','user.html');
+        h += navItem('🔑','History Login','login_history.html');
+    }
+    document.getElementById('sidebarNav').innerHTML = h;
+    const name = currentUser.user || '?';
+    document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
+    document.getElementById('sidebarUserName').innerText   = name;
+    document.getElementById('sidebarUserRole').innerText   = role;
+}
+
+/* ── CLOCK ── */
+function updateClock() {
+    const now = new Date();
+    document.getElementById('realtimeClock').innerText = now.toLocaleTimeString('id-ID');
+    document.getElementById('realtimeDate').innerText  = now.toLocaleDateString('id-ID',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+}
+setInterval(updateClock, 1000);
+
+/* ── MORE MENU ── */
+function buildMoreMenu() {
+    const role = currentUser.role;
+    const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
+    if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
+        items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
+    }
+    if (['Owner','VIP'].includes(role)) {
+        items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
+        items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
+        items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
+    }
+    if (role === 'VIP') {
+        items.push({icon:'👥',label:'Users',link:'user.html'});
+        items.push({icon:'🔑',label:'Login Log',link:'login_history.html'});
+    }
+    items.push({icon:'🚪',label:'Logout',link:'#',action:'logout()'});
+    document.getElementById('moreGrid').innerHTML = items.map(i =>
+        `<button class="more-btn" onclick="${i.action||`location.href='${i.link}'`}">
+            <span class="more-btn-icon">${i.icon}</span>
+            <span class="more-btn-label">${i.label}</span>
+        </button>`).join('');
+}
+
+function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
+function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
+
+/* ── CUSTOM DROPDOWN BARANG ── */
+function toggleDropdownBarang() {
+    document.getElementById('wrapBarang').classList.toggle('open');
+}
+
+function pilihBarang(nama) {
+    selectedBarang = nama;
+    document.getElementById('selectItemLaporan').value = nama;
+    document.getElementById('labelBarang').innerText   = nama;
+    document.querySelectorAll('#dropdownBarang .dropdown-item').forEach(el => el.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.getElementById('wrapBarang').classList.remove('open');
+}
+
+document.addEventListener('click', function(e) {
+    const wrap = document.getElementById('wrapBarang');
+    if (wrap && !wrap.contains(e.target)) wrap.classList.remove('open');
+});
+
+/* ── LOGIKA RESTOCK (TIDAK BERUBAH) ── */
+async function renderMasterSync() {
+    try {
+        const res    = await fetch('api.php?action=get_master_stok');
+        const master = await res.json();
+        const dropdown = document.getElementById('dropdownBarang');
+        dropdown.innerHTML = '';
+        master.forEach((m, i) => {
+            const active = i === 0 ? 'active' : '';
+            dropdown.innerHTML += `<div class="dropdown-item ${active}" onclick="pilihBarang('${m.nama_item}')">${m.nama_item}</div>`;
+        });
+        if (master.length > 0) {
+            selectedBarang = master[0].nama_item;
+            document.getElementById('selectItemLaporan').value = master[0].nama_item;
+            document.getElementById('labelBarang').innerText   = master[0].nama_item;
         }
-    
-        function buildSidebar() {
-            const menuContainer = document.getElementById('sidebarMenu');
-            const role = currentUser.role;
-            const currentPage = window.location.pathname.split("/").pop() || 'dashboard.html';
-    
-            if (localStorage.getItem('sidebarState') === 'small') {
-                document.getElementById('sidebar').classList.add('collapsed');
-                document.getElementById('mainContent').classList.add('expanded');
-            }
-    
-            let menuHTML = '';
-            const createItem = (icon, label, link, active) => `
-                <li class="${active ? 'active' : ''}" onclick="location.href='${link}'">
-                    <div class="icon">${icon}</div> <span>${label}</span>
-                </li>`;
-    
-            menuHTML += `<div class="menu-group-label">Frontline Operations</div>`;
-            menuHTML += createItem('🛒', 'Kasir', 'dashboard.html', currentPage === 'dashboard.html');
-            menuHTML += createItem('📄', 'History Transaksi', 'history.html', currentPage === 'history.html');
-            menuHTML += createItem('📦', 'Stok Harian', 'stok.html', currentPage === 'stok.html');
-            menuHTML += createItem('🚚', 'Restock Barang', 'restock.html', currentPage === 'restock.html');
-            menuHTML += createItem('📊', 'Laporan Penjualan', 'laporan_staff.html', currentPage === 'laporan_staff.html');
-    
-            if (['Senior Staff', 'SPV', 'Owner', 'VIP'].includes(role)) {
-                menuHTML += `<div class="menu-group-label">Tactical Management</div>`;
-                menuHTML += createItem('🍱', 'Master Produk', 'produk.html', currentPage === 'produk.html');
-                menuHTML += createItem('📈', 'Rekapan Penjualan', 'rekap.html', currentPage === 'rekap.html');
-                menuHTML += createItem('💸', 'Belanja', 'belanja.html', currentPage === 'belanja.html');
-            }
-    
-            if (['Owner', 'VIP'].includes(role)) {
-                menuHTML += `<div class="menu-group-label">Executive Suite</div>`;
-                menuHTML += createItem('📊', 'Keuangan Global', 'laporan.html', currentPage === 'laporan.html');
-                menuHTML += createItem('📈', 'Statistik', 'statistik.html', currentPage === 'statistik.html');
-            }
-    
-            if (role === 'VIP') {
-                menuHTML += `<div class="menu-group-label" style="color: #ffeb3b; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">👑 VIP Access</div>`;
-                menuHTML += createItem('👥', 'Manajemen User', 'user.html', currentPage === 'user.html');
-                menuHTML += createItem('🔑', 'History Login', 'login_history.html', currentPage === 'login_history.html');
-            }
-            menuContainer.innerHTML = menuHTML;
+    } catch (e) { console.error("Gagal muat master stok cloud"); }
+}
+
+function tambahKeDraft() {
+    const item = document.getElementById('selectItemLaporan').value;
+    const qty  = document.getElementById('qtyItemLaporan').value;
+    if (!item) return toast.warning('Pilih barang dulu!');
+    if (!qty || qty <= 0) return toast.warning('Isi jumlah!');
+    draftItem.push({ item, qty });
+    document.getElementById('qtyItemLaporan').value = '';
+    renderDraft();
+}
+
+function renderDraft() {
+    const tbody = document.getElementById('tabelDraft');
+    tbody.innerHTML = '';
+    draftItem.forEach((d, i) => {
+        tbody.innerHTML += `<tr>
+            <td>${d.item}</td>
+            <td><b>${d.qty}</b></td>
+            <td><button onclick="draftItem.splice(${i},1);renderDraft();" style="background:none;border:none;color:var(--red);cursor:pointer;font-weight:700;font-size:16px;">×</button></td>
+        </tr>`;
+    });
+}
+
+async function simpanLaporanFinal() {
+    if (draftItem.length === 0) return toast.warning('Daftar restock masih kosong!');
+    const newReport = {
+        id:      'RSTK-' + Date.now().toString().slice(-4),
+        waktu:   new Date().toLocaleString('id-ID', {weekday:'long',year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}),
+        petugas: currentUser.user,
+        cabang:  cabangAktif,
+        items:   draftItem
+    };
+    try {
+        await fetch('api.php?action=save_laporan_restock', {
+            method: 'POST',
+            body:   JSON.stringify(newReport)
+        });
+        toast.success('Laporan Restock Berhasil Disimpan!');
+        draftItem = [];
+        renderDraft();
+        renderHistoryStok();
+    } catch (e) {
+        toast.error('Gagal menyimpan ke server!');
+    }
+}
+
+async function renderHistoryStok() {
+    try {
+        const url = `api.php?action=get_laporan_restock&role=${currentUser.role}&cabang=${encodeURIComponent(currentUser.cabang)}`;
+        const res = await fetch(url);
+        historyRestockCloud = await res.json();
+        const tbody = document.getElementById('tabelHistoryStok');
+        tbody.innerHTML = '';
+        if (!historyRestockCloud.length) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Belum ada data</td></tr>';
+            return;
         }
-    
-        // --- 2. LOGIKA RESTOCK (CLOUD) ---
-        async function renderMasterSync() {
-            try {
-                const res = await fetch('api.php?action=get_master_stok');
-                const master = await res.json();
-                const select = document.getElementById('selectItemLaporan');
-                select.innerHTML = '';
-                master.forEach((m) => { select.innerHTML += `<option value="${m.nama_item}">${m.nama_item}</option>`; });
-            } catch (e) { console.error("Gagal muat master stok cloud"); }
-        }
-    
-        function tambahKeDraft() {
-            const item = document.getElementById('selectItemLaporan').value;
-            const qty = document.getElementById('qtyItemLaporan').value;
-            if(!qty || qty <= 0) return alert("Isi jumlah!");
-            draftItem.push({ item, qty });
-            document.getElementById('qtyItemLaporan').value = '';
-            renderDraft();
-        }
-    
-        function renderDraft() {
-            const tbody = document.getElementById('tabelDraft');
-            tbody.innerHTML = '';
-            draftItem.forEach((d, i) => {
-                tbody.innerHTML += `<tr><td>${d.item}</td><td><b>${d.qty}</b></td><td><button onclick="draftItem.splice(${i},1); renderDraft();">x</button></td></tr>`;
-            });
-        }
-    
-        async function simpanLaporanFinal() {
-            if(draftItem.length === 0) return alert("Daftar restock masih kosong!");
-            
-            const newReport = {
-                id: "RSTK-" + Date.now().toString().slice(-4),
-                waktu: new Date().toLocaleString('id-ID', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
-                petugas: currentUser.user,
-                cabang: cabangAktif,
-                items: draftItem
-            };
-    
-            // Kirim ke Cloud
-            try {
-                await fetch('api.php?action=save_laporan_restock', {
-                    method: 'POST',
-                    body: JSON.stringify(newReport)
-                });
-                alert("Laporan Restock Berhasil Disimpan ke Cloud! ✅");
-                draftItem = []; renderDraft(); renderHistoryStok();
-            } catch (e) { alert("Gagal menyimpan ke Cloud!"); }
-        }
-    
-        async function renderHistoryStok() {
-            try {
-                const url = `api.php?action=get_laporan_restock&role=${currentUser.role}&cabang=${encodeURIComponent(currentUser.cabang)}`;
-                const res = await fetch(url);
-                historyRestockCloud = await res.json();
-                
-                const tbody = document.getElementById('tabelHistoryStok');
-                tbody.innerHTML = '';
-                
-                historyRestockCloud.forEach((h) => {
-                    tbody.innerHTML += `<tr>
-                        <td><small>${h.report_id}</small></td>
-                        <td><small>${h.waktu_teks}</small></td>
-                        <td>${h.petugas}</td>
-                        <td><b>${h.cabang}</b></td>
-                        <td>
-                            <button onclick="bukaDetail('${h.report_id}')" style="background:#d32f2f; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:11px;">Detail</button>
-                            <button onclick="hapusLaporanCloud(${h.id})" style="background:#333; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:11px;">Hapus</button>
-                        </td>
-                    </tr>`;
-                });
-            } catch (e) { console.error("Gagal muat history restock cloud"); }
-        }
-    
-        async function hapusLaporanCloud(id) {
-            if(confirm("Hapus laporan restock ini permanen dari Cloud?")) {
-                await fetch(`api.php?action=del_laporan_restock&id=${id}`);
-                renderHistoryStok();
-            }
-        }
-    
-        function bukaDetail(report_id) {
-            const data = historyRestockCloud.find(h => h.report_id === report_id);
-            if(!data) return;
-    
-            document.getElementById('detID').innerText = "ID: " + data.report_id;
-            document.getElementById('detWaktu').innerText = "Restock Tanggal: " + data.waktu_teks;
-            document.getElementById('detUser').innerText = data.petugas;
-            document.getElementById('detCabang').innerText = data.cabang;
-            
-            const tbodyDetail = document.getElementById('detTabelItems');
-            tbodyDetail.innerHTML = '';
-            
-            const items = JSON.parse(data.items_json || '[]');
-            items.forEach(it => { tbodyDetail.innerHTML += `<tr><td>${it.item}</td><td><b>${it.qty}</b></td></tr>`; });
-            
-            document.getElementById('detailOverlay').style.display = 'block';
-            document.getElementById('btnKirimWA').onclick = () => kirimLaporanWA(data);
-        }
-    
-        function kirimLaporanWA(data) {
-            let itemText = "";
-            const items = JSON.parse(data.items_json || '[]');
-            items.forEach(it => { itemText += `* ${it.item}: ${it.qty}%0A`; });
-            
-            const teksWA = `🚚 *LAPORAN RESTOCK BARANG*%0A` +
-                           `TANGGAL : ${data.waktu_teks}%0A` +
-                           `NAMA : ${data.petugas}%0A` +
-                           `CABANG : ${data.cabang}%0A` +
-                           `--------------------------------%0A` +
-                           `🥟 *RINCIAN BARANG:*%0A` +
-                           `${itemText}` +
-                           `--------------------------------%0A` +
-                           `✅ _Laporan via Aplikasi Kasir Hoki Dimsum_`;
-            window.open(`https://wa.me/?text=${teksWA}`, '_blank');
-        }
-    
-        function tutupDetail() { document.getElementById('detailOverlay').style.display = 'none'; }
-        function logout() { if(confirm("Yakin ingin Logout?")) { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; } }
-    
-        window.onload = function() {
-            buildSidebar();
-            renderMasterSync();
-            renderHistoryStok();
-        };
-    </script>
+        historyRestockCloud.forEach(h => {
+            tbody.innerHTML += `<tr>
+                <td><small style="font-family:'DM Mono',monospace;color:var(--text-muted);">${h.report_id}</small></td>
+                <td><small>${h.waktu_teks}</small></td>
+                <td>${h.petugas}</td>
+                <td><b>${h.cabang}</b></td>
+                <td>
+                    <button class="btn-detail" onclick="bukaDetail('${h.report_id}')">Detail</button>
+                    <button class="btn-del" onclick="hapusLaporanCloud(${h.id})">✖</button>
+                </td>
+            </tr>`;
+        });
+    } catch (e) { console.error("Gagal muat history restock"); }
+}
+
+async function hapusLaporanCloud(id) {
+    const ok = await showConfirm('Hapus laporan restock ini permanen?', 'Ya, Hapus', 'Batal', '🗑️');
+    if (!ok) return;
+    try {
+        await fetch(`api.php?action=del_laporan_restock&id=${id}`);
+        toast.success('Laporan berhasil dihapus!');
+        renderHistoryStok();
+    } catch(e) {
+        toast.error('Gagal menghapus laporan!');
+    }
+}
+
+function bukaDetail(report_id) {
+    const data = historyRestockCloud.find(h => h.report_id === report_id);
+    if (!data) return;
+    document.getElementById('detID').innerText     = 'ID: ' + data.report_id;
+    document.getElementById('detWaktu').innerText  = 'Restock Tanggal: ' + data.waktu_teks;
+    document.getElementById('detUser').innerText   = data.petugas;
+    document.getElementById('detCabang').innerText = data.cabang;
+    const items = JSON.parse(data.items_json || '[]');
+    document.getElementById('detTabelItems').innerHTML = items.map(it =>
+        `<tr>
+            <td style="padding:8px 12px;border-bottom:1px solid var(--border);">${it.item}</td>
+            <td style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:700;">${it.qty}</td>
+        </tr>`
+    ).join('');
+    document.getElementById('detailOverlay').style.display = 'block';
+    document.getElementById('btnKirimWA').onclick = () => kirimLaporanWA(data);
+}
+
+function kirimLaporanWA(data) {
+    const items = JSON.parse(data.items_json || '[]');
+    let itemText = items.map(it => `* ${it.item}: ${it.qty}`).join('%0A');
+    const teksWA = `🚚 *LAPORAN RESTOCK BARANG*%0A` +
+                   `TANGGAL : ${data.waktu_teks}%0A` +
+                   `NAMA : ${data.petugas}%0A` +
+                   `CABANG : ${data.cabang}%0A` +
+                   `--------------------------------%0A` +
+                   `🥟 *RINCIAN BARANG:*%0A` +
+                   `${itemText}%0A` +
+                   `--------------------------------%0A` +
+                   `✅ _Laporan via Aplikasi Kasir Hoki Dimsum_`;
+    window.open(`https://wa.me/?text=${teksWA}`, '_blank');
+}
+
+function tutupDetail() {
+    document.getElementById('detailOverlay').style.display = 'none';
+}
+
+async function logout() {
+    const ok = await showConfirm('Logout dari sistem?', 'Ya, Logout', 'Batal', '🚪');
+    if (ok) {
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('cabangHoki');
+        window.location.href = 'index.html';
+    }
+}
+
+window.onload = function() {
+    buildSidebar();
+    updateClock();
+    renderMasterSync();
+    renderHistoryStok();
+};
+</script>
+
+<script src="toast.js"></script>
 </body>
 </html>

@@ -2,84 +2,180 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hoki POS - History Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* --- CSS SIDEBAR KONSISTEN & COLLAPSIBLE (IDENTIK DASHBOARD) --- */
-        .sidebar { 
-            width: 220px; background: #d32f2f; color: white; padding: 20px 10px; 
-            transition: 0.3s; display: flex; flex-direction: column; 
-            height: 100vh; position: fixed; left: 0; top: 0; box-sizing: border-box; z-index: 1000;
-        }
-        /* Saat Sidebar Menciut */
-        .sidebar.collapsed { width: 75px; }
-        .sidebar.collapsed .menu-group-label, .sidebar.collapsed li span { display: none; }
-        .sidebar.collapsed li { justify-content: center; padding: 15px 0; }
-        .sidebar.collapsed .brand { font-size: 14px; }
 
-        .brand { font-weight: 800; letter-spacing: 2px; text-align: center; cursor: pointer; margin-bottom: 10px; transition: 0.3s; }
-        
-        .menu-group-label { 
-            font-size: 11px; color: #ff9999; padding: 15px 15px 5px; 
-            text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;
-        }
-        
-        .sidebar ul { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; overflow-x: hidden; }
-        .sidebar ul li { 
-            font-size: 13px; padding: 12px 15px; transition: 0.3s; color: white; 
-            cursor: pointer; display: flex; align-items: center; border-radius: 8px; margin-bottom: 5px;
-        }
-        .sidebar ul li:hover { background: rgba(255,255,255,0.1); }
-        .sidebar ul li.active { background: #b71c1c; font-weight: bold; }
-        .sidebar ul li .icon { min-width: 25px; font-size: 16px; text-align: center; }
-        .sidebar ul li span { margin-left: 10px; white-space: nowrap; }
+    /* ── CARD ── */
+    .card-history {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 20px;
+        box-shadow: var(--sh-sm);
+        overflow-x: auto;
+    }
 
-        /* Logout Section di Dasar Sidebar */
-        .logout-section { padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); margin-top: auto; }
-        .btn-logout-sidebar { 
-            width: 100%; background: #333; color: white; border: none; padding: 10px; 
-            border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;
+    /* ── TABLE ── */
+    .log-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        background: transparent;
+        box-shadow: none;
+        border: none;
+        border-radius: 0;
+    }
+
+    .log-table th {
+        background: var(--red);
+        color: white;
+        padding: 10px 14px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: none;
+    }
+
+    .log-table td {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        color: var(--text);
+        vertical-align: middle;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+    }
+
+    .log-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .log-table tr:hover td {
+        background: var(--red-soft);
+    }
+
+    .log-table .waktu-cell {
+        font-family: 'DM Mono', monospace;
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    .status-success {
+        color: var(--green);
+        font-weight: 700;
+        font-size: 12px;
+    }
+
+    /* ── ROLE BADGES ── */
+    .role-badge {
+        padding: 3px 10px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 700;
+        display: inline-block;
+    }
+
+    .VIP         { background: #fff8e1; color: #f57f17; }
+    .Owner       { background: var(--red-soft); color: var(--red); }
+    .SPV         { background: #e3f2fd; color: #1565c0; }
+    .Staff       { background: #f1f8e9; color: #2e7d32; }
+    .SeniorStaff { background: #f3e5f5; color: #7b1fa2; }
+
+    /* ── BERSIHKAN BUTTON ── */
+    .btn-bersihkan {
+        background: #1c1c1a;
+        color: rgba(255,255,255,0.88);
+        border: none;
+        padding: 10px 20px;
+        border-radius: var(--r-md);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
+        transition: filter 0.15s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+    }
+
+    .btn-bersihkan:hover {
+        filter: brightness(1.2);
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-row td {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-light);
+        font-size: 13px;
+    }
+
+    /* ── RESPONSIVE MOBILE ── */
+    @media (max-width: 844px) {
+
+        .log-table th,
+        .log-table td {
+            padding: 9px 10px;
+            font-size: 12px;
         }
-        .sidebar.collapsed .btn-logout-sidebar span { display: none; }
 
-        /* Penyesuaian Konten Utama */
-        .main-content { margin-left: 220px; padding: 25px; transition: 0.3s; flex: 1; min-height: 100vh; }
-        .main-content.expanded { margin-left: 75px; }
+    }
 
-        /* --- CSS HALAMAN HISTORY --- */
-        .card-history { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
-        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-        th { background: #d32f2f; color: white; text-transform: uppercase; font-size: 11px; }
-        .role-badge { padding: 3px 8px; border-radius: 5px; font-size: 11px; font-weight: bold; }
-        .Owner { background: #ffebee; color: #d32f2f; }
-        .SPV { background: #e3f2fd; color: #1565c0; }
-        .Staff { background: #f1f8e9; color: #2e7d32; }
     </style>
 </head>
-<body class="dashboard-body" style="display: flex;">
+<body>
 
-    <div class="sidebar" id="sidebar">
-        <h2 class="brand" onclick="toggleSidebar()">HOKI</h2>
-        <nav><ul id="sidebarMenu"></ul></nav>
-        <div class="logout-section">
-            <button class="btn-logout-sidebar" onclick="logout()">
-                <div class="icon">🚪</div> <span>LOGOUT</span>
-            </button>
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand" onclick="toggleSidebar()">
+        <div class="sidebar-logo">
+            <img src="Assets/logobrand.png" alt="Hoki">
+        </div>
+        <div class="sidebar-brand-text">
+            <div class="sidebar-brand-name">Hoki Dimsum</div>
+            <div class="sidebar-brand-sub">POS System v2.0</div>
         </div>
     </div>
-
-    <div class="main-content" id="mainContent">
-        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div>
-                <h2 style="margin:0;">🔑 History Login Pengguna</h2>
-                <p style="font-size: 13px; color: #666;">Pantau siapa saja yang mengakses sistem Hoki POS.</p>
+    <button class="sidebar-toggle" onclick="toggleSidebar()">‹</button>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-user">
+        <div class="user-card">
+            <div class="user-avatar" id="userAvatarInitial">?</div>
+            <div class="user-info">
+                <div class="user-name" id="sidebarUserName">Loading...</div>
+                <div class="user-role" id="sidebarUserRole">—</div>
             </div>
-            <button onclick="hapusSemuaLog()" style="width:auto; background:#333; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">🧹 Bersihkan Log</button>
-        </header>
+            <button class="btn-logout-icon" onclick="logout()" title="Logout">🚪</button>
+        </div>
+    </div>
+</aside>
 
+<!-- ── MAIN CONTENT ── -->
+<div class="main-content" id="mainContent">
+
+    <header class="top-header">
+        <div class="header-left">
+            <div class="header-page-title">🔑 History Login Pengguna</div>
+        </div>
+        <div class="header-right">
+            <button class="btn-bersihkan" onclick="hapusSemuaLog()">🧹 Bersihkan Log</button>
+            <div class="clock-pill">
+                <div id="realtimeClock">00:00:00</div>
+                <div id="realtimeDate">...</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="page-body">
         <div class="card-history">
-            <table>
+            <table class="log-table">
                 <thead>
                     <tr>
                         <th>Waktu Masuk</th>
@@ -90,127 +186,183 @@
                     </tr>
                 </thead>
                 <tbody id="logTableBody">
-                    </tbody>
+                    <tr class="empty-row">
+                        <td colspan="5">Memuat data...</td>
+                    </tr>
+                </tbody>
             </table>
         </div>
     </div>
+</div>
 
-    <script>
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+    <button class="bn-item" onclick="location.href='dashboard.html'"><span class="bn-icon">🛒</span><span class="bn-label">Kasir</span></button>
+    <button class="bn-item" onclick="location.href='history.html'"><span class="bn-icon">📄</span><span class="bn-label">History</span></button>
+    <button class="bn-item" onclick="location.href='stok.html'"><span class="bn-icon">📦</span><span class="bn-label">Stok</span></button>
+    <button class="bn-item" onclick="location.href='laporan_staff.html'"><span class="bn-icon">📊</span><span class="bn-label">Laporan</span></button>
+    <button class="bn-item active" onclick="openSheet('moreSheet')"><span class="bn-icon">☰</span><span class="bn-label">Lainnya</span></button>
+</nav>
 
-        // --- 1. FUNGSI SIDEBAR SINKRON ---
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-            localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'small' : 'large');
+<!-- MORE SHEET -->
+<div class="sheet-overlay" id="moreSheet" onclick="closeSheetOutside(event,'moreSheet')">
+    <div class="bottom-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <p style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Menu Lainnya</p>
+        <div class="more-grid" id="moreGrid"></div>
+    </div>
+</div>
+
+<script>
+const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+if (!currentUser) window.location.href = 'index.html';
+
+/* ── SIDEBAR ── */
+function toggleSidebar() {
+    const sb = document.getElementById('sidebar');
+    const mc = document.getElementById('mainContent');
+    sb.classList.toggle('collapsed');
+    mc.classList.toggle('expanded');
+    localStorage.setItem('sidebarState', sb.classList.contains('collapsed') ? 'small' : 'large');
+}
+
+function buildSidebar() {
+    if (localStorage.getItem('sidebarState') === 'small') {
+        document.getElementById('sidebar').classList.add('collapsed');
+        document.getElementById('mainContent').classList.add('expanded');
+    }
+    const role = currentUser.role;
+    const cur  = window.location.pathname.split('/').pop() || 'dashboard.html';
+    const navItem = (icon, label, link) => {
+        const active = cur === link ? 'active' : '';
+        return `<button class="nav-item ${active}" onclick="location.href='${link}'">
+            <span class="nav-icon">${icon}</span>
+            <span class="nav-label">${label}</span>
+        </button>`;
+    };
+    let h = `<div class="nav-group-label">Frontline</div>`;
+    h += navItem('🛒','Kasir','dashboard.html');
+    h += navItem('📄','History Transaksi','history.html');
+    h += navItem('📦','Stok Harian','stok.html');
+    h += navItem('🚚','Restock Barang','restock.html');
+    h += navItem('📊','Laporan Penjualan','laporan_staff.html');
+    if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+        h += `<div class="nav-group-label">Management</div>`;
+        h += navItem('🍱','Master Produk','produk.html');
+        h += navItem('📈','Rekapan Penjualan','rekap.html');
+    }
+    if (['Owner','VIP'].includes(role)) {
+        h += `<div class="nav-group-label">Executive</div>`;
+        h += navItem('📊','Keuangan Global','laporan.html');
+        h += navItem('📈','Statistik','statistik.html');
+        h += navItem('💸','Belanja','belanja.html');
+    }
+    if (role === 'VIP') {
+        h += `<div class="nav-group-label">VIP Access</div>`;
+        h += navItem('👥','Manajemen User','user.html');
+        h += navItem('🔑','History Login','login_history.html');
+    }
+    document.getElementById('sidebarNav').innerHTML = h;
+    const name = currentUser.user || '?';
+    document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
+    document.getElementById('sidebarUserName').innerText   = name;
+    document.getElementById('sidebarUserRole').innerText   = role;
+}
+
+/* ── CLOCK ── */
+function updateClock() {
+    const now = new Date();
+    document.getElementById('realtimeClock').innerText = now.toLocaleTimeString('id-ID');
+    document.getElementById('realtimeDate').innerText  = now.toLocaleDateString('id-ID',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+}
+setInterval(updateClock, 1000);
+
+/* ── MORE MENU ── */
+function buildMoreMenu() {
+    const role = currentUser.role;
+    const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
+    if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
+        items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
+    }
+    if (['Owner','VIP'].includes(role)) {
+        items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
+        items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
+        items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
+    }
+    if (role === 'VIP') {
+        items.push({icon:'👥',label:'Users',link:'user.html'});
+        items.push({icon:'🔑',label:'Login Log',link:'login_history.html'});
+    }
+    items.push({icon:'🚪',label:'Logout',link:'#',action:'logout()'});
+    document.getElementById('moreGrid').innerHTML = items.map(i =>
+        `<button class="more-btn" onclick="${i.action||`location.href='${i.link}'`}">
+            <span class="more-btn-icon">${i.icon}</span>
+            <span class="more-btn-label">${i.label}</span>
+        </button>`).join('');
+}
+
+function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
+function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
+
+/* ── LOGIKA LOG (TIDAK BERUBAH) ── */
+async function tampilkanLogs() {
+    try {
+        const res  = await fetch('api.php?action=get_logs');
+        const logs = await res.json();
+        const tbody = document.getElementById('logTableBody');
+        tbody.innerHTML = '';
+
+        if (logs.length === 0) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Belum ada history login di server.</td></tr>';
+            return;
         }
 
-        function buildSidebar() {
-            const menuContainer = document.getElementById('sidebarMenu');
-            const role = currentUser.role;
-            const currentPage = window.location.pathname.split("/").pop() || 'dashboard.html';
-    
-            if (localStorage.getItem('sidebarState') === 'small') {
-                document.getElementById('sidebar').classList.add('collapsed');
-                document.getElementById('mainContent').classList.add('expanded');
-            }
-    
-            let menuHTML = '';
-            const createItem = (icon, label, link, active) => `
-                <li class="${active ? 'active' : ''}" onclick="location.href='${link}'">
-                    <div class="icon">${icon}</div> <span>${label}</span>
-                </li>`;
-    
-            menuHTML += `<div class="menu-group-label">Frontline Operations</div>`;
-            menuHTML += createItem('🛒', 'Kasir', 'dashboard.html', currentPage === 'dashboard.html');
-            menuHTML += createItem('📄', 'History Transaksi', 'history.html', currentPage === 'history.html');
-            menuHTML += createItem('📦', 'Stok Harian', 'stok.html', currentPage === 'stok.html');
-            menuHTML += createItem('🚚', 'Restock Barang', 'restock.html', currentPage === 'restock.html');
-            menuHTML += createItem('📊', 'Laporan Penjualan', 'laporan_staff.html', currentPage === 'laporan_staff.html');
-    
-            if (['Senior Staff', 'SPV', 'Owner', 'VIP'].includes(role)) {
-                menuHTML += `<div class="menu-group-label">Tactical Management</div>`;
-                menuHTML += createItem('🍱', 'Master Produk', 'produk.html', currentPage === 'produk.html');
-                menuHTML += createItem('📈', 'Rekapan Penjualan', 'rekap.html', currentPage === 'rekap.html');
-                menuHTML += createItem('💸', 'Belanja', 'belanja.html', currentPage === 'belanja.html');
-            }
-    
-            if (['Owner', 'VIP'].includes(role)) {
-                menuHTML += `<div class="menu-group-label">Executive Suite</div>`;
-                menuHTML += createItem('📊', 'Keuangan Global', 'laporan.html', currentPage === 'laporan.html');
-                menuHTML += createItem('📈', 'Statistik', 'statistik.html', currentPage === 'statistik.html');
-            }
-    
-            if (role === 'VIP') {
-                menuHTML += `<div class="menu-group-label" style="color: #ffeb3b; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">👑 VIP Access</div>`;
-                menuHTML += createItem('👥', 'Manajemen User', 'user.html', currentPage === 'user.html');
-                menuHTML += createItem('🔑', 'History Login', 'login_history.html', currentPage === 'login_history.html');
-            }
-            menuContainer.innerHTML = menuHTML;
-        }
+        logs.forEach(log => {
+            const roleClass = log.role ? log.role.replace(/\s+/g, '') : 'Staff';
+            tbody.innerHTML += `
+                <tr>
+                    <td class="waktu-cell">${log.waktu}</td>
+                    <td><b>${log.username}</b></td>
+                    <td><span class="role-badge ${roleClass}">${log.role}</span></td>
+                    <td>${log.cabang}</td>
+                    <td><span class="status-success">✓ Success</span></td>
+                </tr>`;
+        });
+    } catch (e) {
+        document.getElementById('logTableBody').innerHTML = '<tr class="empty-row"><td colspan="5">Gagal memuat data dari server.</td></tr>';
+    }
+}
 
-        // --- 2. LOGIKA TAMPILKAN LOG ---
-        async function tampilkanLogs() {
-            try {
-                // Tarik data dari Cloud API
-                const res = await fetch('api.php?action=get_logs');
-                const logs = await res.json();
-                
-                const tableBody = document.getElementById('logTableBody');
-                tableBody.innerHTML = '';
-
-                logs.forEach(log => {
-                    // Sesuaikan nama kolom dengan di database (username, role, cabang, waktu)
-                    tableBody.innerHTML += `
-                        <tr>
-                            <td><b>${log.waktu}</b></td>
-                            <td>${log.username}</td>
-                            <td><span class="role-badge ${log.role}">${log.role}</span></td>
-                            <td>${log.cabang}</td>
-                            <td style="color:green; font-weight:bold;">✓ Success</td>
-                        </tr>`;
-                });
-
-                if (logs.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Belum ada history login di server.</td></tr>';
-                }
-            } catch (e) {
-                console.error("Gagal memuat log dari cloud:", e);
-                alert("Gagal mengambil data log dari server.");
-            }
-        }
-
-        async function hapusSemuaLog() {
-            if (confirm("Hapus semua catatan login di server? Tindakan ini tidak bisa dibatalkan.")) {
-                try {
-                    const res = await fetch('api.php?action=clear_logs');
-                    const hasil = await res.json();
-                    
-                    if (hasil.status === 'success') {
-                        alert("Log berhasil dibersihkan.");
-                        tampilkanLogs();
-                    } else {
-                        alert("Gagal menghapus log: " + hasil.message);
-                    }
-                } catch (e) {
-                    alert("Terjadi kesalahan koneksi ke server.");
-                }
-            }
-        }
-
-        function logout() {
-            if(confirm("Yakin ingin Logout?")) {
-                localStorage.removeItem('currentUser');
-                window.location.href = 'index.html';
-            }
-        }
-
-        window.onload = () => {
-            buildSidebar();
+async function hapusSemuaLog() {
+    const ok = await showConfirm('Hapus semua catatan login? Tindakan ini tidak bisa dibatalkan.', 'Ya, Hapus', 'Batal', '🧹');
+    if (!ok) return;
+    try {
+        const res   = await fetch('api.php?action=clear_logs');
+        const hasil = await res.json();
+        if (hasil.status === 'success') {
+            toast.success('Log berhasil dibersihkan!');
             tampilkanLogs();
-        };
-    </script>
+        } else {
+            toast.error('Gagal menghapus log: ' + hasil.message);
+        }
+    } catch (e) {
+        toast.error('Terjadi kesalahan koneksi ke server.');
+    }
+}
+
+async function logout() {
+    const ok = await showConfirm('Logout dari sistem?', 'Ya, Logout', 'Batal', '🚪');
+    if (ok) {
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('cabangHoki');
+        window.location.href = 'index.html';
+    }
+}
+
+window.onload = () => { buildSidebar(); updateClock(); tampilkanLogs(); };
+</script>
+
+<script src="toast.js"></script>
 </body>
 </html>
