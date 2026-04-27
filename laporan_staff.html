@@ -32,6 +32,50 @@
         color: var(--text);
     }
 
+    .card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 4px;
+    }
+
+    .card-header-left { flex: 1; }
+
+    .card-header-right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+        flex-shrink: 0;
+    }
+
+    .card-header-right label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin: 0;
+    }
+
+    .card-header-right input[type="date"] {
+        padding: 6px 12px;
+        font-size: 13px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--r-md);
+        font-family: 'DM Sans', sans-serif;
+        outline: none;
+        color: var(--text);
+        background: var(--surface);
+        transition: border-color 0.2s;
+    }
+
+    .card-header-right input[type="date"]:focus {
+        border-color: var(--red);
+        box-shadow: 0 0 0 3px rgba(211,47,47,0.08);
+    }
+
     /* ── SECTION TITLE ── */
     .section-title {
         background: var(--red-soft);
@@ -131,13 +175,8 @@
         border-right: none;
     }
 
-    #historyTable tr:last-child td {
-        border-bottom: none;
-    }
-
-    #historyTable tr:hover td {
-        background: var(--red-soft);
-    }
+    #historyTable tr:last-child td { border-bottom: none; }
+    #historyTable tr:hover td { background: var(--red-soft); }
 
     /* ── PENGELUARAN INPUT ── */
     .exp-input-row {
@@ -147,9 +186,7 @@
         margin: 8px 0;
     }
 
-    .exp-input-row input {
-        margin: 0;
-    }
+    .exp-input-row input { margin: 0; }
 
     .btn-add-exp {
         background: #1c1c1a;
@@ -163,9 +200,7 @@
         font-family: 'DM Sans', sans-serif;
     }
 
-    .btn-add-exp:hover {
-        filter: brightness(1.2);
-    }
+    .btn-add-exp:hover { filter: brightness(1.2); }
 
     /* ── TOTAL HIGHLIGHT ── */
     .total-highlight {
@@ -199,9 +234,7 @@
         gap: 6px;
     }
 
-    .btn-save-wa:hover {
-        filter: brightness(0.9);
-    }
+    .btn-save-wa:hover { filter: brightness(0.9); }
 
     /* ── ICON BUTTON ── */
     .btn-icon {
@@ -215,17 +248,13 @@
         font-family: 'DM Sans', sans-serif;
     }
 
-    .btn-icon:hover {
-        background: var(--surface-2);
-    }
+    .btn-icon:hover { background: var(--surface-2); }
 
     /* ── DETAIL OVERLAY ── */
     #detailOverlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
         background: rgba(0,0,0,0.5);
         z-index: 2000;
         display: none;
@@ -257,9 +286,7 @@
         transition: filter 0.15s;
     }
 
-    .btn-close:hover {
-        filter: brightness(1.2);
-    }
+    .btn-close:hover { filter: brightness(1.2); }
 
     .detail-grid {
         display: grid;
@@ -278,27 +305,13 @@
 
     /* ── RESPONSIVE MOBILE ── */
     @media (max-width: 844px) {
-
-        .grid-laporan {
-            grid-template-columns: 1fr;
-        }
-
-        .detail-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .exp-input-row {
-            grid-template-columns: 1fr 1fr auto;
-        }
-
-        #detailOverlay {
-            padding: 12px;
-        }
-
-        .detail-container {
-            padding: 16px;
-        }
-
+        .grid-laporan { grid-template-columns: 1fr; }
+        .detail-grid  { grid-template-columns: 1fr; }
+        .exp-input-row { grid-template-columns: 1fr 1fr auto; }
+        #detailOverlay { padding: 12px; }
+        .detail-container { padding: 16px; }
+        .card-header { flex-direction: column; }
+        .card-header-right { align-items: flex-start; }
     }
 
     </style>
@@ -338,10 +351,6 @@
             <div class="header-page-title">📊 Laporan Penjualan</div>
         </div>
         <div class="header-right">
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-                <label style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin:0;">Tanggal</label>
-                <input type="date" id="filterTanggal" onchange="fetchLaporanData()" style="width:160px;padding:6px 12px;font-size:13px;">
-            </div>
             <div class="clock-pill">
                 <div id="realtimeClock">00:00:00</div>
                 <div id="realtimeDate">...</div>
@@ -354,8 +363,17 @@
 
             <!-- KOLOM KIRI: Form Settlement -->
             <div class="card-laporan">
-                <h3>📝 Settlement Harian</h3>
-                <p style="font-size:11px;color:var(--text-muted);margin:2px 0 0;">ID: <b id="reportID"></b></p>
+                <!-- Header card dengan tanggal di dalamnya -->
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <h3>📝 Settlement Harian</h3>
+                        <p style="font-size:11px;color:var(--text-muted);margin:2px 0 0;">ID: <b id="reportID"></b></p>
+                    </div>
+                    <div class="card-header-right">
+                        <label>Tanggal</label>
+                        <input type="date" id="filterTanggal" onchange="fetchLaporanData()">
+                    </div>
+                </div>
 
                 <div class="section-title">💰 Omset Per Metode</div>
                 <table id="tableMetode"><tbody></tbody></table>
@@ -383,7 +401,7 @@
 
                 <div class="section-title">💸 Pengeluaran</div>
                 <div class="exp-input-row">
-                    <input type="text" id="exNama" placeholder="Nama Barang">
+                    <input type="text"   id="exNama"  placeholder="Nama Barang">
                     <input type="number" id="exHarga" placeholder="Rp Total">
                     <button class="btn-add-exp" onclick="addEx()">+</button>
                 </div>
@@ -402,7 +420,7 @@
                 <div style="overflow-x:auto;">
                     <table id="historyTable">
                         <thead>
-                            <tr><th>Waktu</th><th>Cabang</th><th>Total</th><th>Aksi</th></tr>
+                            <tr><th>Waktu</th><th>Petugas</th><th>Total</th><th>Aksi</th></tr>
                         </thead>
                         <tbody id="historyBody">
                             <tr class="empty-row"><td colspan="4">Belum ada data</td></tr>
@@ -411,9 +429,10 @@
                 </div>
             </div>
 
-        </div>
-    </div>
-</div>
+        </div><!-- /.grid-laporan -->
+    </div><!-- /.page-body -->
+
+</div><!-- /.main-content -->
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
@@ -457,378 +476,375 @@
 </div>
 
 <script>
-const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff'};
-const cabangAktif = localStorage.getItem('cabangHoki') || 'Pusat';
-if (!currentUser.user) window.location.href = 'index.html';
+    const currentUser  = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff'};
+    const cabangAktif  = localStorage.getItem('cabangHoki') || 'Pusat';
+    if (!currentUser.user) window.location.href = 'index.html';
 
-let pengeluaran        = [];
-let cacheHistoryLaporan = [];
-let omzetPerMetode     = {};
-let lakuDimsum         = 0;
-let lakuTray           = 0;
-let currentDetailID    = null;
+    let pengeluaran         = [];
+    let cacheHistoryLaporan = [];
+    let omzetPerMetode      = {};
+    let lakuDimsum          = 0;
+    let lakuTray            = 0;
+    let currentDetailID     = null;
 
-/* ── SIDEBAR ── */
-function toggleSidebar() {
-    const sb = document.getElementById('sidebar');
-    const mc = document.getElementById('mainContent');
-    sb.classList.toggle('collapsed');
-    mc.classList.toggle('expanded');
-    localStorage.setItem('sidebarState', sb.classList.contains('collapsed') ? 'small' : 'large');
-}
-
-function buildSidebar() {
-    if (localStorage.getItem('sidebarState') === 'small') {
-        document.getElementById('sidebar').classList.add('collapsed');
-        document.getElementById('mainContent').classList.add('expanded');
+    // ── SIDEBAR ──
+    function toggleSidebar() {
+        const sb = document.getElementById('sidebar');
+        const mc = document.getElementById('mainContent');
+        sb.classList.toggle('collapsed');
+        mc.classList.toggle('expanded');
+        localStorage.setItem('sidebarState', sb.classList.contains('collapsed') ? 'small' : 'large');
     }
-    const role = currentUser.role;
-    const cur  = window.location.pathname.split('/').pop() || 'dashboard.html';
-    const navItem = (icon, label, link) => {
-        const active = cur === link ? 'active' : '';
-        return `<button class="nav-item ${active}" onclick="location.href='${link}'">
-            <span class="nav-icon">${icon}</span>
-            <span class="nav-label">${label}</span>
-        </button>`;
-    };
-    let h = `<div class="nav-group-label">Frontline</div>`;
-    h += navItem('🛒','Kasir','dashboard.html');
-    h += navItem('📄','History Transaksi','history.html');
-    h += navItem('📦','Stok Harian','stok.html');
-    h += navItem('🚚','Restock Barang','restock.html');
-    h += navItem('📊','Laporan Penjualan','laporan_staff.html');
-    if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
-        h += `<div class="nav-group-label">Management</div>`;
-        h += navItem('🍱','Master Produk','produk.html');
-        h += navItem('📈','Rekapan Penjualan','rekap.html');
-    }
-    if (['Owner','VIP'].includes(role)) {
-        h += `<div class="nav-group-label">Executive</div>`;
-        h += navItem('📊','Keuangan Global','laporan.html');
-        h += navItem('📈','Statistik','statistik.html');
-        h += navItem('💸','Belanja','belanja.html');
-    }
-    if (role === 'VIP') {
-        h += `<div class="nav-group-label">VIP Access</div>`;
-        h += navItem('👥','Manajemen User','user.html');
-        h += navItem('🔑','History Login','login_history.html');
-    }
-    document.getElementById('sidebarNav').innerHTML = h;
-    const name = currentUser.user || '?';
-    document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
-    document.getElementById('sidebarUserName').innerText   = name;
-    document.getElementById('sidebarUserRole').innerText   = role;
-}
 
-/* ── CLOCK ── */
-function updateClock() {
-    const now = new Date();
-    document.getElementById('realtimeClock').innerText = now.toLocaleTimeString('id-ID');
-    document.getElementById('realtimeDate').innerText  = now.toLocaleDateString('id-ID',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
-}
-setInterval(updateClock, 1000);
-
-/* ── MORE MENU ── */
-function buildMoreMenu() {
-    const role = currentUser.role;
-    const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
-    if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
-        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
-        items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
+    function buildSidebar() {
+        if (localStorage.getItem('sidebarState') === 'small') {
+            document.getElementById('sidebar').classList.add('collapsed');
+            document.getElementById('mainContent').classList.add('expanded');
+        }
+        const role = currentUser.role;
+        const cur  = window.location.pathname.split('/').pop() || 'dashboard.html';
+        const navItem = (icon, label, link) => {
+            const active = cur === link ? 'active' : '';
+            return `<button class="nav-item ${active}" onclick="location.href='${link}'">
+                <span class="nav-icon">${icon}</span>
+                <span class="nav-label">${label}</span>
+            </button>`;
+        };
+        let h = `<div class="nav-group-label">Frontline</div>`;
+        h += navItem('🛒','Kasir','dashboard.html');
+        h += navItem('📄','History Transaksi','history.html');
+        h += navItem('📦','Stok Harian','stok.html');
+        h += navItem('🚚','Restock Barang','restock.html');
+        h += navItem('📊','Laporan Penjualan','laporan_staff.html');
+        if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+            h += `<div class="nav-group-label">Management</div>`;
+            h += navItem('🍱','Master Produk','produk.html');
+            h += navItem('📈','Rekapan Penjualan','rekap.html');
+        }
+        if (['Owner','VIP'].includes(role)) {
+            h += `<div class="nav-group-label">Executive</div>`;
+            h += navItem('📊','Keuangan Global','laporan.html');
+            h += navItem('📈','Statistik','statistik.html');
+            h += navItem('💸','Belanja','belanja.html');
+        }
+        if (role === 'VIP') {
+            h += `<div class="nav-group-label">VIP Access</div>`;
+            h += navItem('👥','Manajemen User','user.html');
+            h += navItem('🔑','History Login','login_history.html');
+        }
+        document.getElementById('sidebarNav').innerHTML = h;
+        const name = currentUser.user || '?';
+        document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
+        document.getElementById('sidebarUserName').innerText   = name;
+        document.getElementById('sidebarUserRole').innerText   = role;
     }
-    if (['Owner','VIP'].includes(role)) {
-        items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
-        items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
-        items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
+
+    // ── CLOCK ──
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('realtimeClock').innerText = now.toLocaleTimeString('id-ID');
+        document.getElementById('realtimeDate').innerText  = now.toLocaleDateString('id-ID',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
     }
-    if (role === 'VIP') {
-        items.push({icon:'👥',label:'Users',link:'user.html'});
-        items.push({icon:'🔑',label:'Login Log',link:'login_history.html'});
+    setInterval(updateClock, 1000);
+
+    // ── MORE MENU ──
+    function buildMoreMenu() {
+        const role  = currentUser.role;
+        const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
+        if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+            items.push({icon:'🍱',label:'Produk',link:'produk.html'});
+            items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
+        }
+        if (['Owner','VIP'].includes(role)) {
+            items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
+            items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
+            items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
+        }
+        if (role === 'VIP') {
+            items.push({icon:'👥',label:'Users',link:'user.html'});
+            items.push({icon:'🔑',label:'Login Log',link:'login_history.html'});
+        }
+        items.push({icon:'🚪',label:'Logout',link:'#',action:'logout()'});
+        document.getElementById('moreGrid').innerHTML = items.map(i =>
+            `<button class="more-btn" onclick="${i.action||`location.href='${i.link}'`}">
+                <span class="more-btn-icon">${i.icon}</span>
+                <span class="more-btn-label">${i.label}</span>
+            </button>`).join('');
     }
-    items.push({icon:'🚪',label:'Logout',link:'#',action:'logout()'});
-    document.getElementById('moreGrid').innerHTML = items.map(i =>
-        `<button class="more-btn" onclick="${i.action||`location.href='${i.link}'`}">
-            <span class="more-btn-icon">${i.icon}</span>
-            <span class="more-btn-label">${i.label}</span>
-        </button>`).join('');
-}
 
-function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
-function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
+    function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
+    function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
 
-/* ── LOGIKA (TIDAK BERUBAH) ── */
-async function fetchLaporanData() {
-    const tglDipilih = document.getElementById('filterTanggal').value;
-    try {
-        const resProd      = await fetch('api.php?action=get_produk');
-        const masterProduk = await resProd.json();
-        const resTrx       = await fetch('api.php?action=get_history');
-        const transactions = await resTrx.json();
+    // ── FETCH DATA ──
+    async function fetchLaporanData() {
+        const tglDipilih = document.getElementById('filterTanggal').value;
+        try {
+            const resProd      = await fetch('api.php?action=get_produk');
+            const masterProduk = await resProd.json();
+            const resTrx       = await fetch('api.php?action=get_history');
+            const transactions = await resTrx.json();
 
-        omzetPerMetode = { CASH: 0, QRIS: 0, GF: 0, GB: 0, PG: 0, RM: 0 };
-        lakuDimsum = 0; lakuTray = 0;
-        let totalOmzet = 0;
+            omzetPerMetode = { CASH: 0, QRIS: 0, GF: 0, GB: 0, PG: 0, RM: 0 };
+            lakuDimsum = 0; lakuTray = 0;
+            let totalOmzet = 0;
 
-        transactions.forEach(t => {
-            if (t.waktu.split(' ')[0] === tglDipilih && t.cabang === cabangAktif) {
-                const mtd = t.metode.toUpperCase();
-                if (omzetPerMetode[mtd] !== undefined) omzetPerMetode[mtd] += parseInt(t.total);
-                totalOmzet += parseInt(t.total);
-                const items = JSON.parse(t.items_json || '[]');
-                items.forEach(it => {
-                    const p = masterProduk.find(x => x.nama === it.nama || x.sku === it.sku);
-                    if (p) {
-                        lakuDimsum += (parseInt(p.dimsumPcs) || 0) * (it.qty || 1);
-                        lakuTray   += (parseInt(p.aluTrayPcs) || 0) * (it.qty || 1);
-                    }
-                });
+            transactions.forEach(t => {
+                if (t.waktu.split(' ')[0] === tglDipilih && t.cabang === cabangAktif) {
+                    const mtd = t.metode.toUpperCase();
+                    if (omzetPerMetode[mtd] !== undefined) omzetPerMetode[mtd] += parseInt(t.total);
+                    totalOmzet += parseInt(t.total);
+                    const items = JSON.parse(t.items_json || '[]');
+                    items.forEach(it => {
+                        const p = masterProduk.find(x => x.nama === it.nama || x.sku === it.sku);
+                        if (p) {
+                            lakuDimsum += (parseInt(p.dimsumPcs) || 0) * (it.qty || 1);
+                            lakuTray   += (parseInt(p.aluTrayPcs) || 0) * (it.qty || 1);
+                        }
+                    });
+                }
+            });
+
+            let htmlM = '';
+            for (let m in omzetPerMetode) {
+                htmlM += `<tr><td><b>${m}</b></td><td>Rp ${omzetPerMetode[m].toLocaleString()}</td></tr>`;
             }
-        });
-
-        let htmlM = "";
-        for (let m in omzetPerMetode) {
-            htmlM += `<tr><td><b>${m}</b></td><td>Rp ${omzetPerMetode[m].toLocaleString()}</td></tr>`;
-        }
-        document.querySelector('#tableMetode tbody').innerHTML = htmlM;
-        document.getElementById('dLak').innerText        = lakuDimsum;
-        document.getElementById('tLak').innerText        = lakuTray;
-        document.getElementById('grandTotal').innerText  = "Rp " + totalOmzet.toLocaleString();
-        window.currentGrandTotal = totalOmzet;
-        document.getElementById('reportID').innerText    = `LP-${cabangAktif.toUpperCase()}-${tglDipilih.replace(/-/g, '')}`;
-        hitungSisa();
-    } catch (e) { console.error(e); }
-}
-
-function hitungSisa() {
-    const dAw = parseInt(document.getElementById('dAw').value) || 0;
-    const tAw = parseInt(document.getElementById('tAw').value) || 0;
-    document.getElementById('dSis').innerText = dAw - lakuDimsum;
-    document.getElementById('tSis').innerText = tAw - lakuTray;
-}
-
-function addEx() {
-    const nama  = document.getElementById('exNama').value;
-    const harga = document.getElementById('exHarga').value;
-    if (!nama || !harga) return toast.warning('Isi nama dan harga dulu!');
-    pengeluaran.push({ nama, harga: parseInt(harga) });
-    document.getElementById('exNama').value  = '';
-    document.getElementById('exHarga').value = '';
-    renderExpTable();
-}
-
-function renderExpTable() {
-    const tbody = document.querySelector('#tableExp tbody');
-    tbody.innerHTML = pengeluaran.map((ex, i) =>
-        `<tr>
-            <td>${ex.nama}</td>
-            <td>Rp ${ex.harga.toLocaleString()}</td>
-            <td onclick="pengeluaran.splice(${i},1);renderExpTable()" style="color:var(--red);cursor:pointer;font-weight:700;">×</td>
-        </tr>`
-    ).join('');
-}
-
-async function simpanDanKirimWA() {
-    const data = {
-        report_id: document.getElementById('reportID').innerText,
-        petugas:   currentUser.user,
-        cabang:    cabangAktif,
-        metode:    omzetPerMetode,
-        audit: {
-            dAw:  document.getElementById('dAw').value,
-            tAw:  document.getElementById('tAw').value,
-            dLak: lakuDimsum,
-            tLak: lakuTray
-        },
-        expens: pengeluaran,
-        total:  window.currentGrandTotal
-    };
-
-    try {
-        const res   = await fetch('api.php?action=save_laporan', {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify(data)
-        });
-        const hasil = await res.json();
-        if (hasil.status === 'success') {
-            toast.success('Laporan Tersimpan!', 'Mengirim ke WhatsApp...');
-            kirimWA(data);
-            renderHistoryLaporan();
-        } else {
-            toast.error('Gagal menyimpan laporan!');
-        }
-    } catch (e) {
-        toast.error('Gagal koneksi server!');
+            document.querySelector('#tableMetode tbody').innerHTML = htmlM;
+            document.getElementById('dLak').innerText       = lakuDimsum;
+            document.getElementById('tLak').innerText       = lakuTray;
+            document.getElementById('grandTotal').innerText = 'Rp ' + totalOmzet.toLocaleString();
+            window.currentGrandTotal = totalOmzet;
+            document.getElementById('reportID').innerText   = `LP-${cabangAktif.toUpperCase()}-${tglDipilih.replace(/-/g, '')}`;
+            hitungSisa();
+        } catch (e) { console.error(e); }
     }
-}
 
-function kirimWA(d) {
-    const nomor = "6281234567890";
-    let txt = `*SETTLEMENT HOKI POS*\nID: ${d.report_id}\n------------------\n`;
-    for (let m in d.metode) if (d.metode[m] > 0) txt += `${m}: Rp ${d.metode[m].toLocaleString()}\n`;
-    txt += `------------------\nDimsum Laku: ${d.audit.dLak}\nTray Laku: ${d.audit.tLak}\n------------------\nTOTAL: Rp ${d.total.toLocaleString()}`;
-    window.open(`https://wa.me/${nomor}?text=${encodeURIComponent(txt)}`, '_blank');
-}
-
-async function renderHistoryLaporan() {
-    try {
-        const url = `api.php?action=get_laporan_history&role=${currentUser.role}&cabang=${cabangAktif}`;
-        const res = await fetch(url);
-        
-        cacheHistoryLaporan = await res.json();
-        const tbody = document.getElementById('historyBody');
-        tbody.innerHTML = '';
-
-        if (!cacheHistoryLaporan || !cacheHistoryLaporan.length) {
-            tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Belum ada data</td></tr>';
-            return;
-        }
-
-        cacheHistoryLaporan.forEach(l => {
-            // Filter tambahan di sisi client untuk keamanan ganda
-            if (currentUser.role !== 'Owner' && currentUser.role !== 'VIP' && l.cabang !== cabangAktif) return;
-
-            tbody.innerHTML += `<tr>
-                <td><small style="font-family:'DM Mono',monospace;color:var(--text-muted);">${l.waktu}</small></td>
-                <td>${l.petugas}</td>
-                <td style="font-family:'DM Mono',monospace;font-weight:700;color:var(--red);">Rp ${parseInt(l.grand_total).toLocaleString('id-ID')}</td>
-                <td>
-                    <button class="btn-icon" onclick="bukaDetail('${l.report_id}')">👁️</button>
-                    ${['Owner', 'VIP'].includes(currentUser.role) ? `<button class="btn-icon" onclick="hapusLaporan(${l.id})">🗑️</button>` : ''}
-                </td>
-            </tr>`;
-        });
-    } catch (e) {
-        console.error("Error History:", e);
-        toast.error('Gagal memuat history laporan!');
+    function hitungSisa() {
+        const dAw = parseInt(document.getElementById('dAw').value) || 0;
+        const tAw = parseInt(document.getElementById('tAw').value) || 0;
+        document.getElementById('dSis').innerText = dAw - lakuDimsum;
+        document.getElementById('tSis').innerText = tAw - lakuTray;
     }
-}
 
-function bukaDetail(rid) {
-    const data = cacheHistoryLaporan.find(x => x.report_id === rid);
-    if (!data) return;
-    currentDetailID = rid;
+    function addEx() {
+        const nama  = document.getElementById('exNama').value;
+        const harga = document.getElementById('exHarga').value;
+        if (!nama || !harga) return toast.warning('Isi nama dan harga dulu!');
+        pengeluaran.push({ nama, harga: parseInt(harga) });
+        document.getElementById('exNama').value  = '';
+        document.getElementById('exHarga').value = '';
+        renderExpTable();
+    }
 
-    const audit  = JSON.parse(data.audit_json);
-    const metode = JSON.parse(data.metode_json);
-    const exps   = JSON.parse(data.pengeluaran_json || '[]');
+    function renderExpTable() {
+        const tbody = document.querySelector('#tableExp tbody');
+        tbody.innerHTML = pengeluaran.map((ex, i) =>
+            `<tr>
+                <td>${ex.nama}</td>
+                <td>Rp ${ex.harga.toLocaleString()}</td>
+                <td onclick="pengeluaran.splice(${i},1);renderExpTable()" style="color:var(--red);cursor:pointer;font-weight:700;">×</td>
+            </tr>`
+        ).join('');
+    }
 
-    document.getElementById('detID').innerText   = data.report_id;
-    document.getElementById('detMeta').innerText = `${data.petugas} | ${data.cabang}`;
-
-    let htmlM = "<thead><tr><th>Metode</th><th>Nominal</th></tr></thead><tbody>";
-    for (let m in metode) {
-        const isAuthorized = ['Owner','VIP'].includes(currentUser.role);
-        const lock = (m === 'CASH' || m === 'QRIS' || !isAuthorized);
-        htmlM += `<tr><td>${m}</td><td>
-            ${lock
-                ? `<span>${metode[m].toLocaleString()}</span>`
-                : `<input type="number" class="edit-mtd" data-m="${m}" value="${metode[m]}" oninput="recalcDetail()" style="width:100px;padding:5px 8px;font-size:12px;margin:0;">`
+    async function simpanDanKirimWA() {
+        const data = {
+            report_id: document.getElementById('reportID').innerText,
+            petugas:   currentUser.user,
+            cabang:    cabangAktif,
+            metode:    omzetPerMetode,
+            audit: {
+                dAw:  document.getElementById('dAw').value,
+                tAw:  document.getElementById('tAw').value,
+                dLak: lakuDimsum,
+                tLak: lakuTray
+            },
+            expens: pengeluaran,
+            total:  window.currentGrandTotal
+        };
+        try {
+            const res   = await fetch('api.php?action=save_laporan', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(data)
+            });
+            const hasil = await res.json();
+            if (hasil.status === 'success') {
+                toast.success('Laporan Tersimpan!', 'Mengirim ke WhatsApp...');
+                kirimWA(data);
+                renderHistoryLaporan();
+            } else {
+                toast.error('Gagal menyimpan laporan!');
             }
-        </td></tr>`;
-    }
-    document.getElementById('detTabelMetode').innerHTML = htmlM + "</tbody>";
-
-    document.getElementById('detTabelAudit').innerHTML = `
-        <thead><tr><th>Item</th><th>Awal</th><th>Laku</th><th>Sisa</th></tr></thead>
-        <tbody>
-            <tr><td>Dimsum</td><td>${audit.dAw}</td><td>${audit.dLak}</td><td><b>${audit.dAw - audit.dLak}</b></td></tr>
-            <tr><td>Tray</td><td>${audit.tAw}</td><td>${audit.tLak}</td><td><b>${audit.tAw - audit.tLak}</b></td></tr>
-        </tbody>`;
-
-    document.getElementById('detTabelExp').innerHTML = exps.length
-        ? `<thead><tr><th>Nama</th><th>Harga</th></tr></thead><tbody>` +
-          exps.map(e => `<tr><td>${e.nama}</td><td>Rp ${parseInt(e.harga).toLocaleString()}</td></tr>`).join('') +
-          `</tbody>`
-        : '';
-
-    document.getElementById('detGrandTotal').innerHTML = `
-        Total: <span id="detTotal">Rp ${parseInt(data.grand_total).toLocaleString()}</span>
-        ${currentUser.role !== 'Staff'
-            ? `<button onclick="saveEditDetail()" class="btn-save-wa" style="background:#333;margin-top:10px;">💾 Simpan Perubahan</button>`
-            : ''}`;
-
-    document.getElementById('detailOverlay').style.display = 'block';
-}
-
-function recalcDetail() {
-    let total   = 0;
-    const data  = cacheHistoryLaporan.find(x => x.report_id === currentDetailID);
-    const mtd   = JSON.parse(data.metode_json);
-    total += (parseInt(mtd.CASH) || 0) + (parseInt(mtd.QRIS) || 0);
-    document.querySelectorAll('.edit-mtd').forEach(i => total += parseInt(i.value) || 0);
-    document.getElementById('detTotal').innerText = "Rp " + total.toLocaleString();
-    window.tempTotal = total;
-}
-
-async function saveEditDetail() {
-    const ok = await showConfirm('Simpan perubahan settlement?', 'Simpan', 'Batal', '💾', 'blue');
-    if (!ok) return;
-    const dataLama = cacheHistoryLaporan.find(x => x.report_id === currentDetailID);
-    const mtd      = JSON.parse(dataLama.metode_json);
-    document.querySelectorAll('.edit-mtd').forEach(i => mtd[i.dataset.m] = parseInt(i.value) || 0);
-    const dataBaru = {
-        report_id: currentDetailID,
-        petugas:   dataLama.petugas,
-        cabang:    dataLama.cabang,
-        metode:    mtd,
-        audit:     JSON.parse(dataLama.audit_json),
-        expens:    JSON.parse(dataLama.pengeluaran_json),
-        total:     window.tempTotal || dataLama.grand_total
-    };
-    try {
-        const res = await fetch('api.php?action=save_laporan', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:   JSON.stringify(dataBaru)
-        });
-        if ((await res.json()).status === 'success') {
-            toast.success('Settlement Diupdate!');
-            tutupDetail();
-            renderHistoryLaporan();
+        } catch (e) {
+            toast.error('Gagal koneksi server!');
         }
-    } catch (e) {
-        toast.error('Gagal koneksi server!');
     }
-}
 
-async function hapusLaporan(id) {
-    const ok = await showConfirm('Hapus laporan ini?', 'Ya, Hapus', 'Batal', '🗑️');
-    if (!ok) return;
-    try {
-        await fetch(`api.php?action=del_laporan&id=${id}`);
-        toast.success('Laporan dihapus!');
+    function kirimWA(d) {
+        const nomor = "6281234567890";
+        let txt = `*SETTLEMENT HOKI POS*\nID: ${d.report_id}\n------------------\n`;
+        for (let m in d.metode) if (d.metode[m] > 0) txt += `${m}: Rp ${d.metode[m].toLocaleString()}\n`;
+        txt += `------------------\nDimsum Laku: ${d.audit.dLak}\nTray Laku: ${d.audit.tLak}\n------------------\nTOTAL: Rp ${d.total.toLocaleString()}`;
+        window.open(`https://wa.me/${nomor}?text=${encodeURIComponent(txt)}`, '_blank');
+    }
+
+    async function renderHistoryLaporan() {
+        try {
+            const url = `api.php?action=get_laporan_history&role=${currentUser.role}&cabang=${cabangAktif}`;
+            const res = await fetch(url);
+            cacheHistoryLaporan = await res.json();
+            const tbody = document.getElementById('historyBody');
+            tbody.innerHTML = '';
+
+            if (!cacheHistoryLaporan || !cacheHistoryLaporan.length) {
+                tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Belum ada data</td></tr>';
+                return;
+            }
+
+            cacheHistoryLaporan.forEach(l => {
+                if (currentUser.role !== 'Owner' && currentUser.role !== 'VIP' && l.cabang !== cabangAktif) return;
+                tbody.innerHTML += `<tr>
+                    <td><small style="font-family:'DM Mono',monospace;color:var(--text-muted);">${l.waktu}</small></td>
+                    <td>${l.petugas}</td>
+                    <td style="font-family:'DM Mono',monospace;font-weight:700;color:var(--red);">Rp ${parseInt(l.grand_total).toLocaleString('id-ID')}</td>
+                    <td>
+                        <button class="btn-icon" onclick="bukaDetail('${l.report_id}')">👁️</button>
+                        ${['Owner','VIP'].includes(currentUser.role) ? `<button class="btn-icon" onclick="hapusLaporan(${l.id})">🗑️</button>` : ''}
+                    </td>
+                </tr>`;
+            });
+        } catch (e) {
+            console.error('Error History:', e);
+            toast.error('Gagal memuat history laporan!');
+        }
+    }
+
+    function bukaDetail(rid) {
+        const data = cacheHistoryLaporan.find(x => x.report_id === rid);
+        if (!data) return;
+        currentDetailID = rid;
+
+        const audit  = JSON.parse(data.audit_json);
+        const metode = JSON.parse(data.metode_json);
+        const exps   = JSON.parse(data.pengeluaran_json || '[]');
+
+        document.getElementById('detID').innerText   = data.report_id;
+        document.getElementById('detMeta').innerText = `${data.petugas} | ${data.cabang}`;
+
+        let htmlM = '<thead><tr><th>Metode</th><th>Nominal</th></tr></thead><tbody>';
+        for (let m in metode) {
+            const isAuthorized = ['Owner','VIP'].includes(currentUser.role);
+            const lock = (m === 'CASH' || m === 'QRIS' || !isAuthorized);
+            htmlM += `<tr><td>${m}</td><td>
+                ${lock
+                    ? `<span>${metode[m].toLocaleString()}</span>`
+                    : `<input type="number" class="edit-mtd" data-m="${m}" value="${metode[m]}" oninput="recalcDetail()" style="width:100px;padding:5px 8px;font-size:12px;margin:0;">`
+                }
+            </td></tr>`;
+        }
+        document.getElementById('detTabelMetode').innerHTML = htmlM + '</tbody>';
+
+        document.getElementById('detTabelAudit').innerHTML = `
+            <thead><tr><th>Item</th><th>Awal</th><th>Laku</th><th>Sisa</th></tr></thead>
+            <tbody>
+                <tr><td>Dimsum</td><td>${audit.dAw}</td><td>${audit.dLak}</td><td><b>${audit.dAw - audit.dLak}</b></td></tr>
+                <tr><td>Tray</td><td>${audit.tAw}</td><td>${audit.tLak}</td><td><b>${audit.tAw - audit.tLak}</b></td></tr>
+            </tbody>`;
+
+        document.getElementById('detTabelExp').innerHTML = exps.length
+            ? `<thead><tr><th>Nama</th><th>Harga</th></tr></thead><tbody>` +
+              exps.map(e => `<tr><td>${e.nama}</td><td>Rp ${parseInt(e.harga).toLocaleString()}</td></tr>`).join('') +
+              `</tbody>`
+            : '';
+
+        document.getElementById('detGrandTotal').innerHTML = `
+            Total: <span id="detTotal">Rp ${parseInt(data.grand_total).toLocaleString()}</span>
+            ${currentUser.role !== 'Staff'
+                ? `<button onclick="saveEditDetail()" class="btn-save-wa" style="background:#333;margin-top:10px;">💾 Simpan Perubahan</button>`
+                : ''}`;
+
+        document.getElementById('detailOverlay').style.display = 'block';
+    }
+
+    function recalcDetail() {
+        let total  = 0;
+        const data = cacheHistoryLaporan.find(x => x.report_id === currentDetailID);
+        const mtd  = JSON.parse(data.metode_json);
+        total += (parseInt(mtd.CASH) || 0) + (parseInt(mtd.QRIS) || 0);
+        document.querySelectorAll('.edit-mtd').forEach(i => total += parseInt(i.value) || 0);
+        document.getElementById('detTotal').innerText = 'Rp ' + total.toLocaleString();
+        window.tempTotal = total;
+    }
+
+    async function saveEditDetail() {
+        const ok = await showConfirm('Simpan perubahan settlement?', 'Simpan', 'Batal', '💾', 'blue');
+        if (!ok) return;
+        const dataLama = cacheHistoryLaporan.find(x => x.report_id === currentDetailID);
+        const mtd      = JSON.parse(dataLama.metode_json);
+        document.querySelectorAll('.edit-mtd').forEach(i => mtd[i.dataset.m] = parseInt(i.value) || 0);
+        const dataBaru = {
+            report_id: currentDetailID,
+            petugas:   dataLama.petugas,
+            cabang:    dataLama.cabang,
+            metode:    mtd,
+            audit:     JSON.parse(dataLama.audit_json),
+            expens:    JSON.parse(dataLama.pengeluaran_json),
+            total:     window.tempTotal || dataLama.grand_total
+        };
+        try {
+            const res = await fetch('api.php?action=save_laporan', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(dataBaru)
+            });
+            if ((await res.json()).status === 'success') {
+                toast.success('Settlement Diupdate!');
+                tutupDetail();
+                renderHistoryLaporan();
+            }
+        } catch (e) {
+            toast.error('Gagal koneksi server!');
+        }
+    }
+
+    async function hapusLaporan(id) {
+        const ok = await showConfirm('Hapus laporan ini?', 'Ya, Hapus', 'Batal', '🗑️');
+        if (!ok) return;
+        try {
+            await fetch(`api.php?action=del_laporan&id=${id}`);
+            toast.success('Laporan dihapus!');
+            renderHistoryLaporan();
+        } catch (e) {
+            toast.error('Gagal menghapus laporan!');
+        }
+    }
+
+    function tutupDetail() {
+        document.getElementById('detailOverlay').style.display = 'none';
+    }
+
+    async function logout() {
+        const ok = await showConfirm('Logout dari sistem?', 'Ya, Logout', 'Batal', '🚪');
+        if (ok) {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('cabangHoki');
+            window.location.href = 'index.html';
+        }
+    }
+
+    // ── SINGLE window.onload ──
+    window.onload = function() {
+        buildSidebar();
+        updateClock();
+        const filterTgl = document.getElementById('filterTanggal');
+        filterTgl.value = new Date().toISOString().split('T')[0];
+        if (currentUser.role === 'Staff') {
+            filterTgl.disabled        = true;
+            filterTgl.style.background = '#f0f0f0';
+        }
+        fetchLaporanData();
         renderHistoryLaporan();
-    } catch (e) {
-        toast.error('Gagal menghapus laporan!');
-    }
-}
-
-function tutupDetail() {
-    document.getElementById('detailOverlay').style.display = 'none';
-}
-
-async function logout() {
-    const ok = await showConfirm('Logout dari sistem?', 'Ya, Logout', 'Batal', '🚪');
-    if (ok) {
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('cabangHoki');
-        window.location.href = 'index.html';
-    }
-}
-
-window.onload = () => {
-    buildSidebar();
-    updateClock();
-    const filterTgl = document.getElementById('filterTanggal');
-    filterTgl.value = new Date().toISOString().split('T')[0];
-    if (currentUser.role === 'Staff') {
-        filterTgl.disabled        = true;
-        filterTgl.style.background = '#f0f0f0';
-    }
-    fetchLaporanData();
-    renderHistoryLaporan();
-};
+    };
 </script>
 
 <script src="toast.js"></script>
