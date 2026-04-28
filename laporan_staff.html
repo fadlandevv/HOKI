@@ -9,14 +9,12 @@
     <link rel="stylesheet" href="style.css">
     <style>
 
-    /* ── LAYOUT ── */
     .grid-laporan {
         display: grid;
         grid-template-columns: 1fr 1.2fr;
         gap: 12px;
     }
 
-    /* ── CARD LAPORAN ── */
     .card-laporan {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -69,6 +67,7 @@
         color: var(--text);
         background: var(--surface);
         transition: border-color 0.2s;
+        width: auto;
     }
 
     .card-header-right input[type="date"]:focus {
@@ -76,7 +75,6 @@
         box-shadow: 0 0 0 3px rgba(211,47,47,0.08);
     }
 
-    /* ── SECTION TITLE ── */
     .section-title {
         background: var(--red-soft);
         border-left: 3px solid var(--red);
@@ -90,14 +88,9 @@
         letter-spacing: 0.5px;
     }
 
-    /* ── TABLES ── */
-    #tableMetode,
-    #tableAudit,
-    #tableExp,
-    #historyTable,
-    #detTabelMetode,
-    #detTabelAudit,
-    #detTabelExp {
+    /* Tables inside card */
+    #tableMetode, #tableAudit, #tableExp,
+    #detTabelMetode, #detTabelAudit, #detTabelExp {
         width: 100%;
         border-collapse: collapse;
         font-size: 13px;
@@ -108,12 +101,8 @@
         border: none;
     }
 
-    #tableMetode th,
-    #tableAudit th,
-    #tableExp th,
-    #detTabelMetode th,
-    #detTabelAudit th,
-    #detTabelExp th {
+    #tableMetode th, #tableAudit th, #tableExp th,
+    #detTabelMetode th, #detTabelAudit th, #detTabelExp th {
         background: var(--surface-2);
         color: var(--text-muted);
         font-size: 11px;
@@ -126,21 +115,16 @@
         border-radius: 0;
     }
 
-    #tableMetode td,
-    #tableAudit td,
-    #tableExp td,
-    #detTabelMetode td,
-    #detTabelAudit td,
-    #detTabelExp td {
+    #tableMetode td, #tableAudit td, #tableExp td,
+    #detTabelMetode td, #detTabelAudit td, #detTabelExp td {
         padding: 9px 10px;
         border-bottom: 1px solid var(--border);
         color: var(--text);
         vertical-align: middle;
-        border-top: none;
-        border-left: none;
-        border-right: none;
+        border-top: none; border-left: none; border-right: none;
     }
 
+    /* History table */
     #historyTable {
         width: 100%;
         border-collapse: collapse;
@@ -170,15 +154,12 @@
         border-bottom: 1px solid var(--border);
         color: var(--text);
         vertical-align: middle;
-        border-top: none;
-        border-left: none;
-        border-right: none;
+        border-top: none; border-left: none; border-right: none;
     }
 
     #historyTable tr:last-child td { border-bottom: none; }
     #historyTable tr:hover td { background: var(--red-soft); }
 
-    /* ── PENGELUARAN INPUT ── */
     .exp-input-row {
         display: grid;
         grid-template-columns: 2fr 1.5fr auto;
@@ -202,7 +183,6 @@
 
     .btn-add-exp:hover { filter: brightness(1.2); }
 
-    /* ── TOTAL HIGHLIGHT ── */
     .total-highlight {
         font-family: 'DM Mono', monospace;
         font-size: 20px;
@@ -214,11 +194,11 @@
         padding-top: 12px;
     }
 
-    /* ── SAVE BUTTON ── */
-    .btn-save-wa {
+    /* Tombol simpan — merah, tanpa WA */
+    .btn-simpan-laporan {
         width: 100%;
         padding: 13px;
-        background: var(--green);
+        background: var(--red);
         color: white;
         border: none;
         border-radius: var(--r-md);
@@ -232,11 +212,54 @@
         align-items: center;
         justify-content: center;
         gap: 6px;
+        box-shadow: 0 4px 12px rgba(211,47,47,0.25);
     }
 
-    .btn-save-wa:hover { filter: brightness(0.9); }
+    .btn-simpan-laporan:hover { filter: brightness(0.9); }
 
-    /* ── ICON BUTTON ── */
+    /* Tombol WA di detail */
+    .btn-wa-detail {
+        width: 100%;
+        padding: 12px;
+        background: #25D366;
+        color: white;
+        border: none;
+        border-radius: var(--r-md);
+        font-size: 13px;
+        font-weight: 700;
+        font-family: 'DM Sans', sans-serif;
+        cursor: pointer;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: filter 0.15s;
+    }
+
+    .btn-wa-detail:hover { filter: brightness(0.9); }
+
+    .btn-save-edit-det {
+        width: 100%;
+        padding: 12px;
+        background: #333;
+        color: white;
+        border: none;
+        border-radius: var(--r-md);
+        font-size: 13px;
+        font-weight: 700;
+        font-family: 'DM Sans', sans-serif;
+        cursor: pointer;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: filter 0.15s;
+    }
+
+    .btn-save-edit-det:hover { filter: brightness(1.2); }
+
     .btn-icon {
         background: none;
         border: none;
@@ -250,7 +273,7 @@
 
     .btn-icon:hover { background: var(--surface-2); }
 
-    /* ── DETAIL OVERLAY ── */
+    /* Detail overlay */
     #detailOverlay {
         position: fixed;
         top: 0; left: 0;
@@ -295,7 +318,6 @@
         margin-bottom: 16px;
     }
 
-    /* ── EMPTY STATE ── */
     .empty-row td {
         text-align: center;
         padding: 32px;
@@ -303,10 +325,9 @@
         font-size: 13px;
     }
 
-    /* ── RESPONSIVE MOBILE ── */
     @media (max-width: 844px) {
-        .grid-laporan { grid-template-columns: 1fr; }
-        .detail-grid  { grid-template-columns: 1fr; }
+        .grid-laporan  { grid-template-columns: 1fr; }
+        .detail-grid   { grid-template-columns: 1fr; }
         .exp-input-row { grid-template-columns: 1fr 1fr auto; }
         #detailOverlay { padding: 12px; }
         .detail-container { padding: 16px; }
@@ -314,16 +335,61 @@
         .card-header-right { align-items: flex-start; }
     }
 
+
+    /* ── INFO BAR SIMPLE ── */
+    .info-bar-simple {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 0 24px;
+        display: flex;
+        align-items: center;
+        height: 40px;
+        flex-shrink: 0;
+    }
+
+    .ib-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 16px;
+        height: 100%;
+    }
+
+    .ib-item:first-child { padding-left: 0; }
+
+    .ib-divider {
+        width: 1px;
+        height: 20px;
+        background: var(--border);
+        flex-shrink: 0;
+    }
+
+    .ib-label {
+        font-size: 11px;
+        color: var(--text-light);
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .ib-val {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text);
+        white-space: nowrap;
+    }
+
+    @media (max-width: 844px) {
+        .info-bar-simple { padding: 6px 14px; height: auto; gap: 16px; }
+        .ib-item { padding: 0; }
+    }
     </style>
 </head>
 <body>
 
-<!-- ── SIDEBAR ── -->
+<!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand" onclick="toggleSidebar()">
-        <div class="sidebar-logo">
-            <img src="Assets/logobrand.png" alt="Hoki">
-        </div>
+        <div class="sidebar-logo"><img src="Assets/logobrand.png" alt="Hoki"></div>
         <div class="sidebar-brand-text">
             <div class="sidebar-brand-name">Hoki Dimsum</div>
             <div class="sidebar-brand-sub">POS System v2.0</div>
@@ -343,7 +409,7 @@
     </div>
 </aside>
 
-<!-- ── MAIN CONTENT ── -->
+<!-- MAIN CONTENT -->
 <div class="main-content" id="mainContent">
 
     <header class="top-header">
@@ -358,19 +424,25 @@
         </div>
     </header>
 
+    <!-- INFO BAR -->
+    <div class="info-bar-simple">
+        <div class="ib-item"><span class="ib-label">👤 Petugas</span><span class="ib-val" id="infoPetugas">—</span></div>
+        <div class="ib-divider"></div>
+        <div class="ib-item"><span class="ib-label">📍 Cabang</span><span class="ib-val" id="infoCabang">—</span></div>
+    </div>
+
     <div class="page-body">
         <div class="grid-laporan">
 
             <!-- KOLOM KIRI: Form Settlement -->
             <div class="card-laporan">
-                <!-- Header card dengan tanggal di dalamnya -->
                 <div class="card-header">
                     <div class="card-header-left">
                         <h3>📝 Settlement Harian</h3>
                         <p style="font-size:11px;color:var(--text-muted);margin:2px 0 0;">ID: <b id="reportID"></b></p>
                     </div>
                     <div class="card-header-right">
-                        <label>Tanggal</label>
+                        <label for="filterTanggal">Tanggal</label>
                         <input type="date" id="filterTanggal" onchange="fetchLaporanData()">
                     </div>
                 </div>
@@ -380,9 +452,7 @@
 
                 <div class="section-title">📉 Audit Stok</div>
                 <table id="tableAudit">
-                    <thead>
-                        <tr><th>Item</th><th>Awal</th><th>Laku</th><th>Sisa</th></tr>
-                    </thead>
+                    <thead><tr><th>Item</th><th>Awal</th><th>Laku</th><th>Sisa</th></tr></thead>
                     <tbody>
                         <tr>
                             <td>Dimsum (Pcs)</td>
@@ -411,7 +481,8 @@
                     <span id="grandTotal">Rp 0</span>
                 </div>
 
-                <button class="btn-save-wa" onclick="simpanDanKirimWA()">💾 Simpan & Kirim Laporan</button>
+                <!-- Hanya tombol Simpan di halaman utama -->
+                <button class="btn-simpan-laporan" onclick="simpanLaporan()">💾 Simpan Laporan</button>
             </div>
 
             <!-- KOLOM KANAN: History -->
@@ -420,26 +491,32 @@
                 <div style="overflow-x:auto;">
                     <table id="historyTable">
                         <thead>
-                            <tr><th>Waktu</th><th>Petugas</th><th>Total</th><th>Aksi</th></tr>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Jam</th>
+                                <th>Petugas</th>
+                                <th>Cabang</th>
+                                <th>Total</th>
+                                <th>Aksi</th>
+                            </tr>
                         </thead>
                         <tbody id="historyBody">
-                            <tr class="empty-row"><td colspan="4">Belum ada data</td></tr>
+                            <tr class="empty-row"><td colspan="6">Belum ada data</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-        </div><!-- /.grid-laporan -->
-    </div><!-- /.page-body -->
-
-</div><!-- /.main-content -->
+        </div>
+    </div>
+</div>
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
     <button class="bn-item" onclick="location.href='dashboard.html'"><span class="bn-icon">🛒</span><span class="bn-label">Kasir</span></button>
     <button class="bn-item" onclick="location.href='history.html'"><span class="bn-icon">📄</span><span class="bn-label">History</span></button>
     <button class="bn-item" onclick="location.href='stok.html'"><span class="bn-icon">📦</span><span class="bn-label">Stok</span></button>
-    <button class="bn-item active" onclick="location.href='laporan_staff.html'"><span class="bn-icon">📊</span><span class="bn-label">Laporan</span></button>
+    <button class="bn-item active"><span class="bn-icon">📊</span><span class="bn-label">Laporan</span></button>
     <button class="bn-item" onclick="openSheet('moreSheet')"><span class="bn-icon">☰</span><span class="bn-label">Lainnya</span></button>
 </nav>
 
@@ -472,381 +549,432 @@
         <div class="section-title">💸 Pengeluaran</div>
         <table id="detTabelExp"></table>
         <div class="total-highlight" id="detGrandTotal"></div>
+
+        <!-- Tombol WA di detail -->
+        <button class="btn-wa-detail" onclick="kirimWADariDetail()">
+            📲 Kirim WA
+        </button>
     </div>
 </div>
 
 <script>
-    const currentUser  = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff'};
-    const cabangAktif  = localStorage.getItem('cabangHoki') || 'Pusat';
-    if (!currentUser.user) window.location.href = 'index.html';
+const currentUser  = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff'};
+const cabangAktif  = localStorage.getItem('cabangHoki') || 'Pusat';
+if (!currentUser.user) window.location.href = 'index.html';
 
-    let pengeluaran         = [];
-    let cacheHistoryLaporan = [];
-    let omzetPerMetode      = {};
-    let lakuDimsum          = 0;
-    let lakuTray            = 0;
-    let currentDetailID     = null;
+let pengeluaran         = [];
+let cacheHistoryLaporan = [];
+let omzetPerMetode      = {};
+let lakuDimsum          = 0;
+let lakuTray            = 0;
+let currentDetailID     = null;
 
-    // ── SIDEBAR ──
-    function toggleSidebar() {
-        const sb = document.getElementById('sidebar');
-        const mc = document.getElementById('mainContent');
-        sb.classList.toggle('collapsed');
-        mc.classList.toggle('expanded');
-        localStorage.setItem('sidebarState', sb.classList.contains('collapsed') ? 'small' : 'large');
+/* ── SIDEBAR ── */
+function toggleSidebar() {
+    const sb = document.getElementById('sidebar');
+    const mc = document.getElementById('mainContent');
+    sb.classList.toggle('collapsed');
+    mc.classList.toggle('expanded');
+    localStorage.setItem('sidebarState', sb.classList.contains('collapsed') ? 'small' : 'large');
+}
+
+function buildSidebar() {
+    if (localStorage.getItem('sidebarState') === 'small') {
+        document.getElementById('sidebar').classList.add('collapsed');
+        document.getElementById('mainContent').classList.add('expanded');
     }
-
-    function buildSidebar() {
-        if (localStorage.getItem('sidebarState') === 'small') {
-            document.getElementById('sidebar').classList.add('collapsed');
-            document.getElementById('mainContent').classList.add('expanded');
-        }
-        const role = currentUser.role;
-        const cur  = window.location.pathname.split('/').pop() || 'dashboard.html';
-        const navItem = (icon, label, link) => {
-            const active = cur === link ? 'active' : '';
-            return `<button class="nav-item ${active}" onclick="location.href='${link}'">
-                <span class="nav-icon">${icon}</span>
-                <span class="nav-label">${label}</span>
-            </button>`;
-        };
-        let h = `<div class="nav-group-label">Frontline</div>`;
-        h += navItem('🛒','Kasir','dashboard.html');
-        h += navItem('📄','History Transaksi','history.html');
-        h += navItem('📦','Stok Harian','stok.html');
-        h += navItem('🚚','Restock Barang','restock.html');
-        h += navItem('📊','Laporan Penjualan','laporan_staff.html');
-        if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
-            h += `<div class="nav-group-label">Management</div>`;
-            h += navItem('🍱','Master Produk','produk.html');
-            h += navItem('📈','Rekapan Penjualan','rekap.html');
-        }
-        if (['Owner','VIP'].includes(role)) {
-            h += `<div class="nav-group-label">Executive</div>`;
-            h += navItem('📊','Keuangan Global','laporan.html');
-            h += navItem('📈','Statistik','statistik.html');
-            h += navItem('💸','Belanja','belanja.html');
-        }
-        if (role === 'VIP') {
-            h += `<div class="nav-group-label">VIP Access</div>`;
-            h += navItem('👥','Manajemen User','user.html');
-            h += navItem('🔑','History Login','login_history.html');
-        }
-        document.getElementById('sidebarNav').innerHTML = h;
-        const name = currentUser.user || '?';
-        document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
-        document.getElementById('sidebarUserName').innerText   = name;
-        document.getElementById('sidebarUserRole').innerText   = role;
-    }
-
-    // ── CLOCK ──
-    function updateClock() {
-        const now = new Date();
-        document.getElementById('realtimeClock').innerText = now.toLocaleTimeString('id-ID');
-        document.getElementById('realtimeDate').innerText  = now.toLocaleDateString('id-ID',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
-    }
-    setInterval(updateClock, 1000);
-
-    // ── MORE MENU ──
-    function buildMoreMenu() {
-        const role  = currentUser.role;
-        const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
-        if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
-            items.push({icon:'🍱',label:'Produk',link:'produk.html'});
-            items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
-        }
-        if (['Owner','VIP'].includes(role)) {
-            items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
-            items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
-            items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
-        }
-        if (role === 'VIP') {
-            items.push({icon:'👥',label:'Users',link:'user.html'});
-            items.push({icon:'🔑',label:'Login Log',link:'login_history.html'});
-        }
-        items.push({icon:'🚪',label:'Logout',link:'#',action:'logout()'});
-        document.getElementById('moreGrid').innerHTML = items.map(i =>
-            `<button class="more-btn" onclick="${i.action||`location.href='${i.link}'`}">
-                <span class="more-btn-icon">${i.icon}</span>
-                <span class="more-btn-label">${i.label}</span>
-            </button>`).join('');
-    }
-
-    function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
-    function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
-
-    // ── FETCH DATA ──
-    async function fetchLaporanData() {
-        const tglDipilih = document.getElementById('filterTanggal').value;
-        try {
-            const resProd      = await fetch('api.php?action=get_produk');
-            const masterProduk = await resProd.json();
-            const resTrx       = await fetch('api.php?action=get_history');
-            const transactions = await resTrx.json();
-
-            omzetPerMetode = { CASH: 0, QRIS: 0, GF: 0, GB: 0, PG: 0, RM: 0 };
-            lakuDimsum = 0; lakuTray = 0;
-            let totalOmzet = 0;
-
-            transactions.forEach(t => {
-                if (t.waktu.split(' ')[0] === tglDipilih && t.cabang === cabangAktif) {
-                    const mtd = t.metode.toUpperCase();
-                    if (omzetPerMetode[mtd] !== undefined) omzetPerMetode[mtd] += parseInt(t.total);
-                    totalOmzet += parseInt(t.total);
-                    const items = JSON.parse(t.items_json || '[]');
-                    items.forEach(it => {
-                        const p = masterProduk.find(x => x.nama === it.nama || x.sku === it.sku);
-                        if (p) {
-                            lakuDimsum += (parseInt(p.dimsumPcs) || 0) * (it.qty || 1);
-                            lakuTray   += (parseInt(p.aluTrayPcs) || 0) * (it.qty || 1);
-                        }
-                    });
-                }
-            });
-
-            let htmlM = '';
-            for (let m in omzetPerMetode) {
-                htmlM += `<tr><td><b>${m}</b></td><td>Rp ${omzetPerMetode[m].toLocaleString()}</td></tr>`;
-            }
-            document.querySelector('#tableMetode tbody').innerHTML = htmlM;
-            document.getElementById('dLak').innerText       = lakuDimsum;
-            document.getElementById('tLak').innerText       = lakuTray;
-            document.getElementById('grandTotal').innerText = 'Rp ' + totalOmzet.toLocaleString();
-            window.currentGrandTotal = totalOmzet;
-            document.getElementById('reportID').innerText   = `LP-${cabangAktif.toUpperCase()}-${tglDipilih.replace(/-/g, '')}`;
-            hitungSisa();
-        } catch (e) { console.error(e); }
-    }
-
-    function hitungSisa() {
-        const dAw = parseInt(document.getElementById('dAw').value) || 0;
-        const tAw = parseInt(document.getElementById('tAw').value) || 0;
-        document.getElementById('dSis').innerText = dAw - lakuDimsum;
-        document.getElementById('tSis').innerText = tAw - lakuTray;
-    }
-
-    function addEx() {
-        const nama  = document.getElementById('exNama').value;
-        const harga = document.getElementById('exHarga').value;
-        if (!nama || !harga) return toast.warning('Isi nama dan harga dulu!');
-        pengeluaran.push({ nama, harga: parseInt(harga) });
-        document.getElementById('exNama').value  = '';
-        document.getElementById('exHarga').value = '';
-        renderExpTable();
-    }
-
-    function renderExpTable() {
-        const tbody = document.querySelector('#tableExp tbody');
-        tbody.innerHTML = pengeluaran.map((ex, i) =>
-            `<tr>
-                <td>${ex.nama}</td>
-                <td>Rp ${ex.harga.toLocaleString()}</td>
-                <td onclick="pengeluaran.splice(${i},1);renderExpTable()" style="color:var(--red);cursor:pointer;font-weight:700;">×</td>
-            </tr>`
-        ).join('');
-    }
-
-    async function simpanDanKirimWA() {
-        const data = {
-            report_id: document.getElementById('reportID').innerText,
-            petugas:   currentUser.user,
-            cabang:    cabangAktif,
-            metode:    omzetPerMetode,
-            audit: {
-                dAw:  document.getElementById('dAw').value,
-                tAw:  document.getElementById('tAw').value,
-                dLak: lakuDimsum,
-                tLak: lakuTray
-            },
-            expens: pengeluaran,
-            total:  window.currentGrandTotal
-        };
-        try {
-            const res   = await fetch('api.php?action=save_laporan', {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify(data)
-            });
-            const hasil = await res.json();
-            if (hasil.status === 'success') {
-                toast.success('Laporan Tersimpan!', 'Mengirim ke WhatsApp...');
-                kirimWA(data);
-                renderHistoryLaporan();
-            } else {
-                toast.error('Gagal menyimpan laporan!');
-            }
-        } catch (e) {
-            toast.error('Gagal koneksi server!');
-        }
-    }
-
-    function kirimWA(d) {
-        const nomor = "6281234567890";
-        let txt = `*SETTLEMENT HOKI POS*\nID: ${d.report_id}\n------------------\n`;
-        for (let m in d.metode) if (d.metode[m] > 0) txt += `${m}: Rp ${d.metode[m].toLocaleString()}\n`;
-        txt += `------------------\nDimsum Laku: ${d.audit.dLak}\nTray Laku: ${d.audit.tLak}\n------------------\nTOTAL: Rp ${d.total.toLocaleString()}`;
-        window.open(`https://wa.me/${nomor}?text=${encodeURIComponent(txt)}`, '_blank');
-    }
-
-    async function renderHistoryLaporan() {
-        try {
-            const url = `api.php?action=get_laporan_history&role=${currentUser.role}&cabang=${cabangAktif}`;
-            const res = await fetch(url);
-            cacheHistoryLaporan = await res.json();
-            const tbody = document.getElementById('historyBody');
-            tbody.innerHTML = '';
-
-            if (!cacheHistoryLaporan || !cacheHistoryLaporan.length) {
-                tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Belum ada data</td></tr>';
-                return;
-            }
-
-            cacheHistoryLaporan.forEach(l => {
-                if (currentUser.role !== 'Owner' && currentUser.role !== 'VIP' && l.cabang !== cabangAktif) return;
-                tbody.innerHTML += `<tr>
-                    <td><small style="font-family:'DM Mono',monospace;color:var(--text-muted);">${l.waktu}</small></td>
-                    <td>${l.petugas}</td>
-                    <td style="font-family:'DM Mono',monospace;font-weight:700;color:var(--red);">Rp ${parseInt(l.grand_total).toLocaleString('id-ID')}</td>
-                    <td>
-                        <button class="btn-icon" onclick="bukaDetail('${l.report_id}')">👁️</button>
-                        ${['Owner','VIP'].includes(currentUser.role) ? `<button class="btn-icon" onclick="hapusLaporan(${l.id})">🗑️</button>` : ''}
-                    </td>
-                </tr>`;
-            });
-        } catch (e) {
-            console.error('Error History:', e);
-            toast.error('Gagal memuat history laporan!');
-        }
-    }
-
-    function bukaDetail(rid) {
-        const data = cacheHistoryLaporan.find(x => x.report_id === rid);
-        if (!data) return;
-        currentDetailID = rid;
-
-        const audit  = JSON.parse(data.audit_json);
-        const metode = JSON.parse(data.metode_json);
-        const exps   = JSON.parse(data.pengeluaran_json || '[]');
-
-        document.getElementById('detID').innerText   = data.report_id;
-        document.getElementById('detMeta').innerText = `${data.petugas} | ${data.cabang}`;
-
-        let htmlM = '<thead><tr><th>Metode</th><th>Nominal</th></tr></thead><tbody>';
-        for (let m in metode) {
-            const isAuthorized = ['Owner','VIP'].includes(currentUser.role);
-            const lock = (m === 'CASH' || m === 'QRIS' || !isAuthorized);
-            htmlM += `<tr><td>${m}</td><td>
-                ${lock
-                    ? `<span>${metode[m].toLocaleString()}</span>`
-                    : `<input type="number" class="edit-mtd" data-m="${m}" value="${metode[m]}" oninput="recalcDetail()" style="width:100px;padding:5px 8px;font-size:12px;margin:0;">`
-                }
-            </td></tr>`;
-        }
-        document.getElementById('detTabelMetode').innerHTML = htmlM + '</tbody>';
-
-        document.getElementById('detTabelAudit').innerHTML = `
-            <thead><tr><th>Item</th><th>Awal</th><th>Laku</th><th>Sisa</th></tr></thead>
-            <tbody>
-                <tr><td>Dimsum</td><td>${audit.dAw}</td><td>${audit.dLak}</td><td><b>${audit.dAw - audit.dLak}</b></td></tr>
-                <tr><td>Tray</td><td>${audit.tAw}</td><td>${audit.tLak}</td><td><b>${audit.tAw - audit.tLak}</b></td></tr>
-            </tbody>`;
-
-        document.getElementById('detTabelExp').innerHTML = exps.length
-            ? `<thead><tr><th>Nama</th><th>Harga</th></tr></thead><tbody>` +
-              exps.map(e => `<tr><td>${e.nama}</td><td>Rp ${parseInt(e.harga).toLocaleString()}</td></tr>`).join('') +
-              `</tbody>`
-            : '';
-
-        document.getElementById('detGrandTotal').innerHTML = `
-            Total: <span id="detTotal">Rp ${parseInt(data.grand_total).toLocaleString()}</span>
-            ${currentUser.role !== 'Staff'
-                ? `<button onclick="saveEditDetail()" class="btn-save-wa" style="background:#333;margin-top:10px;">💾 Simpan Perubahan</button>`
-                : ''}`;
-
-        document.getElementById('detailOverlay').style.display = 'block';
-    }
-
-    function recalcDetail() {
-        let total  = 0;
-        const data = cacheHistoryLaporan.find(x => x.report_id === currentDetailID);
-        const mtd  = JSON.parse(data.metode_json);
-        total += (parseInt(mtd.CASH) || 0) + (parseInt(mtd.QRIS) || 0);
-        document.querySelectorAll('.edit-mtd').forEach(i => total += parseInt(i.value) || 0);
-        document.getElementById('detTotal').innerText = 'Rp ' + total.toLocaleString();
-        window.tempTotal = total;
-    }
-
-    async function saveEditDetail() {
-        const ok = await showConfirm('Simpan perubahan settlement?', 'Simpan', 'Batal', '💾', 'blue');
-        if (!ok) return;
-        const dataLama = cacheHistoryLaporan.find(x => x.report_id === currentDetailID);
-        const mtd      = JSON.parse(dataLama.metode_json);
-        document.querySelectorAll('.edit-mtd').forEach(i => mtd[i.dataset.m] = parseInt(i.value) || 0);
-        const dataBaru = {
-            report_id: currentDetailID,
-            petugas:   dataLama.petugas,
-            cabang:    dataLama.cabang,
-            metode:    mtd,
-            audit:     JSON.parse(dataLama.audit_json),
-            expens:    JSON.parse(dataLama.pengeluaran_json),
-            total:     window.tempTotal || dataLama.grand_total
-        };
-        try {
-            const res = await fetch('api.php?action=save_laporan', {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify(dataBaru)
-            });
-            if ((await res.json()).status === 'success') {
-                toast.success('Settlement Diupdate!');
-                tutupDetail();
-                renderHistoryLaporan();
-            }
-        } catch (e) {
-            toast.error('Gagal koneksi server!');
-        }
-    }
-
-    async function hapusLaporan(id) {
-        const ok = await showConfirm('Hapus laporan ini?', 'Ya, Hapus', 'Batal', '🗑️');
-        if (!ok) return;
-        try {
-            await fetch(`api.php?action=del_laporan&id=${id}`);
-            toast.success('Laporan dihapus!');
-            renderHistoryLaporan();
-        } catch (e) {
-            toast.error('Gagal menghapus laporan!');
-        }
-    }
-
-    function tutupDetail() {
-        document.getElementById('detailOverlay').style.display = 'none';
-    }
-
-    async function logout() {
-        const ok = await showConfirm('Logout dari sistem?', 'Ya, Logout', 'Batal', '🚪');
-        if (ok) {
-            localStorage.removeItem('currentUser');
-            localStorage.removeItem('cabangHoki');
-            window.location.href = 'index.html';
-        }
-    }
-
-    // ── SINGLE window.onload ──
-    window.onload = function() {
-        buildSidebar();
-        updateClock();
-        const filterTgl = document.getElementById('filterTanggal');
-        filterTgl.value = new Date().toISOString().split('T')[0];
-        if (currentUser.role === 'Staff') {
-            filterTgl.disabled        = true;
-            filterTgl.style.background = '#f0f0f0';
-        }
-        fetchLaporanData();
-        renderHistoryLaporan();
+    const role = currentUser.role;
+    const cur  = window.location.pathname.split('/').pop() || 'dashboard.html';
+    const navItem = (icon, label, link) => {
+        const active = cur === link ? 'active' : '';
+        return `<button class="nav-item ${active}" onclick="location.href='${link}'">
+            <span class="nav-icon">${icon}</span>
+            <span class="nav-label">${label}</span>
+        </button>`;
     };
+    let h = `<div class="nav-group-label">Frontline</div>`;
+    h += navItem('🛒','Kasir','dashboard.html');
+    h += navItem('📄','History Transaksi','history.html');
+    h += navItem('📦','Stok Harian','stok.html');
+    h += navItem('🚚','Restock Barang','restock.html');
+    h += navItem('📊','Laporan Penjualan','laporan_staff.html');
+    if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+        h += `<div class="nav-group-label">Management</div>`;
+        h += navItem('📈','Rekapan Penjualan','rekap.html');
+        h += navItem('🍱','Master Produk','produk.html');
+    }
+    if (['Owner','VIP'].includes(role)) {
+        h += `<div class="nav-group-label">Executive</div>`;
+        h += navItem('📊','Keuangan Global','laporan.html');
+        h += navItem('📈','Statistik','statistik.html');
+        h += navItem('🧂','Bahan Baku','bahan_baku.html');
+        h += navItem('💰','HPP Produk','hpp_produk.html');
+        h += navItem('💸','Belanja','belanja.html');
+    }
+    if (role === 'VIP') {
+        h += `<div class="nav-group-label">VIP Access</div>`;
+        h += navItem('👥','Manajemen User','user.html');
+        h += navItem('🔑','History Login','login_history.html');
+    }
+    document.getElementById('sidebarNav').innerHTML = h;
+    const name = currentUser.fullName || currentUser.user || '?';
+    document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
+    document.getElementById('sidebarUserName').innerText   = name;
+    document.getElementById('sidebarUserRole').innerText   = role;
+}
+
+/* ── CLOCK ── */
+function updateClock() {
+    const now = new Date();
+    document.getElementById('realtimeClock').innerText = now.toLocaleTimeString('id-ID');
+    document.getElementById('realtimeDate').innerText  = now.toLocaleDateString('id-ID',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+}
+setInterval(updateClock, 1000);
+
+/* ── MORE MENU ── */
+function buildMoreMenu() {
+    const role  = currentUser.role;
+    const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
+    if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
+        items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
+    }
+    if (['Owner','VIP'].includes(role)) {
+        items.push({icon:'🧂',label:'Bahan Baku',link:'bahan_baku.html'});
+        items.push({icon:'💰',label:'HPP Produk',link:'hpp_produk.html'});
+        items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
+        items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
+        items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
+    }
+    if (role === 'VIP') {
+        items.push({icon:'👥',label:'Users',link:'user.html'});
+        items.push({icon:'🔑',label:'Login Log',link:'login_history.html'});
+    }
+    items.push({icon:'🚪',label:'Logout',link:'#',action:'logout()'});
+    document.getElementById('moreGrid').innerHTML = items.map(i =>
+        `<button class="more-btn" onclick="${i.action||`location.href='${i.link}'`}">
+            <span class="more-btn-icon">${i.icon}</span>
+            <span class="more-btn-label">${i.label}</span>
+        </button>`).join('');
+}
+
+function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
+function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
+
+/* ── FETCH DATA ── */
+async function fetchLaporanData() {
+    const tglDipilih = document.getElementById('filterTanggal').value;
+    try {
+        const resProd      = await fetch('api.php?action=get_produk');
+        const masterProduk = await resProd.json();
+        const resTrx       = await fetch('api.php?action=get_history');
+        const transactions = await resTrx.json();
+
+        omzetPerMetode = { CASH: 0, QRIS: 0, GF: 0, GB: 0, PG: 0, RM: 0 };
+        lakuDimsum = 0;
+        lakuTray   = 0;
+        let totalOmzet = 0;
+
+        transactions.forEach(t => {
+            if ((t.waktu || '').split(' ')[0] === tglDipilih && t.cabang === cabangAktif) {
+                const mtd = (t.metode || '').toUpperCase();
+                if (omzetPerMetode[mtd] !== undefined) omzetPerMetode[mtd] += parseInt(t.total);
+                totalOmzet += parseInt(t.total);
+                const items = JSON.parse(t.items_json || '[]');
+                items.forEach(it => {
+                    const p = masterProduk.find(x => x.nama === it.nama || x.sku === it.sku);
+                    if (p) {
+                        lakuDimsum += (parseInt(p.dimsumPcs)  || 0) * (parseInt(it.qty) || 1);
+                        lakuTray   += (parseInt(p.aluTrayPcs) || 0) * (parseInt(it.qty) || 1);
+                    }
+                });
+            }
+        });
+
+        let htmlM = '';
+        for (let m in omzetPerMetode) {
+            htmlM += `<tr><td><b>${m}</b></td><td>Rp ${omzetPerMetode[m].toLocaleString('id-ID')}</td></tr>`;
+        }
+        document.querySelector('#tableMetode tbody').innerHTML = htmlM;
+        document.getElementById('dLak').innerText       = lakuDimsum;
+        document.getElementById('tLak').innerText       = lakuTray;
+        document.getElementById('grandTotal').innerText = 'Rp ' + totalOmzet.toLocaleString('id-ID');
+        window.currentGrandTotal = totalOmzet;
+        document.getElementById('reportID').innerText   = `LP-${cabangAktif.toUpperCase()}-${tglDipilih.replace(/-/g,'')}`;
+        hitungSisa();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function hitungSisa() {
+    const dAw = parseInt(document.getElementById('dAw').value) || 0;
+    const tAw = parseInt(document.getElementById('tAw').value) || 0;
+    document.getElementById('dSis').innerText = dAw - lakuDimsum;
+    document.getElementById('tSis').innerText = tAw - lakuTray;
+}
+
+function addEx() {
+    const nama  = document.getElementById('exNama').value.trim();
+    const harga = document.getElementById('exHarga').value;
+    if (!nama || !harga) return toast.warning('Isi nama dan harga dulu!');
+    pengeluaran.push({ nama, harga: parseInt(harga) });
+    document.getElementById('exNama').value  = '';
+    document.getElementById('exHarga').value = '';
+    renderExpTable();
+}
+
+function renderExpTable() {
+    const tbody = document.querySelector('#tableExp tbody');
+    if (!tbody) return;
+    tbody.innerHTML = pengeluaran.map((ex, i) =>
+        `<tr>
+            <td>${ex.nama}</td>
+            <td>Rp ${ex.harga.toLocaleString('id-ID')}</td>
+            <td onclick="pengeluaran.splice(${i},1);renderExpTable()" style="color:var(--red);cursor:pointer;font-weight:700;">×</td>
+        </tr>`
+    ).join('');
+}
+
+/* ── SIMPAN LAPORAN (tanpa WA) ── */
+async function simpanLaporan() {
+    const data = {
+        report_id: document.getElementById('reportID').innerText,
+        petugas:   currentUser.fullName || currentUser.user,
+        cabang:    cabangAktif,
+        metode:    omzetPerMetode,
+        audit: {
+            dAw:  document.getElementById('dAw').value,
+            tAw:  document.getElementById('tAw').value,
+            dLak: lakuDimsum,
+            tLak: lakuTray
+        },
+        expens: pengeluaran,
+        total:  window.currentGrandTotal || 0
+    };
+    try {
+        const res   = await fetch('api.php?action=save_laporan', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(data)
+        });
+        const hasil = await res.json();
+        if (hasil.status === 'success') {
+            toast.success('Laporan Berhasil Disimpan!');
+            renderHistoryLaporan();
+        } else {
+            toast.error('Gagal menyimpan laporan!');
+        }
+    } catch (e) {
+        toast.error('Gagal koneksi server!');
+    }
+}
+
+/* ── KIRIM WA dari detail ── */
+function kirimWADariDetail() {
+    const d = window.currentDetailCache;
+    if (!d) return;
+    const nomor  = "6281234567890"; // ganti nomor WA tujuan
+    const mtd    = JSON.parse(d.metode_json    || '{}');
+    const audit  = JSON.parse(d.audit_json     || '{}');
+    const exps   = JSON.parse(d.pengeluaran_json || '[]');
+
+    let txt = `*SETTLEMENT HOKI POS*\n`;
+    txt += `ID: ${d.report_id}\n`;
+    txt += `Petugas: ${d.petugas}\n`;
+    txt += `Cabang: ${d.cabang}\n`;
+    txt += `------------------\n`;
+    for (let m in mtd) if (parseInt(mtd[m]) > 0) txt += `${m}: Rp ${parseInt(mtd[m]).toLocaleString('id-ID')}\n`;
+    txt += `------------------\n`;
+    txt += `Dimsum Laku: ${audit.dLak || 0}\n`;
+    txt += `Tray Laku: ${audit.tLak || 0}\n`;
+    if (exps.length) {
+        txt += `------------------\nPengeluaran:\n`;
+        exps.forEach(e => txt += `• ${e.nama}: Rp ${parseInt(e.harga).toLocaleString('id-ID')}\n`);
+    }
+    txt += `------------------\nTOTAL: Rp ${parseInt(d.grand_total).toLocaleString('id-ID')}`;
+    window.open(`https://wa.me/${nomor}?text=${encodeURIComponent(txt)}`, '_blank');
+}
+
+/* ── RENDER HISTORY ── */
+async function renderHistoryLaporan() {
+    try {
+        const url = `api.php?action=get_laporan_history&role=${currentUser.role}&cabang=${encodeURIComponent(cabangAktif)}`;
+        const res = await fetch(url);
+        cacheHistoryLaporan = await res.json();
+        const tbody = document.getElementById('historyBody');
+        tbody.innerHTML = '';
+
+        if (!cacheHistoryLaporan || !cacheHistoryLaporan.length) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Belum ada data</td></tr>';
+            return;
+        }
+
+        cacheHistoryLaporan.forEach(l => {
+            if (!['Owner','VIP'].includes(currentUser.role) && l.cabang !== cabangAktif) return;
+
+            const parts  = (l.waktu || '').split(' ');
+            const tglStr = parts[0] || '—';
+            const jamStr = parts[1] ? parts[1].substring(0,5) : '—';
+
+            tbody.innerHTML += `<tr>
+                <td><small style="font-family:'DM Mono',monospace;color:var(--text-muted);">${tglStr}</small></td>
+                <td><small style="font-family:'DM Mono',monospace;color:var(--text-muted);">${jamStr}</small></td>
+                <td>${l.petugas}</td>
+                <td><b>${l.cabang}</b></td>
+                <td style="font-family:'DM Mono',monospace;font-weight:700;color:var(--red);">Rp ${parseInt(l.grand_total).toLocaleString('id-ID')}</td>
+                <td>
+                    <button class="btn-icon" onclick="bukaDetail('${l.report_id}')">👁️</button>
+                    ${['Owner','VIP'].includes(currentUser.role) ? `<button class="btn-icon" onclick="hapusLaporan(${l.id})">🗑️</button>` : ''}
+                </td>
+            </tr>`;
+        });
+    } catch (e) {
+        console.error('Error renderHistoryLaporan:', e);
+    }
+}
+
+/* ── BUKA DETAIL ── */
+function bukaDetail(rid) {
+    const data = cacheHistoryLaporan.find(x => x.report_id === rid);
+    if (!data) return;
+    currentDetailID        = rid;
+    window.currentDetailCache = data;
+
+    const audit  = JSON.parse(data.audit_json       || '{}');
+    const metode = JSON.parse(data.metode_json       || '{}');
+    const exps   = JSON.parse(data.pengeluaran_json  || '[]');
+
+    document.getElementById('detID').innerText   = data.report_id;
+    document.getElementById('detMeta').innerText = `${data.petugas} · ${data.cabang} · ${data.waktu}`;
+
+    let htmlM = '<thead><tr><th>Metode</th><th>Nominal</th></tr></thead><tbody>';
+    for (let m in metode) {
+        const isAuth = ['Owner','VIP'].includes(currentUser.role);
+        const lock   = (m === 'CASH' || m === 'QRIS' || !isAuth);
+        htmlM += `<tr><td>${m}</td><td>
+            ${lock
+                ? `<span>Rp ${parseInt(metode[m]).toLocaleString('id-ID')}</span>`
+                : `<input type="number" class="edit-mtd" data-m="${m}" value="${metode[m]}" oninput="recalcDetail()" style="width:110px;padding:5px 8px;font-size:12px;margin:0;">`
+            }
+        </td></tr>`;
+    }
+    document.getElementById('detTabelMetode').innerHTML = htmlM + '</tbody>';
+
+    document.getElementById('detTabelAudit').innerHTML = `
+        <thead><tr><th>Item</th><th>Awal</th><th>Laku</th><th>Sisa</th></tr></thead>
+        <tbody>
+            <tr><td>Dimsum</td><td>${audit.dAw||0}</td><td>${audit.dLak||0}</td><td><b>${(audit.dAw||0)-(audit.dLak||0)}</b></td></tr>
+            <tr><td>Tray</td><td>${audit.tAw||0}</td><td>${audit.tLak||0}</td><td><b>${(audit.tAw||0)-(audit.tLak||0)}</b></td></tr>
+        </tbody>`;
+
+    document.getElementById('detTabelExp').innerHTML = exps.length
+        ? `<thead><tr><th>Nama</th><th>Harga</th></tr></thead><tbody>` +
+          exps.map(e => `<tr><td>${e.nama}</td><td>Rp ${parseInt(e.harga).toLocaleString('id-ID')}</td></tr>`).join('') +
+          `</tbody>`
+        : '<tbody><tr><td colspan="2" style="text-align:center;color:var(--text-light);padding:12px;">Tidak ada pengeluaran</td></tr></tbody>';
+
+    const totalHTML = `Total: <span id="detTotal">Rp ${parseInt(data.grand_total).toLocaleString('id-ID')}</span>`;
+    const editBtn   = currentUser.role !== 'Staff'
+        ? `<button class="btn-save-edit-det" onclick="saveEditDetail()">💾 Simpan Perubahan</button>`
+        : '';
+    document.getElementById('detGrandTotal').innerHTML = totalHTML + editBtn;
+
+    document.getElementById('detailOverlay').style.display = 'block';
+}
+
+function recalcDetail() {
+    const data = cacheHistoryLaporan.find(x => x.report_id === currentDetailID);
+    if (!data) return;
+    const mtd  = JSON.parse(data.metode_json || '{}');
+    let total  = (parseInt(mtd.CASH) || 0) + (parseInt(mtd.QRIS) || 0);
+    document.querySelectorAll('.edit-mtd').forEach(i => total += parseInt(i.value) || 0);
+    const el = document.getElementById('detTotal');
+    if (el) el.innerText = 'Rp ' + total.toLocaleString('id-ID');
+    window.tempTotal = total;
+}
+
+async function saveEditDetail() {
+    const ok = await showConfirm('Simpan perubahan settlement?', 'Simpan', 'Batal', '💾');
+    if (!ok) return;
+    const dataLama = cacheHistoryLaporan.find(x => x.report_id === currentDetailID);
+    const mtd      = JSON.parse(dataLama.metode_json || '{}');
+    document.querySelectorAll('.edit-mtd').forEach(i => mtd[i.dataset.m] = parseInt(i.value) || 0);
+    const dataBaru = {
+        report_id: currentDetailID,
+        petugas:   dataLama.petugas,
+        cabang:    dataLama.cabang,
+        metode:    mtd,
+        audit:     JSON.parse(dataLama.audit_json      || '{}'),
+        expens:    JSON.parse(dataLama.pengeluaran_json || '[]'),
+        total:     window.tempTotal || dataLama.grand_total
+    };
+    try {
+        const res = await fetch('api.php?action=save_laporan', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(dataBaru)
+        });
+        if ((await res.json()).status === 'success') {
+            toast.success('Settlement Diupdate!');
+            tutupDetail();
+            renderHistoryLaporan();
+        }
+    } catch (e) {
+        toast.error('Gagal koneksi server!');
+    }
+}
+
+async function hapusLaporan(id) {
+    const ok = await showConfirm('Hapus laporan ini?', 'Ya, Hapus', 'Batal', '🗑️');
+    if (!ok) return;
+    try {
+        await fetch(`api.php?action=del_laporan&id=${id}`);
+        toast.success('Laporan dihapus!');
+        renderHistoryLaporan();
+    } catch (e) {
+        toast.error('Gagal menghapus laporan!');
+    }
+}
+
+function tutupDetail() {
+    document.getElementById('detailOverlay').style.display = 'none';
+    window.currentDetailCache = null;
+}
+
+async function logout() {
+    const ok = await showConfirm('Logout dari sistem?', 'Ya, Logout', 'Batal', '🚪');
+    if (ok) {
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('cabangHoki');
+        window.location.href = 'index.html';
+    }
+}
+
+function updateInfoBar() {
+    const name = currentUser.fullName || currentUser.user || '—';
+    const el1 = document.getElementById('infoPetugas');
+    const el2 = document.getElementById('infoCabang');
+    if (el1) el1.innerText = name;
+    if (el2) el2.innerText = cabangAktif;
+}
+
+window.onload = function() {
+    buildSidebar();
+    updateClock();
+    updateInfoBar();
+    const filterTgl = document.getElementById('filterTanggal');
+    filterTgl.value = new Date().toISOString().split('T')[0];
+    if (currentUser.role === 'Staff') {
+        filterTgl.disabled         = true;
+        filterTgl.style.background = '#f0f0f0';
+    }
+    fetchLaporanData();
+    renderHistoryLaporan();
+};
 </script>
 
+<script src="session.js"></script>
 <script src="toast.js"></script>
 </body>
 </html>

@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hoki POS - HPP Produk</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+    .grid-hpp {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: 16px;
+        align-items: start;
+    }
+
+    .card-hpp {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 20px;
+        box-shadow: var(--sh-sm);
+    }
+
+    .card-hpp h3 {
+        margin: 0 0 16px;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text);
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 10px;
+    }
+
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 12px;
+    }
+
+    .input-group label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+    }
+
+    .input-group input {
+        margin: 0;
+        padding: 9px 12px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--r-md);
+        font-size: 13px;
+        font-family: 'DM Sans', sans-serif;
+        background: var(--surface);
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.2s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .input-group input:focus { border-color: var(--red); }
+    .input-group input[readonly] {
+        background: var(--surface-2);
+        color: var(--red);
+        font-family: 'DM Mono', monospace;
+        font-weight: 700;
+    }
+
+    /* Bahan picker */
+    .bahan-row {
+        display: grid;
+        grid-template-columns: 1fr 100px auto;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .bahan-row select, .bahan-row input {
+        margin: 0;
+        padding: 8px 10px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--r-md);
+        font-size: 13px;
+        font-family: 'DM Sans', sans-serif;
+        background: var(--surface);
+        color: var(--text);
+        outline: none;
+    }
+
+    .bahan-row select:focus, .bahan-row input:focus { border-color: var(--red); }
+
+    .btn-add-bahan {
+        background: var(--surface-2);
+        border: 1.5px dashed var(--border);
+        color: var(--text-muted);
+        padding: 10px;
+        border-radius: var(--r-md);
+        font-size: 13px;
+        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
+        cursor: pointer;
+        width: 100%;
+        transition: all 0.15s;
+        margin-bottom: 12px;
+    }
+    .btn-add-bahan:hover { border-color: var(--red); color: var(--red); background: var(--red-soft); }
+
+    .btn-del-bahan {
+        background: none;
+        border: none;
+        color: var(--red);
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: var(--r-sm);
+        font-family: 'DM Sans', sans-serif;
+    }
+    .btn-del-bahan:hover { background: var(--red-soft); }
+
+    .hpp-total {
+        font-family: 'DM Mono', monospace;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--red);
+        text-align: right;
+        padding: 12px 0;
+        border-top: 2px dashed var(--border);
+        margin-top: 8px;
+    }
+
+    .btn-simpan-hpp {
+        width: 100%;
+        background: var(--red);
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: var(--r-md);
+        font-size: 13px;
+        font-weight: 700;
+        font-family: 'DM Sans', sans-serif;
+        cursor: pointer;
+        transition: filter 0.15s;
+        box-shadow: 0 4px 12px rgba(211,47,47,0.25);
+    }
+    .btn-simpan-hpp:hover { filter: brightness(0.9); }
+
+    /* Tabel list */
+    .table-wrap {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        overflow: hidden;
+        box-shadow: var(--sh-sm);
+        overflow-x: auto;
+    }
+
+    .table-wrap table { width: 100%; border-collapse: collapse; }
+    .table-wrap thead th {
+        background: var(--red);
+        color: white;
+        padding: 10px 14px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        border: none;
+        text-align: left;
+    }
+    .table-wrap tbody td {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+        color: var(--text);
+        border-top: none; border-left: none; border-right: none;
+    }
+    .table-wrap tbody tr:last-child td { border-bottom: none; }
+    .table-wrap tbody tr:hover td { background: var(--red-soft); }
+
+    .mono { font-family: 'DM Mono', monospace; font-weight: 700; }
+    .red  { color: var(--red); }
+
+    .btn-del { background: none; border: none; color: var(--red); cursor: pointer; font-size: 16px; padding: 4px 8px; border-radius: var(--r-sm); font-family: 'DM Sans', sans-serif; }
+    .btn-del:hover { background: var(--red-soft); }
+    .btn-edit { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); cursor: pointer; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: var(--r-sm); font-family: 'DM Sans', sans-serif; margin-right: 4px; }
+    .btn-edit:hover { background: var(--border); }
+
+    .detail-chip {
+        display: inline-block;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 99px;
+        padding: 2px 8px;
+        font-size: 11px;
+        color: var(--text-muted);
+        margin: 2px;
+    }
+
+    @media (max-width: 844px) {
+        .grid-hpp { grid-template-columns: 1fr; }
+    }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand" onclick="toggleSidebar()">
+        <div class="sidebar-logo"><img src="Assets/logobrand.png" alt="Hoki"></div>
+        <div class="sidebar-brand-text">
+            <div class="sidebar-brand-name">Hoki Dimsum</div>
+            <div class="sidebar-brand-sub">POS System v2.0</div>
+        </div>
+    </div>
+    <button class="sidebar-toggle" onclick="toggleSidebar()">‹</button>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-user">
+        <div class="user-card">
+            <div class="user-avatar" id="userAvatarInitial">?</div>
+            <div class="user-info">
+                <div class="user-name" id="sidebarUserName">Loading...</div>
+                <div class="user-role" id="sidebarUserRole">—</div>
+            </div>
+            <button class="btn-logout-icon" onclick="logout()" title="Logout">🚪</button>
+        </div>
+    </div>
+</aside>
+
+<div class="main-content" id="mainContent">
+    <header class="top-header">
+        <div class="header-left">
+            <div class="header-page-title">💰 HPP Produk</div>
+        </div>
+        <div class="header-right">
+            <div class="clock-pill">
+                <div id="realtimeClock">00:00:00</div>
+                <div id="realtimeDate">...</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="page-body">
+        <div class="grid-hpp">
+
+            <!-- FORM -->
+            <div class="card-hpp">
+                <h3>➕ Setting HPP Produk</h3>
+
+                <div class="input-group">
+                    <label>Nama Produk</label>
+                    <input type="text" id="hNama" placeholder="Cth: Dimsum Ayam">
+                </div>
+                <div class="input-group">
+                    <label>SKU</label>
+                    <input type="text" id="hSKU" placeholder="Cth: DMS" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+                </div>
+
+                <p style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin:16px 0 8px;">Komposisi Bahan</p>
+                <div id="listBahanPicker"></div>
+                <button class="btn-add-bahan" onclick="tambahBahanRow()">+ Tambah Bahan</button>
+
+                <div class="hpp-total" id="hppTotal">HPP: Rp 0</div>
+
+                <button class="btn-simpan-hpp" onclick="simpanHPP()">💾 Simpan HPP</button>
+            </div>
+
+            <!-- LIST -->
+            <div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nama Produk</th>
+                                <th>SKU</th>
+                                <th>Komposisi</th>
+                                <th>HPP</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelHPP">
+                            <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-light);">Memuat...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<nav class="bottom-nav">
+    <button class="bn-item" onclick="location.href='dashboard.html'"><span class="bn-icon">🛒</span><span class="bn-label">Kasir</span></button>
+    <button class="bn-item" onclick="location.href='history.html'"><span class="bn-icon">📄</span><span class="bn-label">History</span></button>
+    <button class="bn-item" onclick="location.href='stok.html'"><span class="bn-icon">📦</span><span class="bn-label">Stok</span></button>
+    <button class="bn-item" onclick="location.href='laporan_staff.html'"><span class="bn-icon">📊</span><span class="bn-label">Laporan</span></button>
+    <button class="bn-item active" onclick="openSheet('moreSheet')"><span class="bn-icon">☰</span><span class="bn-label">Lainnya</span></button>
+</nav>
+
+<div class="sheet-overlay" id="moreSheet" onclick="closeSheetOutside(event,'moreSheet')">
+    <div class="bottom-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <p style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Menu Lainnya</p>
+        <div class="more-grid" id="moreGrid"></div>
+    </div>
+</div>
+
+<script>
+const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff'};
+if (!currentUser.user) window.location.href = 'index.html';
+if (!['Owner','VIP'].includes(currentUser.role)) window.location.href = 'dashboard.html';
+
+let allBahan = [];
+let allHPP   = [];
+let editHPPId = null;
+
+function toggleSidebar() {
+    const sb = document.getElementById('sidebar');
+    const mc = document.getElementById('mainContent');
+    sb.classList.toggle('collapsed');
+    mc.classList.toggle('expanded');
+    localStorage.setItem('sidebarState', sb.classList.contains('collapsed') ? 'small' : 'large');
+}
+
+function buildSidebar() {
+    if (localStorage.getItem('sidebarState') === 'small') {
+        document.getElementById('sidebar').classList.add('collapsed');
+        document.getElementById('mainContent').classList.add('expanded');
+    }
+    const role = currentUser.role;
+    const cur  = window.location.pathname.split('/').pop() || 'dashboard.html';
+    const navItem = (icon, label, link) => {
+        const active = cur === link ? 'active' : '';
+        return `<button class="nav-item ${active}" onclick="location.href='${link}'">
+            <span class="nav-icon">${icon}</span>
+            <span class="nav-label">${label}</span>
+        </button>`;
+    };
+    let h = `<div class="nav-group-label">Frontline</div>`;
+    h += navItem('🛒','Kasir','dashboard.html');
+    h += navItem('📄','History Transaksi','history.html');
+    h += navItem('📦','Stok Harian','stok.html');
+    h += navItem('🚚','Restock Barang','restock.html');
+    h += navItem('📊','Laporan Penjualan','laporan_staff.html');
+    if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+        h += `<div class="nav-group-label">Management</div>`;
+        h += navItem('📈','Rekapan Penjualan','rekap.html');
+        h += navItem('🍱','Master Produk','produk.html');
+    }
+    if (['Owner','VIP'].includes(role)) {
+        h += `<div class="nav-group-label">Executive</div>`;
+        h += navItem('📊','Keuangan Global','laporan.html');
+        h += navItem('📈','Statistik','statistik.html');
+        h += navItem('🧂','Bahan Baku','bahan_baku.html');
+        h += navItem('💰','HPP Produk','hpp_produk.html');
+        h += navItem('💸','Belanja','belanja.html');
+    }
+    if (role === 'VIP') {
+        h += `<div class="nav-group-label">VIP Access</div>`;
+        h += navItem('👥','Manajemen User','user.html');
+        h += navItem('🔑','History Login','login_history.html');
+    }
+    document.getElementById('sidebarNav').innerHTML = h;
+    const name = currentUser.fullName || currentUser.user || '?';
+    document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
+    document.getElementById('sidebarUserName').innerText   = name;
+    document.getElementById('sidebarUserRole').innerText   = role;
+}
+
+function updateClock() {
+    const now = new Date();
+    document.getElementById('realtimeClock').innerText = now.toLocaleTimeString('id-ID');
+    document.getElementById('realtimeDate').innerText  = now.toLocaleDateString('id-ID',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+}
+setInterval(updateClock, 1000);
+
+function buildMoreMenu() {
+    const role = currentUser.role;
+    const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
+    if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
+        items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
+    }
+    if (['Owner','VIP'].includes(role)) {
+        items.push({icon:'🧂',label:'Bahan Baku',link:'bahan_baku.html'});
+        items.push({icon:'💰',label:'HPP Produk',link:'hpp_produk.html'});
+        items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
+        items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
+        items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
+    }
+    if (role === 'VIP') {
+        items.push({icon:'👥',label:'Users',link:'user.html'});
+        items.push({icon:'🔑',label:'Login Log',link:'login_history.html'});
+    }
+    items.push({icon:'🚪',label:'Logout',link:'#',action:'logout()'});
+    document.getElementById('moreGrid').innerHTML = items.map(i =>
+        `<button class="more-btn" onclick="${i.action||`location.href='${i.link}'`}">
+            <span class="more-btn-icon">${i.icon}</span>
+            <span class="more-btn-label">${i.label}</span>
+        </button>`).join('');
+}
+
+function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
+function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
+
+/* ── BAHAN PICKER ROWS ── */
+function tambahBahanRow(bahanId='', qty='') {
+    const container = document.getElementById('listBahanPicker');
+    const rowId     = 'row_' + Date.now();
+    const options   = allBahan.map(b =>
+        `<option value="${b.id}" data-hs="${b.harga_satuan}" data-satuan="${b.satuan}" ${b.id == bahanId ? 'selected' : ''}>${b.nama} (Rp${parseFloat(b.harga_satuan).toLocaleString('id-ID',{maximumFractionDigits:2})}/${b.satuan})</option>`
+    ).join('');
+
+    const row = document.createElement('div');
+    row.className = 'bahan-row';
+    row.id = rowId;
+    row.innerHTML = `
+        <select onchange="hitungTotal()">
+            <option value="">Pilih Bahan...</option>
+            ${options}
+        </select>
+        <input type="number" placeholder="Qty" value="${qty}" oninput="hitungTotal()" min="0" step="0.01">
+        <button class="btn-del-bahan" onclick="document.getElementById('${rowId}').remove();hitungTotal()">×</button>`;
+    container.appendChild(row);
+    hitungTotal();
+}
+
+function hitungTotal() {
+    let total = 0;
+    document.querySelectorAll('.bahan-row').forEach(row => {
+        const sel = row.querySelector('select');
+        const qty = parseFloat(row.querySelector('input').value) || 0;
+        if (sel.value) {
+            const opt = sel.selectedOptions[0];
+            const hs  = parseFloat(opt.dataset.hs) || 0;
+            total += hs * qty;
+        }
+    });
+    document.getElementById('hppTotal').innerText = `HPP: Rp ${total.toLocaleString('id-ID', {minimumFractionDigits:0, maximumFractionDigits:0})}`;
+    return total;
+}
+
+function getBahanList() {
+    const list = [];
+    document.querySelectorAll('.bahan-row').forEach(row => {
+        const sel = row.querySelector('select');
+        const qty = parseFloat(row.querySelector('input').value) || 0;
+        if (sel.value && qty > 0) {
+            const opt      = sel.selectedOptions[0];
+            const hs       = parseFloat(opt.dataset.hs) || 0;
+            const bahan    = allBahan.find(b => b.id == sel.value);
+            list.push({
+                bahan_id: parseInt(sel.value),
+                nama:     bahan ? bahan.nama : '',
+                qty,
+                harga_satuan: hs,
+                subtotal: hs * qty
+            });
+        }
+    });
+    return list;
+}
+
+async function simpanHPP() {
+    const nama  = document.getElementById('hNama').value.trim();
+    const sku   = document.getElementById('hSKU').value.trim().toUpperCase();
+    const bahan = getBahanList();
+    const hpp   = hitungTotal();
+
+    if (!nama || !sku) return toast.warning('Nama dan SKU wajib diisi!');
+    if (bahan.length === 0) return toast.warning('Tambah minimal 1 bahan!');
+
+    const payload = { id: editHPPId, nama_produk: nama, sku, bahan, harga_pokok: hpp };
+
+    try {
+        const res   = await fetch('api.php?action=save_hpp_produk', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(payload)
+        });
+        const hasil = await res.json();
+        if (hasil.status === 'success') {
+            toast.success(editHPPId ? 'HPP diupdate!' : 'HPP berhasil disimpan!');
+            resetForm();
+            muatHPP();
+        } else {
+            toast.error('Gagal menyimpan!');
+        }
+    } catch(e) { toast.error('Gagal koneksi!'); }
+}
+
+function resetForm() {
+    editHPPId = null;
+    document.getElementById('hNama').value = '';
+    document.getElementById('hSKU').value  = '';
+    document.getElementById('listBahanPicker').innerHTML = '';
+    document.getElementById('hppTotal').innerText = 'HPP: Rp 0';
+    document.querySelector('.btn-simpan-hpp').innerText = '💾 Simpan HPP';
+}
+
+function siapkanEditHPP(id) {
+    const h = allHPP.find(x => x.id == id);
+    if (!h) return;
+    editHPPId = id;
+    document.getElementById('hNama').value = h.nama_produk;
+    document.getElementById('hSKU').value  = h.sku;
+    document.getElementById('listBahanPicker').innerHTML = '';
+    const detail = JSON.parse(h.detail_json || '[]');
+    detail.forEach(d => tambahBahanRow(d.bahan_id, d.qty));
+    hitungTotal();
+    document.querySelector('.btn-simpan-hpp').innerText = '💾 Update HPP';
+    window.scrollTo({top:0, behavior:'smooth'});
+}
+
+async function hapusHPP(id) {
+    const ok = await showConfirm('Hapus HPP produk ini?', 'Ya, Hapus', 'Batal', '🗑️');
+    if (!ok) return;
+    try {
+        await fetch(`api.php?action=del_hpp_produk&id=${id}`);
+        toast.success('HPP dihapus!');
+        muatHPP();
+    } catch(e) { toast.error('Gagal!'); }
+}
+
+async function muatHPP() {
+    try {
+        const res = await fetch('api.php?action=get_hpp_produk');
+        allHPP    = await res.json();
+        const tbody = document.getElementById('tabelHPP');
+        if (!allHPP.length) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-light);">Belum ada HPP Produk</td></tr>';
+            return;
+        }
+        tbody.innerHTML = allHPP.map(h => {
+            const detail  = JSON.parse(h.detail_json || '[]');
+            const chips   = detail.map(d => `<span class="detail-chip">${d.nama || ''} ${d.qty}${d.satuan||''}</span>`).join('');
+            return `<tr>
+                <td><b>${h.nama_produk}</b></td>
+                <td class="mono">${h.sku}</td>
+                <td>${chips}</td>
+                <td class="mono red">Rp ${parseFloat(h.harga_pokok).toLocaleString('id-ID')}</td>
+                <td>
+                    <button class="btn-edit" onclick="siapkanEditHPP(${h.id})">✎ Edit</button>
+                    <button class="btn-del" onclick="hapusHPP(${h.id})">✖</button>
+                </td>
+            </tr>`;
+        }).join('');
+    } catch(e) { console.error(e); }
+}
+
+async function init() {
+    try {
+        const res = await fetch('api.php?action=get_bahan_baku');
+        allBahan  = await res.json();
+    } catch(e) { console.error(e); }
+    await muatHPP();
+    tambahBahanRow(); // default 1 row kosong
+}
+
+async function logout() {
+    const ok = await showConfirm('Logout dari sistem?', 'Ya, Logout', 'Batal', '🚪');
+    if (ok) {
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('cabangHoki');
+        window.location.href = 'index.html';
+    }
+}
+
+window.onload = () => { buildSidebar(); updateClock(); init(); };
+</script>
+
+<script src="session.js"></script>
+<script src="toast.js"></script>
+</body>
+</html>

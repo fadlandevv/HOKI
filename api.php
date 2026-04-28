@@ -9,15 +9,123 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// ── KONEKSI DATABASE ──────────────────────────────────
+$input  = json_decode(file_get_contents('php://input'), true);
+$action = $_GET['action'] ?? '';
+
+// ── AUTO DETECT: DEV atau PRODUCTION ──────────────────
+$host  = $_SERVER['HTTP_HOST'] ?? '';
+// Cek environment - dev jika tidak ada dot di host (localhost, 127.0.0.1, dll)
+// atau jika file dev.flag ada di folder
+$isDev = (
+    $host === 'localhost' || 
+    $host === '127.0.0.1' || 
+    substr($host, 0, 8) === '192.168.' ||
+    strpos($host, 'localhost') !== false ||
+    strpos($host, ':') !== false ||
+    file_exists(__DIR__ . '/dev.flag')
+);
+
+if ($isDev) {
+    // ── MODE DEV: gunakan dummy data ──────────────────
+    $dummyUsers = [
+        ['id'=>1,'user'=>'admin',  'pass'=>'admin',  'role'=>'VIP',          'cabang'=>'Semua',                       'fullName'=>'Administrator'],
+        ['id'=>2,'user'=>'owner',  'pass'=>'owner',  'role'=>'Owner',        'cabang'=>'Semua',                       'fullName'=>'Owner Hoki'],
+        ['id'=>3,'user'=>'spv1',   'pass'=>'spv1',   'role'=>'SPV',          'cabang'=>'Pusat',                       'fullName'=>'Supervisor Pusat'],
+        ['id'=>4,'user'=>'senior', 'pass'=>'senior', 'role'=>'Senior Staff', 'cabang'=>'Pusat,Cabang A',              'fullName'=>'Senior Staff'],
+        ['id'=>5,'user'=>'staff1', 'pass'=>'staff1', 'role'=>'Staff',        'cabang'=>'Pusat,Cabang A,Cabang B',     'fullName'=>'Staff Kasir'],
+    ];
+
+    switch ($action) {
+        case 'login':
+            $u = $input['user'] ?? '';
+            $p = $input['pass'] ?? '';
+            $found = null;
+            foreach ($dummyUsers as $user) {
+                if (strtolower($user['user']) === strtolower($u) && $user['pass'] === $p) { $found = $user; break; }
+            }
+            if ($found) {
+                echo json_encode(['status'=>'success','user'=>['user'=>$found['user'],'fullName'=>$found['fullName'],'role'=>$found['role'],'cabang'=>$found['cabang']],'token'=>bin2hex(random_bytes(32))]);
+            } else {
+                echo json_encode(['status'=>'error','message'=>'Username atau Password salah!']);
+            }
+            break;
+        case 'check_session':
+            echo json_encode(['valid'=>true]);
+            break;
+        case 'get_cabang': case 'get_branches':
+            echo json_encode([['id'=>1,'nama_cabang'=>'Pusat'],['id'=>2,'nama_cabang'=>'Cabang A'],['id'=>3,'nama_cabang'=>'Cabang B']]);
+            break;
+        case 'get_produk':
+            echo json_encode([
+                ['id'=>1,'sku'=>'DMS','nama'=>'Dimsum Ayam',  'harga'=>15000,'hpp'=>8000,'dimsumPcs'=>4,'aluTrayPcs'=>2,'urutan'=>1],
+                ['id'=>2,'sku'=>'SIW','nama'=>'Siomay',       'harga'=>15000,'hpp'=>7000,'dimsumPcs'=>4,'aluTrayPcs'=>2,'urutan'=>2],
+                ['id'=>3,'sku'=>'HAK','nama'=>'Hakau',        'harga'=>18000,'hpp'=>9000,'dimsumPcs'=>3,'aluTrayPcs'=>2,'urutan'=>3],
+                ['id'=>4,'sku'=>'CSP','nama'=>'Ceker Spesial','harga'=>20000,'hpp'=>0,   'dimsumPcs'=>2,'aluTrayPcs'=>1,'urutan'=>4],
+                ['id'=>5,'sku'=>'NAS','nama'=>'Nasi Putih',   'harga'=>5000, 'hpp'=>0,   'dimsumPcs'=>0,'aluTrayPcs'=>0,'urutan'=>5],
+            ]);
+            break;
+        case 'get_history':
+            echo json_encode([
+                ['id'=>1,'waktu'=>date('Y-m-d H:i:s',strtotime('-1 hour')),'petugas'=>'Staff Kasir','cabang'=>'Pusat','items_json'=>json_encode([['nama'=>'Dimsum Ayam','qty'=>1]]),'total'=>15000,'metode'=>'CASH'],
+                ['id'=>2,'waktu'=>date('Y-m-d H:i:s',strtotime('-2 hours')),'petugas'=>'Staff Kasir','cabang'=>'Pusat','items_json'=>json_encode([['nama'=>'Hakau','qty'=>1]]),'total'=>18000,'metode'=>'QRIS'],
+            ]);
+            break;
+        case 'get_users':
+            echo json_encode(array_map(fn($u) => ['id'=>$u['id'],'username'=>$u['user'],'password'=>$u['pass'],'role'=>$u['role'],'cabang'=>$u['cabang'],'fullName'=>$u['fullName'],'docs_json'=>'{}'], $dummyUsers));
+            break;
+        case 'get_master_stok':
+            echo json_encode([['id'=>1,'nama_item'=>'Tepung'],['id'=>2,'nama_item'=>'Ayam'],['id'=>3,'nama_item'=>'Udang'],['id'=>4,'nama_item'=>'Minyak'],['id'=>5,'nama_item'=>'Bumbu']]);
+            break;
+        case 'get_roles':
+            echo json_encode([['id'=>1,'nama_role'=>'VIP'],['id'=>2,'nama_role'=>'Owner'],['id'=>3,'nama_role'=>'SPV'],['id'=>4,'nama_role'=>'Senior Staff'],['id'=>5,'nama_role'=>'Staff']]);
+            break;
+        case 'get_omset_harian':
+            echo json_encode(['total'=>33000,'jumlah'=>2]);
+            break;
+        case 'get_bahan_baku':
+            echo json_encode([
+                ['id'=>1,'nama'=>'Mentai','harga'=>50000,'banyak'=>1000,'satuan'=>'gr','harga_satuan'=>50],
+                ['id'=>2,'nama'=>'Ayam','harga'=>30000,'banyak'=>500,'satuan'=>'gr','harga_satuan'=>60],
+                ['id'=>3,'nama'=>'Tepung','harga'=>10000,'banyak'=>1000,'satuan'=>'gr','harga_satuan'=>10],
+                ['id'=>4,'nama'=>'Tray Aluminium','harga'=>25000,'banyak'=>100,'satuan'=>'pcs','harga_satuan'=>250],
+            ]);
+            break;
+        case 'get_hpp_produk':
+            echo json_encode([
+                ['id'=>1,'nama_produk'=>'Dimsum Ayam','sku'=>'DMS','harga_pokok'=>8000,'detail_json'=>'[{"bahan_id":2,"nama":"Ayam","qty":100,"satuan":"gr","harga_satuan":60,"subtotal":6000},{"bahan_id":3,"nama":"Tepung","qty":50,"satuan":"gr","harga_satuan":10,"subtotal":500}]'],
+                ['id'=>2,'nama_produk'=>'Hakau','sku'=>'HAK','harga_pokok'=>9000,'detail_json'=>'[{"bahan_id":1,"nama":"Mentai","qty":100,"satuan":"gr","harga_satuan":50,"subtotal":5000}]'],
+            ]);
+            break;
+        case 'save_bahan_baku': case 'del_bahan_baku':
+        case 'save_hpp_produk': case 'del_hpp_produk':
+            echo json_encode(['status'=>'success']);
+            break;
+        case 'save_produk': case 'del_produk': case 'update_urutan':
+        case 'save_transaksi': case 'del_transaksi': case 'clear_history':
+        case 'save_user': case 'del_user':
+        case 'save_cabang': case 'del_cabang':
+        case 'save_role': case 'del_role':
+        case 'save_master_stok': case 'del_master_stok':
+        case 'get_laporan_stok': case 'save_laporan_stok': case 'del_laporan_stok':
+        case 'get_laporan_restock': case 'save_laporan_restock': case 'del_laporan_restock':
+        case 'get_kas_jenis': case 'save_kas_jenis': case 'del_kas_jenis':
+        case 'get_kas_data': case 'save_kas_data': case 'del_kas_data':
+        case 'get_laporan_history': case 'save_laporan': case 'del_laporan':
+            echo json_encode(['status'=>'success']);
+            break;
+        default:
+            echo json_encode(['status'=>'error','message'=>"Action '$action' tidak dikenali (dev mode)."]);
+    }
+    exit();
+}
+
+// ── MODE PRODUCTION: konek MySQL ──────────────────────
 $conn = new mysqli("localhost", "u173485424_kurniarp", "Alpukat19#", "u173485424_hoki");
 if ($conn->connect_error) {
     die(json_encode(["status"=>"error","message"=>"Koneksi gagal: ".$conn->connect_error]));
 }
 $conn->set_charset("utf8mb4");
 
-$input  = json_decode(file_get_contents('php://input'), true);
-$action = $_GET['action'] ?? '';
 
 switch ($action) {
 
@@ -25,12 +133,42 @@ switch ($action) {
     case 'login':
         $u = $conn->real_escape_string($input['user'] ?? '');
         $p = $conn->real_escape_string($input['pass'] ?? '');
-        $res = $conn->query("SELECT id, username, role, cabang FROM users WHERE username='$u' AND password='$p'");
+        $res = $conn->query("SELECT * FROM users WHERE LOWER(username)=LOWER('$u') AND password='$p'");
         if ($res && $res->num_rows > 0) {
-            $user = $res->fetch_assoc();
-            echo json_encode(["status"=>"success","user"=>["user"=>$user['username'],"role"=>$user['role'],"cabang"=>$user['cabang']]]);
+            $user  = $res->fetch_assoc();
+            $token = md5(uniqid($user['username'], true) . time());
+            $uid   = (int)$user['id'];
+            $conn->query("UPDATE users SET session_token='$token' WHERE id=$uid");
+            $fullName = $user['fullName'] ?? $user['fullname'] ?? $user['full_name'] ?? $user['username'];
+            echo json_encode([
+                "status" => "success",
+                "user"   => [
+                    "user"     => $user['username'],
+                    "fullName" => $fullName,
+                    "role"     => $user['role'],
+                    "cabang"   => $user['cabang']
+                ],
+                "token" => $token
+            ]);
         } else {
             echo json_encode(["status"=>"error","message"=>"Username atau Password salah!"]);
+        }
+        break;
+
+    // ── SESSION CHECK ──────────────────────────────────
+    case 'check_session':
+        $u     = $conn->real_escape_string($_GET['user']  ?? '');
+        $token = $conn->real_escape_string($_GET['token'] ?? '');
+        if (empty($u) || empty($token)) {
+            echo json_encode(["valid"=>false]);
+            break;
+        }
+        $res = $conn->query("SELECT session_token FROM users WHERE LOWER(username)=LOWER('$u')");
+        if ($res && $res->num_rows > 0) {
+            $row = $res->fetch_assoc();
+            echo json_encode(["valid" => ($row['session_token'] === $token)]);
+        } else {
+            echo json_encode(["valid"=>false]);
         }
         break;
 
@@ -379,6 +517,87 @@ switch ($action) {
     case 'del_laporan':
         $rid = $conn->real_escape_string($_GET['id'] ?? '');
         $conn->query("DELETE FROM laporan_settlement WHERE id='$rid'");
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    // ── BAHAN BAKU ────────────────────────────────────
+    case 'get_bahan_baku':
+        $res = $conn->query("SELECT * FROM bahan_baku ORDER BY nama ASC");
+        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        break;
+
+    case 'save_bahan_baku':
+        $id   = (int)($input['id'] ?? 0);
+        $nama = $conn->real_escape_string($input['nama'] ?? '');
+        $hrg  = (float)($input['harga'] ?? 0);
+        $byk  = (float)($input['banyak'] ?? 0);
+        $sat  = $conn->real_escape_string($input['satuan'] ?? '');
+        $hs   = $byk > 0 ? $hrg / $byk : 0;
+        if ($id > 0) {
+            $sql = "UPDATE bahan_baku SET nama='$nama', harga=$hrg, banyak=$byk, satuan='$sat', harga_satuan=$hs WHERE id=$id";
+        } else {
+            $sql = "INSERT INTO bahan_baku (nama, harga, banyak, satuan, harga_satuan) VALUES ('$nama',$hrg,$byk,'$sat',$hs)";
+        }
+        echo $conn->query($sql)
+            ? json_encode(["status"=>"success"])
+            : json_encode(["status"=>"error","message"=>$conn->error]);
+        break;
+
+    case 'del_bahan_baku':
+        $id = (int)($_GET['id'] ?? 0);
+        $conn->query("DELETE FROM bahan_baku WHERE id=$id");
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    // ── HPP PRODUK ────────────────────────────────────
+    case 'get_hpp_produk':
+        $res  = $conn->query("SELECT h.*, 
+            (SELECT JSON_ARRAYAGG(JSON_OBJECT(
+                'bahan_id', d.bahan_id,
+                'nama', b.nama,
+                'qty', d.qty,
+                'satuan', b.satuan,
+                'harga_satuan', b.harga_satuan,
+                'subtotal', d.subtotal
+            )) FROM hpp_produk_detail d 
+            LEFT JOIN bahan_baku b ON b.id=d.bahan_id 
+            WHERE d.hpp_id=h.id) as detail_json
+            FROM hpp_produk h ORDER BY h.nama_produk ASC");
+        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        break;
+
+    case 'save_hpp_produk':
+        $id    = (int)($input['id'] ?? 0);
+        $nama  = $conn->real_escape_string($input['nama_produk'] ?? '');
+        $sku   = $conn->real_escape_string($input['sku'] ?? '');
+        $hpp   = (float)($input['harga_pokok'] ?? 0);
+        $bahan = $input['bahan'] ?? [];
+
+        if ($id > 0) {
+            $conn->query("UPDATE hpp_produk SET nama_produk='$nama', sku='$sku', harga_pokok=$hpp WHERE id=$id");
+            $conn->query("DELETE FROM hpp_produk_detail WHERE hpp_id=$id");
+        } else {
+            $conn->query("INSERT INTO hpp_produk (nama_produk, sku, harga_pokok) VALUES ('$nama','$sku',$hpp)");
+            $id = $conn->insert_id;
+        }
+
+        foreach ($bahan as $b) {
+            $bid  = (int)($b['bahan_id'] ?? 0);
+            $qty  = (float)($b['qty'] ?? 0);
+            $sub  = (float)($b['subtotal'] ?? 0);
+            $conn->query("INSERT INTO hpp_produk_detail (hpp_id, bahan_id, qty, subtotal) VALUES ($id,$bid,$qty,$sub)");
+        }
+
+        // Sync HPP ke tabel produk berdasarkan SKU
+        $conn->query("UPDATE produk SET hpp=$hpp WHERE sku='$sku'");
+
+        echo json_encode(["status"=>"success"]);
+        break;
+
+    case 'del_hpp_produk':
+        $id = (int)($_GET['id'] ?? 0);
+        $conn->query("DELETE FROM hpp_produk_detail WHERE hpp_id=$id");
+        $conn->query("DELETE FROM hpp_produk WHERE id=$id");
         echo json_encode(["status"=>"success"]);
         break;
 

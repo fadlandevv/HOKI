@@ -212,7 +212,7 @@
        flex: 1;
        overflow-y: auto;
        overflow-x: hidden;
-       padding: 0px 10px;
+       padding: 12px 10px;
    }
    
    .nav-group-label {
@@ -245,6 +245,7 @@
        color: var(--text-muted);
        transition: background var(--ease), color var(--ease);
        white-space: nowrap;
+       margin-bottom: 2px;
        border: none;
        background: transparent;
        width: 100%;
@@ -715,10 +716,7 @@
    }
    
    /* ── FILTER BAR ── */
-   .filter-bar {
-       align-items: center;
-   }
-   
+   .filter-bar,
    .filter-section,
    .filter-container {
        background: var(--surface);
@@ -1654,47 +1652,47 @@
    
    }
    
-   /* ── CHECKBOX PILL (Cabang Filter) ── */
+   /* ── CHECKBOX CHIP (Cabang Filter) ── */
    #containerCabang {
        display: flex;
-       gap: 8px;
+       gap: 6px;
        flex-wrap: wrap;
-       margin-top: 4px;
+       align-items: center;
+       margin-top: 6px;
    }
-   
-   /* Sembunyikan checkbox asli, ganti pakai pseudo element */
+
    .cb-label {
-       font-size: 12px;
-       font-weight: 600;
-       background: var(--surface-2);
-       border: 1px solid var(--border);
-       padding: 6px 14px 6px 10px;
-       border-radius: 99px;
-       cursor: pointer;
        display: inline-flex;
        align-items: center;
        gap: 6px;
+       padding: 5px 12px 5px 8px;
+       border-radius: 99px;
+       border: 1.5px solid var(--border-2);
+       background: var(--surface-2);
+       color: var(--text-muted);
+       font-size: 12px;
+       font-weight: 600;
+       cursor: pointer;
+       user-select: none;
+       white-space: nowrap;
        width: fit-content;
        transition: background 0.15s, border-color 0.15s, color 0.15s;
-       color: var(--text);
-       user-select: none;
-       line-height: 1;
-       white-space: nowrap;
    }
-   
+
    .cb-label:has(input:checked) {
        background: var(--red-soft);
-       border-color: var(--red-border);
+       border-color: var(--red);
        color: var(--red);
    }
-   
+
    .cb-label input[type="checkbox"] {
        appearance: none;
        -webkit-appearance: none;
        width: 14px;
        height: 14px;
+       min-width: 14px;
        border: 1.5px solid var(--border-2);
-       border-radius: 4px;
+       border-radius: 3px;
        background: var(--surface);
        cursor: pointer;
        flex-shrink: 0;
@@ -1703,20 +1701,20 @@
        position: relative;
        transition: background 0.15s, border-color 0.15s;
    }
-   
-   .cb-label input[type="checkbox"]:checked {
+
+   .cb-label:has(input:checked) input[type="checkbox"] {
        background: var(--red);
        border-color: var(--red);
    }
-   
+
    .cb-label input[type="checkbox"]:checked::after {
        content: "";
        position: absolute;
        left: 3px;
-       top: 1px;
-       width: 5px;
+       top: 0px;
+       width: 4px;
        height: 8px;
-       border: 2px solid white;
+       border: 1.5px solid white;
        border-top: none;
        border-left: none;
        transform: rotate(45deg);
@@ -1762,8 +1760,8 @@
    
        .btn-bersihkan,
        .btn-cetak {
-           padding: 7px 12px !important;
-           font-size: 12px !important;
+           padding: 8px 12px !important;
+           font-size: 13px !important;
        }
    
        /* FILTER BAR — history.html */
@@ -1782,7 +1780,7 @@
            width: 100% !important;
        }
    
-       .btn-cari
+       .btn-cari,
        .btn-hari-ini,
        .btn-kosongkan {
            flex: 1 !important;
@@ -1794,6 +1792,23 @@
            display: flex;
            gap: 8px;
            width: 100%;
+       }
+
+       /* CHECKBOX CHIP — mobile */
+       #containerCabang {
+           gap: 5px;
+       }
+
+       .cb-label {
+           font-size: 11px;
+           padding: 5px 10px 5px 7px;
+           gap: 5px;
+       }
+
+       .cb-label input[type="checkbox"] {
+           width: 13px;
+           height: 13px;
+           min-width: 13px;
        }
    
        /* GRID ADMIN — user.html */

@@ -71,7 +71,7 @@
     .grid-dashboard {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        gap: 16px;
     }
 
     /* ── CARDS ── */
@@ -242,6 +242,26 @@
 
     }
 
+
+    .btn-cetak-pdf {
+        background: #1c1c1a;
+        color: rgba(255,255,255,0.88);
+        border: none;
+        padding: 9px 16px;
+        border-radius: var(--r-md);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
+        transition: filter 0.15s;
+        white-space: nowrap;
+    }
+    .btn-cetak-pdf:hover { filter: brightness(1.2); }
+    @media print {
+        .sidebar, .bottom-nav, .filter-container, .btn-cetak-pdf { display: none !important; }
+        .main-content { margin: 0 !important; }
+        .page-body { padding: 16px !important; }
+    }
     </style>
 </head>
 <body>
@@ -279,6 +299,7 @@
             <div class="header-page-title">📈 Statistik</div>
         </div>
         <div class="header-right">
+            <button class="btn-cetak-pdf" onclick="cetakPDF()">🖨️ Cetak PDF</button>
             <div class="clock-pill">
                 <div id="realtimeClock">00:00:00</div>
                 <div id="realtimeDate">...</div>
@@ -291,7 +312,7 @@
         <!-- FILTER -->
         <div class="filter-container">
             <div class="filter-group">
-                <label>📍 Cabang</label>
+                <label for="wrapCabang">📍 Cabang</label>
                 <div class="custom-select-wrap" id="wrapCabang">
                     <button class="custom-select-btn" onclick="toggleDropdown('wrapCabang')">
                         <span id="iconCabang">📍</span>
@@ -307,11 +328,11 @@
                 </div>
             </div>
             <div class="filter-group">
-                <label>📅 Dari Tanggal</label>
+                <label for="startDate">📅 Dari Tanggal</label>
                 <input type="date" id="startDate" onchange="loadStatistik()" style="height:42px;">
             </div>
             <div class="filter-group">
-                <label>📅 Sampai Tanggal</label>
+                <label for="endDate">📅 Sampai Tanggal</label>
                 <input type="date" id="endDate" onchange="loadStatistik()" style="height:42px;">
             </div>
             <div class="filter-group" style="flex:0;">
@@ -420,13 +441,15 @@ function buildSidebar() {
     h += navItem('📊','Laporan Penjualan','laporan_staff.html');
     if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
         h += `<div class="nav-group-label">Management</div>`;
-        h += navItem('🍱','Master Produk','produk.html');
         h += navItem('📈','Rekapan Penjualan','rekap.html');
+        h += navItem('🍱','Master Produk','produk.html');
     }
     if (['Owner','VIP'].includes(role)) {
         h += `<div class="nav-group-label">Executive</div>`;
         h += navItem('📊','Keuangan Global','laporan.html');
         h += navItem('📈','Statistik','statistik.html');
+        h += navItem('🧂','Bahan Baku','bahan_baku.html');
+        h += navItem('💰','HPP Produk','hpp_produk.html');
         h += navItem('💸','Belanja','belanja.html');
     }
     if (role === 'VIP') {
@@ -435,11 +458,13 @@ function buildSidebar() {
         h += navItem('🔑','History Login','login_history.html');
     }
     document.getElementById('sidebarNav').innerHTML = h;
-    const name = currentUser.user || '?';
+    const name = currentUser.fullName || currentUser.user || '?';
     document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
     document.getElementById('sidebarUserName').innerText   = name;
     document.getElementById('sidebarUserRole').innerText   = role;
 }
+
+
 
 /* ── CLOCK ── */
 function updateClock() {
@@ -454,10 +479,12 @@ function buildMoreMenu() {
     const role = currentUser.role;
     const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
     if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
-        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
         items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
     }
     if (['Owner','VIP'].includes(role)) {
+        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
+        items.push({icon:'🧂',label:'Bahan Baku',link:'bahan_baku.html'});
+        items.push({icon:'💰',label:'HPP Produk',link:'hpp_produk.html'});
         items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
         items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
         items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
@@ -473,6 +500,7 @@ function buildMoreMenu() {
             <span class="more-btn-label">${i.label}</span>
         </button>`).join('');
 }
+
 
 function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
 function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
@@ -634,6 +662,10 @@ function resetFilter() {
     pilihCabang('Semua', '📍', 'Semua Cabang', document.querySelector('#dropdownCabang .dropdown-item'));
 }
 
+function cetakPDF() {
+    window.print();
+}
+
 async function logout() {
     const ok = await showConfirm('Logout dari sistem?', 'Ya, Logout', 'Batal', '🚪');
     if (ok) {
@@ -651,6 +683,7 @@ window.onload = async () => {
 };
 </script>
 
+<script src="session.js"></script>
 <script src="toast.js"></script>
 </body>
 </html>

@@ -117,15 +117,10 @@
         font-size: 13px;
     }
 
-    /* ── RESPONSIVE MOBILE ── */
+    /* ── MOBILE HEADER FIX ── */
     @media (max-width: 844px) {
-
-        .log-table th,
-        .log-table td {
-            padding: 9px 10px;
-            font-size: 12px;
-        }
-
+        .header-page-title { font-size: 13px !important; }
+        .btn-bersihkan { padding: 6px 10px !important; font-size: 11px !important; }
     }
 
     </style>
@@ -178,7 +173,8 @@
             <table class="log-table">
                 <thead>
                     <tr>
-                        <th>Waktu Masuk</th>
+                        <th>Tanggal</th>
+                        <th>Waktu</th>
                         <th>Username</th>
                         <th>Role</th>
                         <th>Cabang</th>
@@ -248,13 +244,15 @@ function buildSidebar() {
     h += navItem('📊','Laporan Penjualan','laporan_staff.html');
     if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
         h += `<div class="nav-group-label">Management</div>`;
-        h += navItem('🍱','Master Produk','produk.html');
         h += navItem('📈','Rekapan Penjualan','rekap.html');
+        h += navItem('🍱','Master Produk','produk.html');
     }
     if (['Owner','VIP'].includes(role)) {
         h += `<div class="nav-group-label">Executive</div>`;
         h += navItem('📊','Keuangan Global','laporan.html');
         h += navItem('📈','Statistik','statistik.html');
+        h += navItem('🧂','Bahan Baku','bahan_baku.html');
+        h += navItem('💰','HPP Produk','hpp_produk.html');
         h += navItem('💸','Belanja','belanja.html');
     }
     if (role === 'VIP') {
@@ -263,11 +261,13 @@ function buildSidebar() {
         h += navItem('🔑','History Login','login_history.html');
     }
     document.getElementById('sidebarNav').innerHTML = h;
-    const name = currentUser.user || '?';
+    const name = currentUser.fullName || currentUser.user || '?';
     document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
     document.getElementById('sidebarUserName').innerText   = name;
     document.getElementById('sidebarUserRole').innerText   = role;
 }
+
+
 
 /* ── CLOCK ── */
 function updateClock() {
@@ -282,10 +282,12 @@ function buildMoreMenu() {
     const role = currentUser.role;
     const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
     if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
-        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
         items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
     }
     if (['Owner','VIP'].includes(role)) {
+        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
+        items.push({icon:'🧂',label:'Bahan Baku',link:'bahan_baku.html'});
+        items.push({icon:'💰',label:'HPP Produk',link:'hpp_produk.html'});
         items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
         items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
         items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
@@ -302,6 +304,7 @@ function buildMoreMenu() {
         </button>`).join('');
 }
 
+
 function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
 function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
 
@@ -314,15 +317,19 @@ async function tampilkanLogs() {
         tbody.innerHTML = '';
 
         if (logs.length === 0) {
-            tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Belum ada history login di server.</td></tr>';
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Belum ada history login di server.</td></tr>';
             return;
         }
 
         logs.forEach(log => {
-            const roleClass = log.role ? log.role.replace(/\s+/g, '') : 'Staff';
+            const roleClass  = log.role ? log.role.replace(/\s+/g, '') : 'Staff';
+            const parts      = (log.waktu || '').split(' ');
+            const tglStr     = parts[0] || '—';
+            const jamStr     = parts[1] ? parts[1].substring(0,8) : '—';
             tbody.innerHTML += `
                 <tr>
-                    <td class="waktu-cell">${log.waktu}</td>
+                    <td class="waktu-cell">${tglStr}</td>
+                    <td class="waktu-cell">${jamStr}</td>
                     <td><b>${log.username}</b></td>
                     <td><span class="role-badge ${roleClass}">${log.role}</span></td>
                     <td>${log.cabang}</td>
@@ -330,7 +337,7 @@ async function tampilkanLogs() {
                 </tr>`;
         });
     } catch (e) {
-        document.getElementById('logTableBody').innerHTML = '<tr class="empty-row"><td colspan="5">Gagal memuat data dari server.</td></tr>';
+        document.getElementById('logTableBody').innerHTML = '<tr class="empty-row"><td colspan="6">Gagal memuat data dari server.</td></tr>';
     }
 }
 
@@ -363,6 +370,7 @@ async function logout() {
 window.onload = () => { buildSidebar(); updateClock(); tampilkanLogs(); };
 </script>
 
+<script src="session.js"></script>
 <script src="toast.js"></script>
 </body>
 </html>

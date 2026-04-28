@@ -447,6 +447,58 @@
 
     }
 
+
+    /* ── INFO BAR SIMPLE ── */
+    .info-bar-simple {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 0 24px;
+        display: flex;
+        align-items: center;
+        height: 40px;
+        flex-shrink: 0;
+        gap: 0;
+    }
+
+    .ib-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 16px;
+        height: 100%;
+    }
+
+    .ib-item:first-child { padding-left: 0; }
+
+    .ib-divider {
+        width: 1px;
+        height: 20px;
+        background: var(--border);
+        flex-shrink: 0;
+    }
+
+    .ib-label {
+        font-size: 11px;
+        color: var(--text-light);
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .ib-val {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text);
+        white-space: nowrap;
+    }
+
+    @media (max-width: 844px) {
+        .info-bar-simple {
+            padding: 6px 14px;
+            height: auto;
+            gap: 16px;
+        }
+        .ib-item { padding: 0; }
+    }
     </style>
 </head>
 <body>
@@ -490,6 +542,13 @@
             </div>
         </div>
     </header>
+
+    <!-- INFO BAR -->
+    <div class="info-bar-simple">
+        <div class="ib-item"><span class="ib-label">👤 Petugas</span><span class="ib-val" id="infoPetugas">—</span></div>
+        <div class="ib-divider"></div>
+        <div class="ib-item"><span class="ib-label">📍 Cabang</span><span class="ib-val" id="infoCabang">—</span></div>
+    </div>
 
     <div class="page-body">
         <div class="grid-stok">
@@ -633,13 +692,15 @@ function buildSidebar() {
     h += navItem('📊','Laporan Penjualan','laporan_staff.html');
     if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
         h += `<div class="nav-group-label">Management</div>`;
-        h += navItem('🍱','Master Produk','produk.html');
         h += navItem('📈','Rekapan Penjualan','rekap.html');
+        h += navItem('🍱','Master Produk','produk.html');
     }
     if (['Owner','VIP'].includes(role)) {
         h += `<div class="nav-group-label">Executive</div>`;
         h += navItem('📊','Keuangan Global','laporan.html');
         h += navItem('📈','Statistik','statistik.html');
+        h += navItem('🧂','Bahan Baku','bahan_baku.html');
+        h += navItem('💰','HPP Produk','hpp_produk.html');
         h += navItem('💸','Belanja','belanja.html');
     }
     if (role === 'VIP') {
@@ -648,7 +709,7 @@ function buildSidebar() {
         h += navItem('🔑','History Login','login_history.html');
     }
     document.getElementById('sidebarNav').innerHTML = h;
-    const name = currentUser.user || '?';
+    const name = currentUser.fullName || currentUser.user || '?';
     document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
     document.getElementById('sidebarUserName').innerText   = name;
     document.getElementById('sidebarUserRole').innerText   = role;
@@ -671,6 +732,8 @@ function buildMoreMenu() {
         items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
     }
     if (['Owner','VIP'].includes(role)) {
+        items.push({icon:'🧂',label:'Bahan Baku',link:'bahan_baku.html'});
+        items.push({icon:'💰',label:'HPP Produk',link:'hpp_produk.html'});
         items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
         items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
         items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
@@ -755,7 +818,7 @@ async function simpanLaporanFinal() {
     const newReport = {
         id:      'RSTK-' + Date.now().toString().slice(-4),
         waktu:   new Date().toLocaleString('id-ID', {weekday:'long',year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}),
-        petugas: currentUser.user,
+        petugas: currentUser.fullName || currentUser.user,
         cabang:  cabangAktif,
         items:   draftItem
     };
@@ -857,14 +920,24 @@ async function logout() {
     }
 }
 
+function updateInfoBar() {
+    const name = currentUser.fullName || currentUser.user || '—';
+    const el1 = document.getElementById('infoPetugas');
+    const el2 = document.getElementById('infoCabang');
+    if (el1) el1.innerText = name;
+    if (el2) el2.innerText = cabangAktif;
+}
+
 window.onload = function() {
     buildSidebar();
     updateClock();
+    updateInfoBar();
     renderMasterSync();
     renderHistoryStok();
 };
 </script>
 
+<script src="session.js"></script>
 <script src="toast.js"></script>
 </body>
 </html>

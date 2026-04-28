@@ -21,7 +21,7 @@
 
     .grid-input {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: 1fr 1.5fr 1.5fr 2fr;
         gap: 12px;
         align-items: end;
     }
@@ -41,13 +41,22 @@
         margin: 0;
     }
 
+    /* Override global custom-select di dalam form */
+    .form-belanja .custom-select-wrap {
+        margin-bottom: 0;
+    }
+
+    .form-belanja .custom-select-btn {
+        border-radius: var(--r-md);
+    }
+
     /* Jenis + tombol tambah */
     .jenis-wrap {
         display: flex;
         gap: 6px;
     }
 
-    .jenis-wrap select {
+    .jenis-wrap .custom-select-wrap {
         flex: 1;
     }
 
@@ -243,7 +252,7 @@
         }
 
         .grid-stats {
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr 1fr;
         }
 
         .filter-grid {
@@ -252,6 +261,53 @@
 
     }
 
+    @media (max-width: 480px) {
+
+        .grid-input {
+            grid-template-columns: 1fr;
+        }
+
+        .btn-action {
+            grid-column: 1;
+        }
+
+        .btn-simpan-kas {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .grid-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+    }
+
+
+    .btn-cetak-pdf {
+        background: #1c1c1a;
+        color: rgba(255,255,255,0.88);
+        border: none;
+        padding: 9px 16px;
+        border-radius: var(--r-md);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
+        transition: filter 0.15s;
+        white-space: nowrap;
+    }
+    .btn-cetak-pdf:hover { filter: brightness(1.2); }
+    @media print {
+        .sidebar, .bottom-nav, .form-belanja, .filter-box,
+        .btn-cetak-pdf, .btn-del-kas, .btn-simpan-kas { display: none !important; }
+        .main-content { margin: 0 !important; }
+        .page-body { padding: 16px !important; }
+        .stat-card { break-inside: avoid; }
+    }
     </style>
 </head>
 <body>
@@ -289,6 +345,7 @@
             <div class="header-page-title">💸 Belanja</div>
         </div>
         <div class="header-right">
+            <button class="btn-cetak-pdf" onclick="cetakPDF()">🖨️ Cetak PDF</button>
             <div class="clock-pill">
                 <div id="realtimeClock">00:00:00</div>
                 <div id="realtimeDate">...</div>
@@ -302,19 +359,18 @@
         <div class="form-belanja">
             <div class="grid-input">
                 <div class="input-group">
-                    <label>Username</label>
+                    <label for="fUser">Username</label>
                     <input type="text" id="fUser" readonly>
                 </div>
                 <div class="input-group">
-                    <label>Tanggal & Jam</label>
+                    <label for="fWaktu">Tanggal & Jam</label>
                     <input type="datetime-local" id="fWaktu">
                 </div>
                 <div class="input-group">
-                    <label>Jenis Transaksi</label>
-                    <div style="display:flex;gap:6px;">
-                        <div class="custom-select-wrap" id="wrapJenis" style="flex:1;margin-bottom:0;">
-                            <button class="custom-select-btn" onclick="toggleDropdown('wrapJenis')" style="border-radius:var(--r-md);">
-                                <span id="iconJenis">📂</span>
+                    <label for="wrapJenis">Jenis Transaksi</label>
+                    <div class="jenis-wrap">
+                        <div class="custom-select-wrap" id="wrapJenis">
+                            <button class="custom-select-btn" onclick="toggleDropdown('wrapJenis')">
                                 <span id="labelJenis">Pilih Jenis</span>
                                 <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1l5 5 5-5" stroke="#d32f2f" stroke-width="1.5" stroke-linecap="round"/></svg>
                             </button>
@@ -325,40 +381,39 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label>Nama Transaksi</label>
+                    <label for="fNama">Nama Transaksi</label>
                     <input type="text" id="fNama" list="listNama" placeholder="Cth: Penjualan Event / Beli Sabun">
                     <datalist id="listNama"></datalist>
                 </div>
                 <div class="input-group">
-                    <label>Qty</label>
+                    <label for="fQty">Qty</label>
                     <input type="number" id="fQty" value="1">
                 </div>
                 <div class="input-group">
-                    <label>Credit / Debit</label>
-                    <div class="custom-select-wrap" id="wrapMode" style="margin-bottom:0;">
-                        <button class="custom-select-btn" onclick="toggleDropdown('wrapMode')" style="border-radius:var(--r-md);">
-                            <span id="iconMode">💰</span>
+                    <label for="wrapMode">Credit / Debit</label>
+                    <div class="custom-select-wrap" id="wrapMode">
+                        <button class="custom-select-btn" onclick="toggleDropdown('wrapMode')">
                             <span id="labelMode">Pemasukan (Credit)</span>
                             <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1l5 5 5-5" stroke="#d32f2f" stroke-width="1.5" stroke-linecap="round"/></svg>
                         </button>
                         <div class="custom-dropdown" id="dropdownMode">
-                            <div class="dropdown-item active" onclick="pilihMode('Credit','💰','Pemasukan (Credit)',this)"><span class="dd-icon">💰</span><span>Pemasukan (Credit)</span></div>
-                            <div class="dropdown-item" onclick="pilihMode('Debit','💸','Pengeluaran (Debit)',this)"><span class="dd-icon">💸</span><span>Pengeluaran (Debit)</span></div>
+                            <div class="dropdown-item active" onclick="pilihMode('Credit','💰','Pemasukan (Credit)',this)"><span>Pemasukan (Credit)</span></div>
+                            <div class="dropdown-item" onclick="pilihMode('Debit','💸','Pengeluaran (Debit)',this)"><span>Pengeluaran (Debit)</span></div>
                         </div>
                         <input type="hidden" id="fMode" value="Credit">
                     </div>
                 </div>
                 <div class="input-group">
-                    <label>Nominal (Rp)</label>
+                    <label for="fNominal">Nominal (Rp)</label>
                     <input type="number" id="fNominal" placeholder="0">
                 </div>
                 <div class="input-group">
-                    <label>Keterangan</label>
+                    <label for="fKet">Keterangan</label>
                     <input type="text" id="fKet" list="listKet" placeholder="Catatan tambahan...">
                     <datalist id="listKet"></datalist>
                 </div>
                 <div class="btn-action">
-                    <button class="btn-simpan-kas" onclick="simpanTransaksi()">💾 Simpan Transaksi</button>
+                    <button class="btn-simpan-kas" onclick="simpanTransaksi()">Simpan Transaksi</button>
                 </div>
             </div>
         </div>
@@ -384,53 +439,51 @@
             <h4>🔍 Filter Data History</h4>
             <div class="filter-grid">
                 <div class="input-group">
-                    <label>Dari Tanggal</label>
+                    <label for="filterTglMulai">Dari Tanggal</label>
                     <input type="date" id="filterTglMulai" onchange="muatTabel()">
                 </div>
                 <div class="input-group">
-                    <label>Sampai Tanggal</label>
+                    <label for="filterTglSelesai">Sampai Tanggal</label>
                     <input type="date" id="filterTglSelesai" onchange="muatTabel()">
                 </div>
                 <div class="input-group">
-                    <label>Cari User</label>
+                    <label for="filterUser">Cari User</label>
                     <input type="text" id="filterUser" placeholder="Nama staff..." onkeyup="muatTabel()">
                 </div>
                 <div class="input-group">
-                    <label>Pilih Jenis</label>
+                    <label for="wrapFJenis">Pilih Jenis</label>
                     <div class="custom-select-wrap" id="wrapFJenis" style="margin-bottom:0;">
                         <button class="custom-select-btn" onclick="toggleDropdown('wrapFJenis')" style="border-radius:var(--r-md);">
-                            <span id="iconFJenis">📂</span>
                             <span id="labelFJenis">Semua Jenis</span>
                             <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1l5 5 5-5" stroke="#d32f2f" stroke-width="1.5" stroke-linecap="round"/></svg>
                         </button>
                         <div class="custom-dropdown" id="dropdownFJenis">
-                            <div class="dropdown-item active" onclick="pilihFJenis('','📂','Semua Jenis',this)"><span class="dd-icon">📂</span><span>Semua Jenis</span></div>
+                            <div class="dropdown-item active" onclick="pilihFJenis('','📂','Semua Jenis',this)"><span>Semua Jenis</span></div>
                         </div>
                         <input type="hidden" id="filterJenis" value="">
                     </div>
                 </div>
                 <div class="input-group">
-                    <label>Nama Transaksi</label>
+                    <label for="filterNama">Nama Transaksi</label>
                     <input type="text" id="filterNama" placeholder="Cari transaksi..." onkeyup="muatTabel()">
                 </div>
                 <div class="input-group">
-                    <label>Mode (In/Out)</label>
+                    <label for="wrapFMode">Mode (In/Out)</label>
                     <div class="custom-select-wrap" id="wrapFMode" style="margin-bottom:0;">
                         <button class="custom-select-btn" onclick="toggleDropdown('wrapFMode')" style="border-radius:var(--r-md);">
-                            <span id="iconFMode">🔄</span>
                             <span id="labelFMode">Semua</span>
                             <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1l5 5 5-5" stroke="#d32f2f" stroke-width="1.5" stroke-linecap="round"/></svg>
                         </button>
                         <div class="custom-dropdown" id="dropdownFMode">
-                            <div class="dropdown-item active" onclick="pilihFMode('','🔄','Semua',this)"><span class="dd-icon">🔄</span><span>Semua</span></div>
-                            <div class="dropdown-item" onclick="pilihFMode('Credit','💰','Credit (Masuk)',this)"><span class="dd-icon">💰</span><span>Credit (Masuk)</span></div>
-                            <div class="dropdown-item" onclick="pilihFMode('Debit','💸','Debit (Keluar)',this)"><span class="dd-icon">💸</span><span>Debit (Keluar)</span></div>
+                            <div class="dropdown-item active" onclick="pilihFMode('','🔄','Semua',this)"><span>Semua</span></div>
+                            <div class="dropdown-item" onclick="pilihFMode('Credit','💰','Credit (Masuk)',this)"><span>Credit (Masuk)</span></div>
+                            <div class="dropdown-item" onclick="pilihFMode('Debit','💸','Debit (Keluar)',this)"><span>Debit (Keluar)</span></div>
                         </div>
                         <input type="hidden" id="filterMode" value="">
                     </div>
                 </div>
                 <div class="input-group">
-                    <label>Keterangan</label>
+                    <label for="filterKet">Keterangan</label>
                     <input type="text" id="filterKet" placeholder="Cari catatan..." onkeyup="muatTabel()">
                 </div>
             </div>
@@ -513,13 +566,15 @@ function buildSidebar() {
     h += navItem('📊','Laporan Penjualan','laporan_staff.html');
     if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
         h += `<div class="nav-group-label">Management</div>`;
-        h += navItem('🍱','Master Produk','produk.html');
         h += navItem('📈','Rekapan Penjualan','rekap.html');
+        h += navItem('🍱','Master Produk','produk.html');
     }
     if (['Owner','VIP'].includes(role)) {
         h += `<div class="nav-group-label">Executive</div>`;
         h += navItem('📊','Keuangan Global','laporan.html');
         h += navItem('📈','Statistik','statistik.html');
+        h += navItem('🧂','Bahan Baku','bahan_baku.html');
+        h += navItem('💰','HPP Produk','hpp_produk.html');
         h += navItem('💸','Belanja','belanja.html');
     }
     if (role === 'VIP') {
@@ -528,11 +583,13 @@ function buildSidebar() {
         h += navItem('🔑','History Login','login_history.html');
     }
     document.getElementById('sidebarNav').innerHTML = h;
-    const name = currentUser.user || '?';
+    const name = currentUser.fullName || currentUser.user || '?';
     document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
     document.getElementById('sidebarUserName').innerText   = name;
     document.getElementById('sidebarUserRole').innerText   = role;
 }
+
+
 
 /* ── CLOCK ── */
 function updateClock() {
@@ -547,10 +604,12 @@ function buildMoreMenu() {
     const role = currentUser.role;
     const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
     if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
-        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
         items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
     }
     if (['Owner','VIP'].includes(role)) {
+        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
+        items.push({icon:'🧂',label:'Bahan Baku',link:'bahan_baku.html'});
+        items.push({icon:'💰',label:'HPP Produk',link:'hpp_produk.html'});
         items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
         items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
         items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
@@ -566,6 +625,7 @@ function buildMoreMenu() {
             <span class="more-btn-label">${i.label}</span>
         </button>`).join('');
 }
+
 
 function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
 function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
@@ -815,6 +875,10 @@ async function hapusKas(id) {
     }
 }
 
+function cetakPDF() {
+    window.print();
+}
+
 async function logout() {
     const ok = await showConfirm('Logout dari sistem?', 'Ya, Logout', 'Batal', '🚪');
     if (ok) {
@@ -831,6 +895,7 @@ window.onload = () => {
 };
 </script>
 
+<script src="session.js"></script>
 <script src="toast.js"></script>
 </body>
 </html>

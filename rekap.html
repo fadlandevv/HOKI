@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="style.css">
     <style>
 
-    /* ── STAT CARDS ── */
     .card-rekap {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -26,15 +25,9 @@
         margin-top: 4px;
     }
 
-    .stat-val.green {
-        color: var(--green);
-    }
+    .stat-val.green { color: var(--green); }
+    .stat-val.dark  { color: var(--text); }
 
-    .stat-val.dark {
-        color: var(--text);
-    }
-
-    /* ── SECTION TITLE ── */
     .section-title {
         font-size: 10px;
         font-weight: 700;
@@ -46,7 +39,6 @@
         padding: 0;
     }
 
-    /* ── DETAIL GRID ── */
     .detail-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -54,12 +46,7 @@
         margin-bottom: 16px;
     }
 
-    /* ── CHECKBOX CABANG ── */
-
-    /* ── TABLE OVERRIDES ── */
-    #tableMetode,
-    #tableMenu,
-    #tableDaftarExp {
+    #tableMetode, #tableMenu, #tableDaftarExp, #tableBreakdown {
         width: 100%;
         border-collapse: collapse;
         box-shadow: none;
@@ -68,9 +55,7 @@
         background: transparent;
     }
 
-    #tableMetode th,
-    #tableMenu th,
-    #tableDaftarExp th {
+    #tableMetode th, #tableMenu th, #tableDaftarExp th, #tableBreakdown th {
         background: var(--red);
         color: white;
         padding: 10px 12px;
@@ -78,52 +63,46 @@
         font-weight: 600;
         text-transform: uppercase;
         border: none;
-        border-radius: 0;
     }
 
-    #tableMetode td,
-    #tableMenu td,
-    #tableDaftarExp td {
+    #tableMetode td, #tableMenu td, #tableDaftarExp td, #tableBreakdown td {
         padding: 9px 12px;
         border-bottom: 1px solid var(--border);
-        border-top: none;
-        border-left: none;
-        border-right: none;
+        border-top: none; border-left: none; border-right: none;
         color: var(--text);
     }
 
-    /* ── PRINT ── */
-    @media print {
-        .sidebar,
-        .filter-bar,
-        button {
-            display: none !important;
-        }
-        .main-content {
-            margin: 0 !important;
-            padding: 0 !important;
-        }
+    .bar-container {
+        background: var(--border);
+        border-radius: 99px;
+        height: 6px;
+        margin-top: 4px;
+        overflow: hidden;
     }
 
-    /* ── RESPONSIVE MOBILE ── */
+    .bar-fill {
+        background: var(--red);
+        height: 100%;
+        border-radius: 99px;
+        transition: width 0.4s ease;
+    }
+
+    @media print {
+        .sidebar, .filter-bar, button, .bottom-nav { display: none !important; }
+        .main-content { margin: 0 !important; }
+    }
+
     @media (max-width: 844px) {
-
-        .detail-grid {
-            grid-template-columns: 1fr;
-        }
-
+        .detail-grid { grid-template-columns: 1fr; }
     }
 
     </style>
 </head>
 <body>
 
-<!-- ── SIDEBAR ── -->
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand" onclick="toggleSidebar()">
-        <div class="sidebar-logo">
-            <img src="Assets/logobrand.png" alt="Hoki">
-        </div>
+        <div class="sidebar-logo"><img src="Assets/logobrand.png" alt="Hoki"></div>
         <div class="sidebar-brand-text">
             <div class="sidebar-brand-name">Hoki Dimsum</div>
             <div class="sidebar-brand-sub">POS System v2.0</div>
@@ -143,9 +122,7 @@
     </div>
 </aside>
 
-<!-- ── MAIN CONTENT ── -->
 <div class="main-content" id="mainContent">
-
     <header class="top-header">
         <div class="header-left">
             <div class="header-page-title">📈 Rekapan Penjualan</div>
@@ -163,27 +140,27 @@
         <!-- FILTER -->
         <div class="filter-bar">
             <div class="filter-group">
-                <label>Pilih Tanggal</label>
+                <label for="filterTgl">Pilih Tanggal</label>
                 <input type="date" id="filterTgl" onchange="hitungRekapan()">
             </div>
             <div class="filter-group">
                 <label>Pilih Cabang (bisa pilih banyak)</label>
-                <div id="containerCabang" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;"></div>
+                <div id="containerCabang"></div>
             </div>
         </div>
 
         <!-- STAT CARDS -->
         <div class="grid-rekap">
             <div class="card-rekap">
-                <div class="section-title">💰 Omset (sesuai edit)</div>
+                <div class="section-title">💰 Omset</div>
                 <div class="stat-val" id="totalOmset">Rp 0</div>
             </div>
             <div class="card-rekap">
-                <div class="section-title">🥟 Estimasi Dimsum (Pcs)</div>
+                <div class="section-title">🥟 Dimsum Terjual</div>
                 <div class="stat-val green" id="totalPcs">0 Pcs</div>
             </div>
             <div class="card-rekap">
-                <div class="section-title">💸 Pengeluaran (Audit)</div>
+                <div class="section-title">💸 Pengeluaran</div>
                 <div class="stat-val dark" id="totalExp">Rp 0</div>
             </div>
         </div>
@@ -191,7 +168,7 @@
         <!-- DETAIL TABLES -->
         <div class="detail-grid">
             <div class="card-rekap">
-                <div class="section-title" style="margin-bottom:12px;">💳 Rincian Pembayaran (Settlement)</div>
+                <div class="section-title" style="margin-bottom:12px;">💳 Rincian Pembayaran</div>
                 <table id="tableMetode">
                     <thead><tr><th>Metode</th><th>Nominal</th></tr></thead>
                     <tbody></tbody>
@@ -206,8 +183,17 @@
             </div>
         </div>
 
+        <!-- BREAKDOWN DIMSUM PER PRODUK -->
+        <div class="card-rekap" style="margin-bottom:16px;">
+            <div class="section-title" style="margin-bottom:12px;">🥟 Breakdown Dimsum Terjual per Produk</div>
+            <table id="tableBreakdown">
+                <thead><tr><th>Produk</th><th>Qty Porsi</th><th>Dimsum (Pcs)</th><th>Bar</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
         <div class="card-rekap">
-            <div class="section-title" style="margin-bottom:12px;">📝 Detail Pengeluaran Terlapor</div>
+            <div class="section-title" style="margin-bottom:12px;">📝 Detail Pengeluaran</div>
             <table id="tableDaftarExp">
                 <thead><tr><th>Nama Barang</th><th>Qty</th><th>Harga</th></tr></thead>
                 <tbody></tbody>
@@ -217,7 +203,6 @@
     </div>
 </div>
 
-<!-- BOTTOM NAV -->
 <nav class="bottom-nav">
     <button class="bn-item" onclick="location.href='dashboard.html'"><span class="bn-icon">🛒</span><span class="bn-label">Kasir</span></button>
     <button class="bn-item" onclick="location.href='history.html'"><span class="bn-icon">📄</span><span class="bn-label">History</span></button>
@@ -226,7 +211,6 @@
     <button class="bn-item active" onclick="openSheet('moreSheet')"><span class="bn-icon">☰</span><span class="bn-label">Lainnya</span></button>
 </nav>
 
-<!-- MORE SHEET -->
 <div class="sheet-overlay" id="moreSheet" onclick="closeSheetOutside(event,'moreSheet')">
     <div class="bottom-sheet" onclick="event.stopPropagation()">
         <div class="sheet-handle"></div>
@@ -239,9 +223,12 @@
 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 if (!currentUser) window.location.href = 'index.html';
 
+// Cek akses — hanya Senior Staff ke atas
+const ALLOWED = ['Senior Staff','SPV','Owner','VIP'];
+if (!ALLOWED.includes(currentUser.role)) window.location.href = 'dashboard.html';
+
 const role = currentUser.role;
 
-/* ── SIDEBAR ── */
 function toggleSidebar() {
     const sb = document.getElementById('sidebar');
     const mc = document.getElementById('mainContent');
@@ -271,13 +258,15 @@ function buildSidebar() {
     h += navItem('📊','Laporan Penjualan','laporan_staff.html');
     if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
         h += `<div class="nav-group-label">Management</div>`;
-        h += navItem('🍱','Master Produk','produk.html');
         h += navItem('📈','Rekapan Penjualan','rekap.html');
+        h += navItem('🍱','Master Produk','produk.html');
     }
     if (['Owner','VIP'].includes(role)) {
         h += `<div class="nav-group-label">Executive</div>`;
         h += navItem('📊','Keuangan Global','laporan.html');
         h += navItem('📈','Statistik','statistik.html');
+        h += navItem('🧂','Bahan Baku','bahan_baku.html');
+        h += navItem('💰','HPP Produk','hpp_produk.html');
         h += navItem('💸','Belanja','belanja.html');
     }
     if (role === 'VIP') {
@@ -286,13 +275,12 @@ function buildSidebar() {
         h += navItem('🔑','History Login','login_history.html');
     }
     document.getElementById('sidebarNav').innerHTML = h;
-    const name = currentUser.user || '?';
+    const name = currentUser.fullName || currentUser.user || '?';
     document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
     document.getElementById('sidebarUserName').innerText   = name;
     document.getElementById('sidebarUserRole').innerText   = role;
 }
 
-/* ── CLOCK ── */
 function updateClock() {
     const now = new Date();
     document.getElementById('realtimeClock').innerText = now.toLocaleTimeString('id-ID');
@@ -300,14 +288,15 @@ function updateClock() {
 }
 setInterval(updateClock, 1000);
 
-/* ── MORE MENU ── */
 function buildMoreMenu() {
     const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
     if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
-        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
         items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
     }
     if (['Owner','VIP'].includes(role)) {
+        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
+        items.push({icon:'🧂',label:'Bahan Baku',link:'bahan_baku.html'});
+        items.push({icon:'💰',label:'HPP Produk',link:'hpp_produk.html'});
         items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
         items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
         items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
@@ -327,7 +316,7 @@ function buildMoreMenu() {
 function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
 function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
 
-/* ── LOGIKA REKAPAN (TIDAK BERUBAH) ── */
+/* ── LOAD FILTER CABANG — otomatis sesuai akun ── */
 async function loadFilterCabang() {
     try {
         const res        = await fetch('api.php?action=get_branches');
@@ -335,16 +324,15 @@ async function loadFilterCabang() {
         const container  = document.getElementById('containerCabang');
         container.innerHTML = '';
 
-        const jatahCabang = currentUser.cabang || "";
+        const jatahCabang = currentUser.cabang || '';
         const daftarAkses = jatahCabang.split(',').map(s => s.trim().toUpperCase());
+        const isBoss      = ['Owner','VIP'].includes(role);
+        const hasAll      = daftarAkses.includes('SEMUA');
 
         dataCabang.forEach(c => {
-            const namaCabangSistem = c.nama_cabang.trim().toUpperCase();
-            const isBoss           = (role === 'Owner' || role === 'VIP');
-            const hasAllAccess     = daftarAkses.includes("SEMUA");
-            const isAuthorized     = daftarAkses.includes(namaCabangSistem);
-
-            if (isBoss || hasAllAccess || isAuthorized) {
+            const namaUpper = c.nama_cabang.trim().toUpperCase();
+            const boleh     = isBoss || hasAll || daftarAkses.includes(namaUpper);
+            if (boleh) {
                 container.innerHTML += `
                     <label class="cb-label">
                         <input type="checkbox" class="cb-cabang" value="${c.nama_cabang}" onchange="hitungRekapan()" checked>
@@ -354,45 +342,51 @@ async function loadFilterCabang() {
         });
 
         hitungRekapan();
-    } catch (e) { console.error("Gagal sinkron data cabang:", e); }
+    } catch(e) { console.error('Gagal muat cabang:', e); }
 }
+
+/* ── HITUNG REKAPAN ── */
+let masterProdukCache = [];
 
 async function hitungRekapan() {
     const tglVal = document.getElementById('filterTgl').value;
     if (!tglVal) return;
 
-    let selectedBranches = Array.from(document.querySelectorAll('.cb-cabang:checked')).map(cb => cb.value);
-
+    const selectedBranches = Array.from(document.querySelectorAll('.cb-cabang:checked')).map(cb => cb.value);
     if (selectedBranches.length === 0) {
-        renderTampilan({ omset: 0, pcs: 0, exp: 0, metode: {}, menu: {}, listExp: [] });
+        renderTampilan({ omset:0, pcs:0, exp:0, metode:{}, menu:{}, listExp:[], breakdown:{} });
         return;
     }
 
     try {
-        const params = new URLSearchParams({
-            action: 'get_laporan_history',
-            role:   currentUser.role,
-            cabang: currentUser.cabang || ""
-        });
+        // Ambil laporan settlement + master produk
+        const [resLap, resProd] = await Promise.all([
+            fetch(`api.php?action=get_laporan_history&role=${role}&cabang=${encodeURIComponent(currentUser.cabang||'')}`),
+            masterProdukCache.length ? Promise.resolve({json:()=>masterProdukCache}) : fetch('api.php?action=get_produk')
+        ]);
 
-        const res        = await fetch(`api.php?${params.toString()}`);
-        const allReports = await res.json();
+        const allReports = await resLap.json();
+        if (!masterProdukCache.length) masterProdukCache = await resProd.json();
 
-        let total = { omset: 0, pcs: 0, exp: 0, metode: {}, menu: {}, listExp: [] };
+        let total = { omset:0, pcs:0, exp:0, metode:{}, menu:{}, listExp:[], breakdown:{} };
 
         const filtered = allReports.filter(r => {
-            const rDate = r.waktu.split(' ')[0];
+            const rDate = (r.waktu || '').split(' ')[0];
             return rDate === tglVal && selectedBranches.includes(r.cabang);
         });
 
         filtered.forEach(r => {
             total.omset += parseInt(r.grand_total || 0);
+
+            // Metode
             const mtd = JSON.parse(r.metode_json || '{}');
-            for (let m in mtd) { total.metode[m] = (total.metode[m] || 0) + parseInt(mtd[m]); }
+            for (let m in mtd) total.metode[m] = (total.metode[m] || 0) + parseInt(mtd[m]);
+
+            // Audit stok
             const audit = JSON.parse(r.audit_json || '{}');
             total.pcs += parseInt(audit.dLak || 0);
-            const items = JSON.parse(r.items_json || '[]');
-            items.forEach(it => { total.menu[it.nama] = (total.menu[it.nama] || 0) + parseInt(it.qty || 0); });
+
+            // Pengeluaran
             const exps = JSON.parse(r.pengeluaran_json || '[]');
             exps.forEach(e => {
                 total.exp += parseInt(e.harga || 0);
@@ -400,31 +394,77 @@ async function hitungRekapan() {
             });
         });
 
+        // Ambil menu terjual dari transaksi langsung (lebih akurat)
+        const resTrx = await fetch('api.php?action=get_history');
+        const transaksi = await resTrx.json();
+
+        transaksi.forEach(t => {
+            const tDate = (t.waktu || '').split(' ')[0];
+            if (tDate !== tglVal || !selectedBranches.includes(t.cabang)) return;
+
+            const items = JSON.parse(t.items_json || '[]');
+            items.forEach(it => {
+                const nama = it.nama || it.sku || '';
+                const qty  = parseInt(it.qty) || 1;
+                total.menu[nama] = (total.menu[nama] || 0) + qty;
+
+                // Breakdown dimsum per produk
+                const p = masterProdukCache.find(x => x.nama === nama || x.sku === it.sku);
+                if (p && parseInt(p.dimsumPcs) > 0) {
+                    const dimsumQty = parseInt(p.dimsumPcs) * qty;
+                    total.breakdown[nama] = total.breakdown[nama] || { porsi:0, dimsum:0 };
+                    total.breakdown[nama].porsi  += qty;
+                    total.breakdown[nama].dimsum += dimsumQty;
+                }
+            });
+        });
+
         renderTampilan(total);
-    } catch (e) {
-        console.error("Gagal hitung rekapan:", e);
-        toast.error("Terjadi kesalahan saat mengambil data!");
+    } catch(e) {
+        console.error('Gagal hitung rekapan:', e);
     }
 }
 
 function renderTampilan(data) {
-    document.getElementById('totalOmset').innerText = `Rp ${data.omset.toLocaleString()}`;
-    document.getElementById('totalPcs').innerText   = `${data.pcs.toLocaleString()} Pcs`;
-    document.getElementById('totalExp').innerText   = `Rp ${data.exp.toLocaleString()}`;
+    document.getElementById('totalOmset').innerText = `Rp ${data.omset.toLocaleString('id-ID')}`;
+    document.getElementById('totalPcs').innerText   = `${data.pcs.toLocaleString('id-ID')} Pcs`;
+    document.getElementById('totalExp').innerText   = `Rp ${data.exp.toLocaleString('id-ID')}`;
 
+    // Metode
     const tbodyM = document.querySelector('#tableMetode tbody');
     tbodyM.innerHTML = Object.entries(data.metode).length
-        ? Object.entries(data.metode).map(([m, val]) =>
-            `<tr><td><b>${m}</b></td><td style="font-family:'DM Mono',monospace;font-weight:700;color:var(--red);">Rp ${val.toLocaleString()}</td></tr>`).join('')
+        ? Object.entries(data.metode).map(([m,val]) =>
+            `<tr><td><b>${m}</b></td><td style="font-family:'DM Mono',monospace;font-weight:700;color:var(--red);">Rp ${val.toLocaleString('id-ID')}</td></tr>`).join('')
         : '<tr><td colspan="2" style="text-align:center;color:var(--text-muted);padding:20px;">Tidak ada data</td></tr>';
 
+    // Menu terjual
     const tbodyMenu = document.querySelector('#tableMenu tbody');
-    tbodyMenu.innerHTML = Object.entries(data.menu).sort((a,b) => b[1]-a[1]).map(([nama, qty]) =>
+    tbodyMenu.innerHTML = Object.entries(data.menu).sort((a,b)=>b[1]-a[1]).map(([nama,qty]) =>
         `<tr><td>${nama}</td><td style="font-weight:700;">${qty} Porsi</td></tr>`).join('');
 
+    // Breakdown dimsum per produk
+    const tbodyBreak = document.querySelector('#tableBreakdown tbody');
+    const maxDimsum  = Math.max(...Object.values(data.breakdown).map(v=>v.dimsum), 1);
+    tbodyBreak.innerHTML = Object.entries(data.breakdown).sort((a,b)=>b[1].dimsum-a[1].dimsum).map(([nama,v]) => {
+        const pct = (v.dimsum / maxDimsum * 100).toFixed(0);
+        return `<tr>
+            <td>${nama}</td>
+            <td style="font-weight:700;">${v.porsi} Porsi</td>
+            <td style="font-family:'DM Mono',monospace;font-weight:700;color:var(--green);">${v.dimsum} Pcs</td>
+            <td style="min-width:80px;">
+                <div class="bar-container"><div class="bar-fill" style="width:${pct}%;background:var(--green);"></div></div>
+            </td>
+        </tr>`;
+    }).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:16px;">Tidak ada data</td></tr>';
+
+    // Pengeluaran
     const tbodyExp = document.querySelector('#tableDaftarExp tbody');
     tbodyExp.innerHTML = data.listExp.map(e =>
-        `<tr><td>${e.nama} <small style="color:var(--text-muted);">(${e.cabang})</small></td><td>${e.qty || 1}</td><td style="font-family:'DM Mono',monospace;">Rp ${parseInt(e.harga).toLocaleString()}</td></tr>`).join('');
+        `<tr>
+            <td>${e.nama} <small style="color:var(--text-muted);">(${e.cabang})</small></td>
+            <td>${e.qty||1}</td>
+            <td style="font-family:'DM Mono',monospace;">Rp ${parseInt(e.harga).toLocaleString('id-ID')}</td>
+        </tr>`).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:16px;">Tidak ada pengeluaran</td></tr>';
 }
 
 async function logout() {
@@ -444,6 +484,7 @@ window.onload = () => {
 };
 </script>
 
+<script src="session.js"></script>
 <script src="toast.js"></script>
 </body>
 </html>
