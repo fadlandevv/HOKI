@@ -7,25 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-
     <style>
-
-    .filter-grid {
-        align-items: end;
-    }
-
-    .filter-grid .input-group {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .filter-grid .custom-select-btn,
-    .filter-grid input[type="date"],
-    .filter-grid input[type="text"],
-    .filter-grid select {
-        height: 42px;
-    }
 
     /* ── INPUT GROUP ── */
     .input-group {
@@ -61,18 +43,17 @@
     .filter-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: 12px;
+        gap: 14px;
         align-items: start;
     }
 
     .btn-reset {
-        margin-top: 14px;
         background: var(--surface-2);
         border: 1px solid var(--border);
         color: var(--text-muted);
         padding: 7px 14px;
         border-radius: var(--r-md);
-        font-size: 12px;
+        font-size: 13px;
         cursor: pointer;
         transition: background 0.15s;
         font-family: 'DM Sans', sans-serif;
@@ -252,9 +233,24 @@
         .input-group select[multiple] {
             height: 80px;
         }
+        
+        .btn-reset {
+            width: 100%;
+            padding: 8px 0px;
+        }
 
+        .btn-cetak {
+            width: 100%;
+            padding: 8px 0px;
+        }
     }
 
+
+    @media print {
+        .sidebar, .bottom-nav, .filter-bar { display: none !important; }
+        .main-content { margin: 0 !important; }
+        .page-body { padding: 16px !important; }
+    }
     </style>
 </head>
 <body>
@@ -292,7 +288,6 @@
             <div class="header-page-title">📊 Keuangan Global</div>
         </div>
         <div class="header-right">
-            <button class="btn-cetak" onclick="window.print()">🖨️ Cetak PDF</button>
             <div class="clock-pill">
                 <div id="realtimeClock">00:00:00</div>
                 <div id="realtimeDate">...</div>
@@ -316,7 +311,7 @@
 
                 <!-- Cabang custom dropdown -->
                 <div class="input-group">
-                    <label>📍 Pilih Cabang</label>
+                    <label for="filterCabang">📍 Pilih Cabang</label>
                     <div class="custom-select-wrap" id="wrapCabang">
                         <button class="custom-select-btn" onclick="toggleDropdown('wrapCabang')">
                             <span id="iconCabang">📍</span>
@@ -333,18 +328,18 @@
                 </div>
 
                 <div class="input-group">
-                    <label>📅 Mulai Tanggal</label>
+                    <label for="startDate">📅 Mulai Tanggal</label>
                     <input type="date" id="startDate" onchange="hitungLaporan()">
                 </div>
 
                 <div class="input-group">
-                    <label>📅 Sampai Tanggal</label>
+                    <label for="endDate">📅 Sampai Tanggal</label>
                     <input type="date" id="endDate" onchange="hitungLaporan()">
                 </div>
 
                 <!-- Jenis biaya custom dropdown -->
                 <div class="input-group">
-                    <label>📂 Filter Jenis Biaya</label>
+                    <label for="filterKeterangan">📂 Filter Jenis Biaya</label>
                     <div class="custom-select-wrap" id="wrapKet">
                         <button class="custom-select-btn" onclick="toggleDropdown('wrapKet')">
                             <span id="iconKet">📂</span>
@@ -361,7 +356,10 @@
                 </div>
 
             </div>
-            <button class="btn-reset" onclick="resetFilter()">🔄 Reset Filter</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn-reset" onclick="resetFilter()">Reset Filter</button>
+                <button class="btn-cetak" onclick="window.print()">Cetak PDF</button>
+            </div>
         </div>
 
         <!-- STAT CARDS -->
@@ -489,13 +487,15 @@ function buildSidebar() {
     h += navItem('📊','Laporan Penjualan','laporan_staff.html');
     if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
         h += `<div class="nav-group-label">Management</div>`;
-        h += navItem('🍱','Master Produk','produk.html');
         h += navItem('📈','Rekapan Penjualan','rekap.html');
+        h += navItem('🍱','Master Produk','produk.html');
     }
     if (['Owner','VIP'].includes(role)) {
         h += `<div class="nav-group-label">Executive</div>`;
         h += navItem('📊','Keuangan Global','laporan.html');
         h += navItem('📈','Statistik','statistik.html');
+        h += navItem('🧂','Bahan Baku','bahan_baku.html');
+        h += navItem('💰','HPP Produk','hpp_produk.html');
         h += navItem('💸','Belanja','belanja.html');
     }
     if (role === 'VIP') {
@@ -504,11 +504,13 @@ function buildSidebar() {
         h += navItem('🔑','History Login','login_history.html');
     }
     document.getElementById('sidebarNav').innerHTML = h;
-    const name = currentUser.user || '?';
+    const name = currentUser.fullName || currentUser.user || '?';
     document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
     document.getElementById('sidebarUserName').innerText   = name;
     document.getElementById('sidebarUserRole').innerText   = role;
 }
+
+
 
 /* ── CLOCK ── */
 function updateClock() {
@@ -523,10 +525,12 @@ function buildMoreMenu() {
     const role = currentUser.role;
     const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
     if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
-        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
         items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
     }
     if (['Owner','VIP'].includes(role)) {
+        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
+        items.push({icon:'🧂',label:'Bahan Baku',link:'bahan_baku.html'});
+        items.push({icon:'💰',label:'HPP Produk',link:'hpp_produk.html'});
         items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
         items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
         items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
@@ -542,6 +546,7 @@ function buildMoreMenu() {
             <span class="more-btn-label">${i.label}</span>
         </button>`).join('');
 }
+
 
 function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
 function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
@@ -662,7 +667,6 @@ async function hitungLaporan() {
         document.getElementById('pdfTglCetak').innerText = new Date().toLocaleString('id-ID');
     } catch (e) {
         console.error("Gagal konsolidasi data cloud:", e);
-        toast.error("Gagal memuat data laporan!");
     }
 }
 
@@ -736,6 +740,10 @@ function resetFilter() {
     pilihKet('Semua', '📂', 'Semua Biaya', document.querySelector('#dropdownKet .dropdown-item'));
 }
 
+function cetakPDF() {
+    window.print();
+}
+
 async function logout() {
     const ok = await showConfirm('Logout dari sistem?', 'Ya, Logout', 'Batal', '🚪');
     if (ok) {
@@ -753,6 +761,7 @@ window.onload = async () => {
 };
 </script>
 
+<script src="session.js"></script>
 <script src="toast.js"></script>
 </body>
 </html>

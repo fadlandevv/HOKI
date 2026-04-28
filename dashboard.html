@@ -80,7 +80,7 @@
     /* ── POS LAYOUT ── */
     .pos-container {
         display: flex;
-        gap: 12px;
+        gap: 16px;
         align-items: flex-start;
     }
 
@@ -643,12 +643,12 @@
                     </button>
                     <div class="custom-dropdown" id="customDropdown">
                         <div class="dropdown-item active" onclick="pilihMetode('CASH','💵','CASH')"><span class="dd-icon">💵</span><span>CASH</span></div>
-                        <div class="dropdown-item" onclick="pilihMetode('QR','📱','QRIS')"><span class="dd-icon">📱</span><span>QRIS</span></div>
-                        <div class="dropdown-item" onclick="pilihMetode('GF','🛵','GRAB FOOD')"><span class="dd-icon">🛵</span><span>GRAB FOOD</span></div>
-                        <div class="dropdown-item" onclick="pilihMetode('GB','🍴','GO FOOD')"><span class="dd-icon">🍴</span><span>GO FOOD</span></div>
-                        <div class="dropdown-item" onclick="pilihMetode('SF','🛍️','SHOPEE FOOD')"><span class="dd-icon">🛍️</span><span>SHOPEE FOOD</span></div>
-                        <div class="dropdown-item" onclick="pilihMetode('PG','💳','PANGGIH')"><span class="dd-icon">💳</span><span>PANGGIH</span></div>
-                        <div class="dropdown-item" onclick="pilihMetode('RM','🏪','RAMA')"><span class="dd-icon">🏪</span><span>RAMA</span></div>
+                        <div class="dropdown-item" onclick="pilihMetode('QRIS','📱','QRIS')"><span class="dd-icon">📱</span><span>QRIS</span></div>
+                        <div class="dropdown-item" onclick="pilihMetode('GF','🛵','GRABFOOD')"><span class="dd-icon">🛵</span><span>GRABFOOD</span></div>
+                        <div class="dropdown-item" onclick="pilihMetode('GB','🍴','GOFOOD')"><span class="dd-icon">🍴</span><span>GOFOOD</span></div>
+                        <div class="dropdown-item" onclick="pilihMetode('SF','🛍️','SHOPFOOD')"><span class="dd-icon">🛍️</span><span>SHOPFOOD</span></div>
+                        <div class="dropdown-item" onclick="pilihMetode('PG','💳','PAYGUE')"><span class="dd-icon">💳</span><span>PAYGUE</span></div>
+                        <div class="dropdown-item" onclick="pilihMetode('RM','🏪','ROMBONGAN')"><span class="dd-icon">🏪</span><span>ROMBONGAN</span></div>
                     </div>
                 </div>
                 <input type="hidden" id="metodeBayar" value="CASH">
@@ -703,12 +703,12 @@
             </button>
             <div class="custom-dropdown" id="customDropdownSheet">
                 <div class="dropdown-item active" onclick="pilihMetodeSheet('CASH','💵','CASH')"><span class="dd-icon">💵</span><span>CASH</span></div>
-                <div class="dropdown-item" onclick="pilihMetodeSheet('QR','📱','QRIS')"><span class="dd-icon">📱</span><span>QRIS</span></div>
-                <div class="dropdown-item" onclick="pilihMetodeSheet('GF','🛵','GRAB FOOD')"><span class="dd-icon">🛵</span><span>GRAB FOOD</span></div>
-                <div class="dropdown-item" onclick="pilihMetodeSheet('GB','🍴','GO FOOD')"><span class="dd-icon">🍴</span><span>GO FOOD</span></div>
-                <div class="dropdown-item" onclick="pilihMetodeSheet('SF','🛍️','SHOPEE FOOD')"><span class="dd-icon">🛍️</span><span>SHOPEE FOOD</span></div>
-                <div class="dropdown-item" onclick="pilihMetodeSheet('PG','💳','PANGGIH')"><span class="dd-icon">💳</span><span>PANGGIH</span></div>
-                <div class="dropdown-item" onclick="pilihMetodeSheet('RM','🏪','RAMA')"><span class="dd-icon">🏪</span><span>RAMA</span></div>
+                <div class="dropdown-item" onclick="pilihMetodeSheet('QRIS','📱','QRIS')"><span class="dd-icon">📱</span><span>QRIS</span></div>
+                <div class="dropdown-item" onclick="pilihMetodeSheet('GF','🛵','GRABFOOD')"><span class="dd-icon">🛵</span><span>GRABFOOD</span></div>
+                <div class="dropdown-item" onclick="pilihMetodeSheet('GB','🍴','GOFOOD')"><span class="dd-icon">🍴</span><span>GOFOOD</span></div>
+                <div class="dropdown-item" onclick="pilihMetodeSheet('SF','🛍️','SHOPFOOD')"><span class="dd-icon">🛍️</span><span>SHOPFOOD</span></div>
+                <div class="dropdown-item" onclick="pilihMetodeSheet('PG','💳','PAYGUE')"><span class="dd-icon">💳</span><span>PAYGUE</span></div>
+                <div class="dropdown-item" onclick="pilihMetodeSheet('RM','🏪','ROMBONGAN')"><span class="dd-icon">🏪</span><span>ROMBONGAN</span></div>
             </div>
         </div>
         <input type="hidden" id="metodeBayarSheet" value="CASH">
@@ -812,13 +812,15 @@ function buildSidebar() {
     h += navItem('📊','Laporan Penjualan','laporan_staff.html');
     if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
         h += `<div class="nav-group-label">Management</div>`;
-        h += navItem('🍱','Master Produk','produk.html');
         h += navItem('📈','Rekapan Penjualan','rekap.html');
+        h += navItem('🍱','Master Produk','produk.html');
     }
     if (['Owner','VIP'].includes(role)) {
         h += `<div class="nav-group-label">Executive</div>`;
         h += navItem('📊','Keuangan Global','laporan.html');
         h += navItem('📈','Statistik','statistik.html');
+        h += navItem('🧂','Bahan Baku','bahan_baku.html');
+        h += navItem('💰','HPP Produk','hpp_produk.html');
         h += navItem('💸','Belanja','belanja.html');
     }
     if (role === 'VIP') {
@@ -894,7 +896,7 @@ function renderGrid(list) {
         const el = document.createElement('div');
         el.className = 'menu-item';
         el.onclick = () => tambahItem(p);
-        el.innerHTML = `<span class="sku-text">${p.nama}</span><span class="name-text">${p.sku}</span><span class="price-text">Rp ${parseInt(p.harga).toLocaleString('id-ID')}</span>`;
+        el.innerHTML = `<span class="sku-text">${p.sku}</span><span class="name-text">${p.nama}</span><span class="price-text">Rp ${parseInt(p.harga).toLocaleString('id-ID')}</span>`;
         grid.appendChild(el);
     });
 }
@@ -1000,6 +1002,8 @@ function buildMoreMenu() {
         items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
     }
     if (['Owner','VIP'].includes(role)) {
+        items.push({icon:'🧂',label:'Bahan Baku',link:'bahan_baku.html'});
+        items.push({icon:'💰',label:'HPP Produk',link:'hpp_produk.html'});
         items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
         items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
         items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
@@ -1028,6 +1032,7 @@ async function logout() {
 window.onload = () => { updateHeaderInfo(); buildSidebar(); renderKasir(); updateClock(); };
 </script>
 
+<script src="session.js"></script>
 <script src="toast.js"></script>
 </body>
 </html>

@@ -13,7 +13,7 @@
     .grid-admin {
         display: grid;
         grid-template-columns: 1fr 1fr 1.5fr;
-        gap: 12px;
+        gap: 20px;
     }
 
     /* ── BOX ── */
@@ -387,23 +387,23 @@
                 <h3 class="section-title">📝 Pendaftaran Akun</h3>
 
                 <div class="form-group">
-                    <label>Nama Lengkap (Sesuai KTP)</label>
+                    <label for="fullName">Nama Lengkap (Sesuai KTP)</label>
                     <input type="text" id="fullName" placeholder="Masukkan nama...">
                 </div>
 
                 <div class="two-col">
                     <div class="form-group">
-                        <label>Username Login</label>
+                        <label for="uName">Username Login</label>
                         <input type="text" id="uName" placeholder="user123">
                     </div>
                     <div class="form-group">
-                        <label>Password Login</label>
+                        <label for="uPass">Password Login</label>
                         <input type="text" id="uPass" placeholder="pass123">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Role Jabatan</label>
+                    <label for="wrapRole">Role Jabatan</label>
                     <div class="custom-select-wrap" id="wrapRole">
                         <button class="custom-select-btn" onclick="toggleDropdownRole()">
                             <span id="iconRole">🛡️</span>
@@ -416,7 +416,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Akses Cabang</label>
+                    <label for="containerCeklis">Akses Cabang</label>
                     <div class="checklist-container" id="containerCeklis"></div>
                 </div>
 
@@ -510,11 +510,13 @@ function buildSidebar() {
     h += navItem('📊','Laporan Penjualan','laporan_staff.html');
     if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
         h += `<div class="nav-group-label">Management</div>`;
-        h += navItem('🍱','Master Produk','produk.html');
         h += navItem('📈','Rekapan Penjualan','rekap.html');
     }
     if (['Owner','VIP'].includes(role)) {
         h += `<div class="nav-group-label">Executive</div>`;
+        h += navItem('🍱','Master Produk','produk.html');
+        h += navItem('🧂','Bahan Baku','bahan_baku.html');
+        h += navItem('💰','HPP Produk','hpp_produk.html');
         h += navItem('📊','Keuangan Global','laporan.html');
         h += navItem('📈','Statistik','statistik.html');
         h += navItem('💸','Belanja','belanja.html');
@@ -525,11 +527,13 @@ function buildSidebar() {
         h += navItem('🔑','History Login','login_history.html');
     }
     document.getElementById('sidebarNav').innerHTML = h;
-    const name = currentUser.user || '?';
+    const name = currentUser.fullName || currentUser.user || '?';
     document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
     document.getElementById('sidebarUserName').innerText   = name;
     document.getElementById('sidebarUserRole').innerText   = role;
 }
+
+
 
 /* ── CLOCK ── */
 function updateClock() {
@@ -544,10 +548,12 @@ function buildMoreMenu() {
     const role = currentUser.role;
     const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
     if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
-        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
         items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
     }
     if (['Owner','VIP'].includes(role)) {
+        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
+        items.push({icon:'🧂',label:'Bahan Baku',link:'bahan_baku.html'});
+        items.push({icon:'💰',label:'HPP Produk',link:'hpp_produk.html'});
         items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
         items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
         items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
@@ -563,6 +569,7 @@ function buildMoreMenu() {
             <span class="more-btn-label">${i.label}</span>
         </button>`).join('');
 }
+
 
 function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
 function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
@@ -661,8 +668,8 @@ async function hapusRole(id, nama) {
 
 async function tambahUser() {
     const fullName = document.getElementById('fullName').value;
-    const u = document.getElementById('uName').value;
-    const p = document.getElementById('uPass').value;
+    const u        = document.getElementById('uName').value.trim();
+    const p        = document.getElementById('uPass').value.trim();
     const r        = document.getElementById('uRole').value;
     const aks      = Array.from(document.querySelectorAll('input[name="cabangAkses"]:checked')).map(c => c.value).join(',');
 
@@ -764,6 +771,7 @@ window.onload = () => {
 };
 </script>
 
+<script src="session.js"></script>
 <script src="toast.js"></script>
 </body>
 </html>

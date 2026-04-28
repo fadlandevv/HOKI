@@ -14,14 +14,14 @@
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: var(--r-lg);
-        padding: 12px;
-        margin-bottom: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
         box-shadow: var(--sh-sm);
     }
 
     .grid-input {
         display: grid;
-        grid-template-columns: 0.8fr 1.5fr 1fr 1fr 0.8fr 0.8fr auto;
+        grid-template-columns: 0.8fr 1.5fr 1fr 1fr auto;
         gap: 10px;
         align-items: center;
     }
@@ -136,30 +136,6 @@
         color: var(--red);
     }
 
-    .hpp-text {
-        font-family: 'DM Mono', monospace;
-        font-weight: 700;
-        color: var(--text-muted);
-    }
-
-    .margin-badge {
-        font-family: 'DM Mono', monospace;
-        font-size: 11px;
-        font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 99px;
-    }
-
-    .margin-badge.profit {
-        background: var(--green-soft);
-        color: var(--green);
-    }
-
-    .margin-badge.loss {
-        background: var(--red-soft);
-        color: var(--red);
-    }
-
     .qty-badge {
         background: var(--surface-2);
         border: 1px solid var(--border);
@@ -225,11 +201,7 @@
         table th:nth-child(1),
         table td:nth-child(1),
         table th:nth-child(5),
-        table td:nth-child(5),
-        table th:nth-child(6),
-        table td:nth-child(6),
-        table th:nth-child(7),
-        table td:nth-child(7) {
+        table td:nth-child(5) {
             display: none;
         }
 
@@ -284,12 +256,17 @@
         <!-- FORM -->
         <div class="form-produk">
             <div class="grid-input">
-                <input type="text"   id="pSKU"    placeholder="SKU (Cth: MNT)">
-                <input type="text"   id="pNama"   placeholder="Nama Menu">
-                <input type="number" id="pHarga"  placeholder="Harga Jual">
-                <input type="number" id="pHPP"    placeholder="HPP (Modal)">
-                <input type="number" id="pDimsum" placeholder="Dimsum (Pcs)">
-                <input type="number" id="pAlu"    placeholder="Alu Tray (Pcs)">
+                <div class="custom-select-wrap" id="wrapSKU" style="margin:0;">
+                    <button class="custom-select-btn" onclick="toggleWrapSKU()" style="height:38px;">
+                        <span id="labelSKU">Pilih SKU...</span>
+                        <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1l5 5 5-5" stroke="#d32f2f" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    </button>
+                    <div class="custom-dropdown" id="dropdownSKU"></div>
+                    <input type="hidden" id="pSKU">
+                </div>
+                <input type="text"   id="pNama"  placeholder="Nama Menu (auto)" readonly style="background:var(--surface-2);">
+                <input type="number" id="pHarga" placeholder="Harga Jual">
+                <input type="number" id="pHPP"   placeholder="HPP (auto)" readonly style="background:var(--surface-2);color:var(--red);font-family:'DM Mono',monospace;font-weight:700;">
                 <button class="btn-simpan" onclick="tambahProduk()">+ Simpan</button>
             </div>
         </div>
@@ -305,8 +282,6 @@
                         <th>Harga Jual</th>
                         <th>HPP</th>
                         <th>Margin</th>
-                        <th>Dms/Pcs</th>
-                        <th>Alu/Pcs</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -314,8 +289,8 @@
             </table>
         </div>
 
-    </div><!-- /.page-body -->
-</div><!-- /.main-content -->
+    </div>
+</div>
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
@@ -336,252 +311,285 @@
 </div>
 
 <script>
-    const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff'};
-    if (!currentUser.user) window.location.href = 'index.html';
-    let editModeId = null;
+const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {user:'Guest', role:'Staff'};
+if (!currentUser.user) window.location.href = 'index.html';
+let editModeId = null;
 
-    // ── SIDEBAR ──
-    function toggleSidebar() {
-        const sb = document.getElementById('sidebar');
-        const mc = document.getElementById('mainContent');
-        sb.classList.toggle('collapsed');
-        mc.classList.toggle('expanded');
-        localStorage.setItem('sidebarState', sb.classList.contains('collapsed') ? 'small' : 'large');
+/* ── SIDEBAR ── */
+function toggleSidebar() {
+    const sb = document.getElementById('sidebar');
+    const mc = document.getElementById('mainContent');
+    sb.classList.toggle('collapsed');
+    mc.classList.toggle('expanded');
+    localStorage.setItem('sidebarState', sb.classList.contains('collapsed') ? 'small' : 'large');
+}
+
+function buildSidebar() {
+    if (localStorage.getItem('sidebarState') === 'small') {
+        document.getElementById('sidebar').classList.add('collapsed');
+        document.getElementById('mainContent').classList.add('expanded');
     }
-
-    function buildSidebar() {
-        if (localStorage.getItem('sidebarState') === 'small') {
-            document.getElementById('sidebar').classList.add('collapsed');
-            document.getElementById('mainContent').classList.add('expanded');
-        }
-        const role = currentUser.role;
-        const cur  = window.location.pathname.split('/').pop() || 'dashboard.html';
-        const navItem = (icon, label, link) => {
-            const active = cur === link ? 'active' : '';
-            return `<button class="nav-item ${active}" onclick="location.href='${link}'">
-                <span class="nav-icon">${icon}</span>
-                <span class="nav-label">${label}</span>
-            </button>`;
-        };
-        let h = `<div class="nav-group-label">Frontline</div>`;
-        h += navItem('🛒','Kasir','dashboard.html');
-        h += navItem('📄','History Transaksi','history.html');
-        h += navItem('📦','Stok Harian','stok.html');
-        h += navItem('🚚','Restock Barang','restock.html');
-        h += navItem('📊','Laporan Penjualan','laporan_staff.html');
-        if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
-            h += `<div class="nav-group-label">Management</div>`;
-            h += navItem('🍱','Master Produk','produk.html');
-            h += navItem('📈','Rekapan Penjualan','rekap.html');
-        }
-        if (['Owner','VIP'].includes(role)) {
-            h += `<div class="nav-group-label">Executive</div>`;
-            h += navItem('📊','Keuangan Global','laporan.html');
-            h += navItem('📈','Statistik','statistik.html');
-            h += navItem('💸','Belanja','belanja.html');
-        }
-        if (role === 'VIP') {
-            h += `<div class="nav-group-label">VIP Access</div>`;
-            h += navItem('👥','Manajemen User','user.html');
-            h += navItem('🔑','History Login','login_history.html');
-        }
-        document.getElementById('sidebarNav').innerHTML = h;
-        const name = currentUser.user || '?';
-        document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
-        document.getElementById('sidebarUserName').innerText   = name;
-        document.getElementById('sidebarUserRole').innerText   = role;
+    const role = currentUser.role;
+    const cur  = window.location.pathname.split('/').pop() || 'dashboard.html';
+    const navItem = (icon, label, link) => {
+        const active = cur === link ? 'active' : '';
+        return `<button class="nav-item ${active}" onclick="location.href='${link}'">
+            <span class="nav-icon">${icon}</span>
+            <span class="nav-label">${label}</span>
+        </button>`;
+    };
+    let h = `<div class="nav-group-label">Frontline</div>`;
+    h += navItem('🛒','Kasir','dashboard.html');
+    h += navItem('📄','History Transaksi','history.html');
+    h += navItem('📦','Stok Harian','stok.html');
+    h += navItem('🚚','Restock Barang','restock.html');
+    h += navItem('📊','Laporan Penjualan','laporan_staff.html');
+    if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+        h += `<div class="nav-group-label">Management</div>`;
+        h += navItem('📈','Rekapan Penjualan','rekap.html');
+        h += navItem('🍱','Master Produk','produk.html');
     }
-
-    // ── CLOCK ──
-    function updateClock() {
-        const now = new Date();
-        document.getElementById('realtimeClock').innerText = now.toLocaleTimeString('id-ID');
-        document.getElementById('realtimeDate').innerText  = now.toLocaleDateString('id-ID',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+    if (['Owner','VIP'].includes(role)) {
+        h += `<div class="nav-group-label">Executive</div>`;
+        h += navItem('📊','Keuangan Global','laporan.html');
+        h += navItem('📈','Statistik','statistik.html');
+        h += navItem('🧂','Bahan Baku','bahan_baku.html');
+        h += navItem('💰','HPP Produk','hpp_produk.html');
+        h += navItem('💸','Belanja','belanja.html');
     }
-    setInterval(updateClock, 1000);
-
-    // ── MORE MENU ──
-    function buildMoreMenu() {
-        const role = currentUser.role;
-        const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
-        if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
-            items.push({icon:'🍱',label:'Produk',link:'produk.html'});
-            items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
-        }
-        if (['Owner','VIP'].includes(role)) {
-            items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
-            items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
-            items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
-        }
-        if (role === 'VIP') {
-            items.push({icon:'👥',label:'Users',link:'user.html'});
-            items.push({icon:'🔑',label:'Login Log',link:'login_history.html'});
-        }
-        items.push({icon:'🚪',label:'Logout',link:'#',action:'logout()'});
-        document.getElementById('moreGrid').innerHTML = items.map(i =>
-            `<button class="more-btn" onclick="${i.action||`location.href='${i.link}'`}">
-                <span class="more-btn-icon">${i.icon}</span>
-                <span class="more-btn-label">${i.label}</span>
-            </button>`).join('');
+    if (role === 'VIP') {
+        h += `<div class="nav-group-label">VIP Access</div>`;
+        h += navItem('👥','Manajemen User','user.html');
+        h += navItem('🔑','History Login','login_history.html');
     }
+    document.getElementById('sidebarNav').innerHTML = h;
+    const name = currentUser.fullName || currentUser.user || '?';
+    document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
+    document.getElementById('sidebarUserName').innerText   = name;
+    document.getElementById('sidebarUserRole').innerText   = role;
+}
 
-    function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
-    function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
 
-    // ── LOGIKA PRODUK ──
-    async function muatProduk() {
-        const res    = await fetch('api.php?action=get_produk');
-        const produk = await res.json();
-        window.allProduk = produk;
 
+/* ── CLOCK ── */
+function updateClock() {
+    const now = new Date();
+    document.getElementById('realtimeClock').innerText = now.toLocaleTimeString('id-ID');
+    document.getElementById('realtimeDate').innerText  = now.toLocaleDateString('id-ID',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+}
+setInterval(updateClock, 1000);
+
+/* ── MORE MENU ── */
+function buildMoreMenu() {
+    const role = currentUser.role;
+    const items = [{icon:'🚚',label:'Restock',link:'restock.html'}];
+    if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
+        items.push({icon:'🍱',label:'Produk',link:'produk.html'});
+        items.push({icon:'📈',label:'Rekapan',link:'rekap.html'});
+    }
+    if (['Owner','VIP'].includes(role)) {
+        items.push({icon:'🧂',label:'Bahan Baku',link:'bahan_baku.html'});
+        items.push({icon:'💰',label:'HPP Produk',link:'hpp_produk.html'});
+        items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
+        items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
+        items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
+    }
+    if (role === 'VIP') {
+        items.push({icon:'👥',label:'Users',link:'user.html'});
+        items.push({icon:'🔑',label:'Login Log',link:'login_history.html'});
+    }
+    items.push({icon:'🚪',label:'Logout',link:'#',action:'logout()'});
+    document.getElementById('moreGrid').innerHTML = items.map(i =>
+        `<button class="more-btn" onclick="${i.action||`location.href='${i.link}'`}">
+            <span class="more-btn-icon">${i.icon}</span>
+            <span class="more-btn-label">${i.label}</span>
+        </button>`).join('');
+}
+
+
+function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
+function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
+
+/* ── LOGIKA PRODUK (TIDAK BERUBAH) ── */
+async function muatProduk() {
+    const res    = await fetch('api.php?action=get_produk');
+    const produk = await res.json();
+    window.allProduk = produk;
+
+    const tbody = document.getElementById('tabelProduk');
+    tbody.innerHTML = '';
+
+    produk.forEach((p, index) => {
+        const tr = document.createElement('tr');
+        tr.setAttribute('draggable', 'true');
+        tr.setAttribute('data-id', p.id);
+        const hpp    = parseInt(p.hpp) || 0;
+        const harga  = parseInt(p.harga) || 0;
+        const margin = harga > 0 ? Math.round((harga - hpp) / harga * 100) : 0;
+        const mColor = margin >= 30 ? 'var(--green)' : margin >= 15 ? 'var(--orange)' : 'var(--red)';
+        tr.innerHTML = `
+            <td><span class="drag-handle">☰</span></td>
+            <td><span class="sku-badge">${p.sku}</span></td>
+            <td>${p.nama}</td>
+            <td><span class="harga-text">Rp ${harga.toLocaleString('id-ID')}</span></td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted);">Rp ${hpp.toLocaleString('id-ID')}</td>
+            <td><span style="font-weight:700;color:${mColor};">${margin}%</span></td>
+            <td>
+                <button class="btn-edit" onclick="siapkanEdit(${index})">✎ Edit</button>
+                <button class="btn-del" onclick="hapusProduk(${p.id})">✖</button>
+            </td>`;
+        tr.addEventListener('dragstart', handleDragStart);
+        tr.addEventListener('dragover',  handleDragOver);
+        tr.addEventListener('drop',      handleDrop);
+        tr.addEventListener('dragend',   handleDragEnd);
+        tbody.appendChild(tr);
+    });
+}
+
+async function tambahProduk() {
+    const data = {
+        id:    editModeId,
+        sku:   document.getElementById('pSKU').value.toUpperCase(),
+        nama:  document.getElementById('pNama').value,
+        harga: document.getElementById('pHarga').value,
+        hpp:   document.getElementById('pHPP').value || 0
+    };
+
+    if (!data.sku || !data.nama || !data.harga) return toast.warning('Lengkapi SKU, Nama, dan Harga!');
+
+    try {
+        const res   = await fetch('api.php?action=save_produk', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(data)
+        });
+        const hasil = await res.json();
+        if (hasil.status === 'success') {
+            toast.success(editModeId ? 'Menu berhasil diupdate!' : 'Menu baru berhasil ditambah!');
+            editModeId = null;
+            document.querySelector('.btn-simpan').innerText = '+ Simpan';
+            ['pHarga'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('pSKU').value = '';
+            document.getElementById('pNama').value = '';
+            document.getElementById('pHPP').value = '';
+            document.getElementById('labelSKU').innerText = 'Pilih SKU...';
+            muatProduk();
+        }
+    } catch(e) {
+        toast.error('Gagal menyimpan ke server!');
+    }
+}
+
+function siapkanEdit(idx) {
+    const p = window.allProduk[idx];
+    editModeId = p.id;
+    document.getElementById('pSKU').value   = p.sku;
+    document.getElementById('labelSKU').innerText = p.sku;
+    document.getElementById('pNama').value  = p.nama;
+    document.getElementById('pHarga').value = p.harga;
+    document.getElementById('pHPP').value   = p.hpp || 0;
+    document.querySelector('.btn-simpan').innerText = '💾 UPDATE MENU';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function hapusProduk(id) {
+    const ok = await showConfirm('Hapus produk ini secara permanen?', 'Ya, Hapus', 'Batal', '🗑️');
+    if (!ok) return;
+    try {
+        await fetch(`api.php?action=del_produk&id=${id}`);
+        toast.success('Produk berhasil dihapus!');
+        muatProduk();
+    } catch(e) {
+        toast.error('Gagal menghapus produk!');
+    }
+}
+
+/* ── DRAG & DROP ── */
+let dragSrcEl = null;
+
+function handleDragStart(e) {
+    dragSrcEl = this;
+    e.dataTransfer.effectAllowed = 'move';
+    this.style.opacity = '0.4';
+}
+
+function handleDragOver(e) {
+    if (e.preventDefault) e.preventDefault();
+    return false;
+}
+
+async function handleDrop(e) {
+    if (e.stopPropagation) e.stopPropagation();
+    if (dragSrcEl !== this) {
         const tbody = document.getElementById('tabelProduk');
-        tbody.innerHTML = '';
-
-        produk.forEach((p, index) => {
-            const harga  = parseInt(p.harga  || 0);
-            const hpp    = parseInt(p.hpp    || 0);
-            const margin = harga - hpp;
-            const pct    = hpp > 0 ? Math.round((margin / harga) * 100) : null;
-
-            const marginHTML = hpp > 0
-                ? `<span class="margin-badge ${margin >= 0 ? 'profit' : 'loss'}">
-                       ${margin >= 0 ? '+' : ''}${pct}%
-                   </span>`
-                : `<span class="qty-badge">—</span>`;
-
-            const tr = document.createElement('tr');
-            tr.setAttribute('draggable', 'true');
-            tr.setAttribute('data-id', p.id);
-            tr.innerHTML = `
-                <td><span class="drag-handle">☰</span></td>
-                <td><span class="sku-badge">${p.sku}</span></td>
-                <td>${p.nama}</td>
-                <td><span class="harga-text">Rp ${harga.toLocaleString('id-ID')}</span></td>
-                <td><span class="hpp-text">Rp ${hpp > 0 ? hpp.toLocaleString('id-ID') : '—'}</span></td>
-                <td>${marginHTML}</td>
-                <td><span class="qty-badge">${p.dimsumPcs} Pcs</span></td>
-                <td><span class="qty-badge">${p.aluTrayPcs} Pcs</span></td>
-                <td>
-                    <button class="btn-edit" onclick="siapkanEdit(${index})">✎ Edit</button>
-                    <button class="btn-del"  onclick="hapusProduk(${p.id})">✖</button>
-                </td>`;
-            tr.addEventListener('dragstart', handleDragStart);
-            tr.addEventListener('dragover',  handleDragOver);
-            tr.addEventListener('drop',      handleDrop);
-            tr.addEventListener('dragend',   handleDragEnd);
-            tbody.appendChild(tr);
+        const rows  = Array.from(tbody.querySelectorAll('tr'));
+        const fromIdx = rows.indexOf(dragSrcEl);
+        const toIdx   = rows.indexOf(this);
+        if (fromIdx < toIdx) { this.after(dragSrcEl); }
+        else { this.before(dragSrcEl); }
+        const newOrderIds = Array.from(tbody.querySelectorAll('tr')).map(tr => tr.getAttribute('data-id'));
+        await fetch('api.php?action=update_urutan', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ ids: newOrderIds })
         });
     }
+    return false;
+}
 
-    async function tambahProduk() {
-        const data = {
-            id:         editModeId,
-            sku:        document.getElementById('pSKU').value.toUpperCase(),
-            nama:       document.getElementById('pNama').value,
-            harga:      document.getElementById('pHarga').value,
-            hpp:        document.getElementById('pHPP').value    || 0,
-            dimsumPcs:  document.getElementById('pDimsum').value || 0,
-            aluTrayPcs: document.getElementById('pAlu').value    || 0
-        };
+function handleDragEnd() { this.style.opacity = '1'; }
 
-        if (!data.sku || !data.nama || !data.harga) return toast.warning('Lengkapi data produk!');
-
-        try {
-            const res   = await fetch('api.php?action=save_produk', {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify(data)
-            });
-            const hasil = await res.json();
-            if (hasil.status === 'success') {
-                toast.success(editModeId ? 'Menu berhasil diupdate!' : 'Menu baru berhasil ditambah!');
-                editModeId = null;
-                document.querySelector('.btn-simpan').innerText = '+ Simpan';
-                ['pSKU','pNama','pHarga','pHPP','pDimsum','pAlu'].forEach(id => document.getElementById(id).value = '');
-                muatProduk();
-            }
-        } catch(e) {
-            toast.error('Gagal menyimpan ke server!');
-        }
+async function logout() {
+    const ok = await showConfirm('Logout dari sistem?', 'Ya, Logout', 'Batal', '🚪');
+    if (ok) {
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('cabangHoki');
+        window.location.href = 'index.html';
     }
+}
 
-    function siapkanEdit(idx) {
-        const p = window.allProduk[idx];
-        editModeId = p.id;
-        document.getElementById('pSKU').value    = p.sku;
-        document.getElementById('pNama').value   = p.nama;
-        document.getElementById('pHarga').value  = p.harga;
-        document.getElementById('pHPP').value    = p.hpp || 0;
-        document.getElementById('pDimsum').value = p.dimsumPcs;
-        document.getElementById('pAlu').value    = p.aluTrayPcs;
-        document.querySelector('.btn-simpan').innerText = '💾 UPDATE MENU';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+function toggleWrapSKU() {
+    document.getElementById('wrapSKU').classList.toggle('open');
+}
 
-    async function hapusProduk(id) {
-        const ok = await showConfirm('Hapus produk ini secara permanen?', 'Ya, Hapus', 'Batal', '🗑️');
-        if (!ok) return;
-        try {
-            await fetch(`api.php?action=del_produk&id=${id}`);
-            toast.success('Produk berhasil dihapus!');
-            muatProduk();
-        } catch(e) {
-            toast.error('Gagal menghapus produk!');
-        }
-    }
+async function muatDropdownSKU() {
+    try {
+        const res = await fetch('api.php?action=get_hpp_produk');
+        const hpp = await res.json();
+        const dropdown = document.getElementById('dropdownSKU');
+        dropdown.innerHTML = '';
+        hpp.forEach(h => {
+            const item = document.createElement('div');
+            item.className = 'dropdown-item';
+            item.innerHTML = `<b>${h.sku}</b> — ${h.nama_produk}`;
+            item.onclick = () => {
+                document.getElementById('pSKU').value         = h.sku;
+                document.getElementById('pNama').value        = h.nama_produk;
+                document.getElementById('pHPP').value         = h.harga_pokok;
+                document.getElementById('labelSKU').innerText = h.sku + ' — ' + h.nama_produk;
+                document.querySelectorAll('#dropdownSKU .dropdown-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                document.getElementById('wrapSKU').classList.remove('open');
+            };
+            dropdown.appendChild(item);
+        });
+    } catch(e) { console.error(e); }
+}
 
-    // ── DRAG & DROP ──
-    let dragSrcEl = null;
+document.addEventListener('click', function(e) {
+    const wrap = document.getElementById('wrapSKU');
+    if (wrap && !wrap.contains(e.target)) wrap.classList.remove('open');
+});
 
-    function handleDragStart(e) {
-        dragSrcEl = this;
-        e.dataTransfer.effectAllowed = 'move';
-        this.style.opacity = '0.4';
-    }
-
-    function handleDragOver(e) {
-        if (e.preventDefault) e.preventDefault();
-        return false;
-    }
-
-    async function handleDrop(e) {
-        if (e.stopPropagation) e.stopPropagation();
-        if (dragSrcEl !== this) {
-            const tbody   = document.getElementById('tabelProduk');
-            const rows    = Array.from(tbody.querySelectorAll('tr'));
-            const fromIdx = rows.indexOf(dragSrcEl);
-            const toIdx   = rows.indexOf(this);
-            if (fromIdx < toIdx) { this.after(dragSrcEl); }
-            else { this.before(dragSrcEl); }
-            const newOrderIds = Array.from(tbody.querySelectorAll('tr')).map(tr => tr.getAttribute('data-id'));
-            await fetch('api.php?action=update_urutan', {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ ids: newOrderIds })
-            });
-        }
-        return false;
-    }
-
-    function handleDragEnd() { this.style.opacity = '1'; }
-
-    async function logout() {
-        const ok = await showConfirm('Logout dari sistem?', 'Ya, Logout', 'Batal', '🚪');
-        if (ok) {
-            localStorage.removeItem('currentUser');
-            localStorage.removeItem('cabangHoki');
-            window.location.href = 'index.html';
-        }
-    }
-
-    // ── SINGLE window.onload ──
-    window.onload = function() {
-        buildSidebar();
-        updateClock();
-        muatProduk();
-    };
+window.onload = () => {
+    buildSidebar();
+    updateClock();
+    muatDropdownSKU();
+    muatProduk();
+};
 </script>
 
+<script src="session.js"></script>
 <script src="toast.js"></script>
 </body>
 </html>

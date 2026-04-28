@@ -609,6 +609,13 @@
     updateClock();
     setInterval(updateClock, 1000);
 
+    // Tampilkan pesan force logout kalau ada
+    const logoutMsg = sessionStorage.getItem('logoutMsg');
+    if (logoutMsg) {
+        sessionStorage.removeItem('logoutMsg');
+        setTimeout(() => showError(logoutMsg), 500);
+    }
+
     /* ── LOGIN ── */
     async function cekAksesLogin() {
         const userIn = document.getElementById('username').value.trim();
@@ -637,22 +644,27 @@
                 const ketemu = hasil.user;
 
                 if (ketemu.role === 'VIP' || ketemu.role === 'Owner') {
-                    localStorage.setItem('currentUser', JSON.stringify({user:ketemu.user, role:ketemu.role, cabang:'Semua'}));
+                    localStorage.setItem('currentUser', JSON.stringify({user:ketemu.user, fullName:ketemu.fullName||ketemu.user, role:ketemu.role, cabang:'Semua'}));
                     localStorage.setItem('cabangHoki', 'Semua');
+                    localStorage.setItem('sessionToken', hasil.token || '');
+                    localStorage.setItem('lastActivity', Date.now().toString());
                     await catatLogLogin(ketemu.user, ketemu.role, 'Semua');
                     window.location.href = 'dashboard.html';
 
                 } else if (ketemu.role === 'SPV') {
                     const lokasi = ketemu.cabang;
                     if (!lokasi) { showError('Error: Cabang SPV belum ditentukan!'); return; }
-                    localStorage.setItem('currentUser', JSON.stringify({user:ketemu.user, role:ketemu.role, cabang:ketemu.cabang}));
+                    localStorage.setItem('currentUser', JSON.stringify({user:ketemu.user, fullName:ketemu.fullName||ketemu.user, role:ketemu.role, cabang:ketemu.cabang}));
                     localStorage.setItem('cabangHoki', lokasi);
+                    localStorage.setItem('sessionToken', hasil.token || '');
+                    localStorage.setItem('lastActivity', Date.now().toString());
                     await catatLogLogin(ketemu.user, ketemu.role, lokasi);
                     window.location.href = 'dashboard.html';
 
                 } else {
                     // Staff / Senior Staff — pilih cabang dulu
                     localStorage.setItem('tempUser', JSON.stringify(ketemu));
+                    window._loginToken = hasil.token || '';
                     document.getElementById('loginCard').classList.add('hidden');
                     document.getElementById('nextStepCard').classList.remove('hidden');
                     document.getElementById('userBadge').innerText = 'ROLE: ' + ketemu.role;
@@ -688,8 +700,10 @@
         const user          = JSON.parse(localStorage.getItem('tempUser'));
         const cabangPilihan = document.getElementById('cabangPilihan').value;
         if (!cabangPilihan) { showError('Pilih cabang dulu!'); return; }
-        localStorage.setItem('currentUser', JSON.stringify({user:user.user, role:user.role, cabang:user.cabang}));
+        localStorage.setItem('currentUser', JSON.stringify({user:user.user, fullName:user.fullName||user.user, role:user.role, cabang:user.cabang}));
         localStorage.setItem('cabangHoki', cabangPilihan);
+        localStorage.setItem('sessionToken', window._loginToken || '');
+        localStorage.setItem('lastActivity', Date.now().toString());
         await catatLogLogin(user.user, user.role, cabangPilihan);
         localStorage.removeItem('tempUser');
         window.location.href = 'dashboard.html';
