@@ -548,8 +548,14 @@ async function loadWarehouse() {
         const allHpp = Array.isArray(rawHpp) ? rawHpp : [];
         const stokDB = Array.isArray(rawStok) ? rawStok : [];
 
+        console.log('[WH] Total transaksi dari DB:', allTrx.length);
+        console.log('[WH] Filter tanggal:', date);
+        console.log('[WH] Contoh waktu transaksi:', allTrx[0]?.waktu ?? 'kosong');
+        console.log('[WH] Total HPP:', allHpp.length);
+
         // 2. Filter transaksi by date
         const todayTrx = allTrx.filter(t => (t.waktu || '').startsWith(date));
+        console.log('[WH] Transaksi cocok tanggal:', todayTrx.length);
 
         setVisible('loadingState', false);
 
@@ -782,5 +788,6 @@ window.onload = () => {
 
 <script src="session.js"></script>
 <script src="toast.js"></script>
+
 </body>
 </html>
