@@ -207,91 +207,6 @@
     }
 
     /* ── BUTTONS ── */
-    .btn-add-draft {
-        width: 100%;
-        padding: 11px;
-        background: var(--green);
-        color: white;
-        border: none;
-        border-radius: var(--r-md);
-        font-size: 13px;
-        font-weight: 700;
-        font-family: 'DM Sans', sans-serif;
-        cursor: pointer;
-        transition: filter 0.15s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-    }
-
-    .btn-add-draft:hover {
-        filter: brightness(0.9);
-    }
-
-    .btn-save-restock {
-        width: 100%;
-        padding: 12px;
-        background: var(--red);
-        color: white;
-        border: none;
-        border-radius: var(--r-md);
-        font-size: 13px;
-        font-weight: 700;
-        font-family: 'DM Sans', sans-serif;
-        cursor: pointer;
-        transition: filter 0.15s;
-        margin-top: 12px;
-        box-shadow: 0 4px 12px rgba(211,47,47,0.25);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-    }
-
-    .btn-save-restock:hover {
-        filter: brightness(0.9);
-    }
-
-    .btn-detail {
-        background: var(--red-soft);
-        color: var(--red);
-        border: 1px solid var(--red-border);
-        padding: 4px 10px;
-        border-radius: var(--r-sm);
-        font-size: 12px;
-        font-weight: 600;
-        font-family: 'DM Sans', sans-serif;
-        cursor: pointer;
-        transition: background 0.15s;
-    }
-
-    .btn-detail:hover {
-        background: var(--red);
-        color: white;
-        filter: none;
-    }
-
-    .btn-del {
-        background: var(--surface-2);
-        color: var(--text-muted);
-        border: 1px solid var(--border);
-        padding: 4px 10px;
-        border-radius: var(--r-sm);
-        font-size: 12px;
-        font-weight: 600;
-        font-family: 'DM Sans', sans-serif;
-        cursor: pointer;
-        margin-left: 4px;
-        transition: background 0.15s;
-    }
-
-    .btn-del:hover {
-        background: #1c1c1a;
-        color: white;
-        filter: none;
-    }
-
     /* ── HISTORY TABLE ── */
     .history-wrap {
         overflow-x: auto;
@@ -368,40 +283,6 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 16px;
-    }
-
-    .btn-back {
-        background: #1c1c1a;
-        color: rgba(255,255,255,0.88);
-        border: none;
-        padding: 9px 18px;
-        border-radius: var(--r-md);
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 600;
-        font-family: 'DM Sans', sans-serif;
-        transition: filter 0.15s;
-    }
-
-    .btn-back:hover {
-        filter: brightness(1.2);
-    }
-
-    .btn-wa {
-        background: #25d366;
-        color: white;
-        border: none;
-        padding: 9px 18px;
-        border-radius: var(--r-md);
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 600;
-        font-family: 'DM Sans', sans-serif;
-        transition: filter 0.15s;
-    }
-
-    .btn-wa:hover {
-        filter: brightness(0.9);
     }
 
     .detail-meta {
@@ -684,35 +565,72 @@ function buildSidebar() {
             <span class="nav-label">${label}</span>
         </button>`;
     };
-    let h = `<div class="nav-group-label">Frontline</div>`;
-    h += navItem('🛒','Kasir','dashboard.html');
-    h += navItem('📄','History Transaksi','history.html');
-    h += navItem('📦','Stok Harian','stok.html');
-    h += navItem('🚚','Restock Barang','restock.html');
-    h += navItem('📊','Laporan Penjualan','laporan_staff.html');
+    const PAGES_FRONTLINE = ['dashboard.html','history.html','stok.html','restock.html','laporan_staff.html'];
+    const PAGES_MGMT      = ['rekap.html','produk.html'];
+    const PAGES_EXEC      = ['laporan.html','statistik.html','bahan_baku.html','hpp_produk.html','belanja.html'];
+    const PAGES_VIP       = ['user.html','login_history.html'];
+    const inGroup = pages => pages.includes(cur);
+    const getOpen = (id, pages) => {
+        const s = localStorage.getItem('navGroup_' + id);
+        return s !== null ? s === '1' : inGroup(pages);
+    };
+    const GROUP_ICONS = { frontline:'🛒', management:'📊', executive:'📋', vip:'👑' };
+    const navGroup = (id, label, items, pages) => {
+        const open      = getOpen(id, pages);
+        const hasActive = inGroup(pages);
+        const icon      = GROUP_ICONS[id] || '📁';
+        return `<div class="nav-group-wrap">
+            <button class="nav-group-label${hasActive ? ' has-active' : ''}" onclick="toggleNavGroup('${id}')">
+                <span class="nav-group-icon">${icon}</span>
+                <span class="nav-group-text">${label}</span>
+                <span class="nav-group-ti">${open ? '−' : '+'}</span>
+            </button>
+            <div class="nav-group-items" id="navg-${id}"${open ? '' : ' style="display:none"'}>
+                ${items}
+            </div>
+        </div>`;
+    };
+
+    let frontline = navItem('🛒','Kasir','dashboard.html')
+        + navItem('📄','History Transaksi','history.html')
+        + navItem('📦','Stok Harian','stok.html')
+        + navItem('🚚','Restock Barang','restock.html')
+        + navItem('📊','Laporan Penjualan','laporan_staff.html');
+    let h = navGroup('frontline', 'Frontline', frontline, PAGES_FRONTLINE);
+
     if (['Senior Staff','SPV','Owner','VIP'].includes(role)) {
-        h += `<div class="nav-group-label">Management</div>`;
-        h += navItem('📈','Rekapan Penjualan','rekap.html');
-        h += navItem('🍱','Master Produk','produk.html');
+        let mgmt = navItem('📈','Rekapan Penjualan','rekap.html')
+            + navItem('🍱','Master Produk','produk.html');
+        h += navGroup('management', 'Management', mgmt, PAGES_MGMT);
     }
     if (['Owner','VIP'].includes(role)) {
-        h += `<div class="nav-group-label">Executive</div>`;
-        h += navItem('📊','Keuangan Global','laporan.html');
-        h += navItem('📈','Statistik','statistik.html');
-        h += navItem('🧂','Bahan Baku','bahan_baku.html');
-        h += navItem('💰','HPP Produk','hpp_produk.html');
-        h += navItem('💸','Belanja','belanja.html');
+        let exec = navItem('📊','Keuangan Global','laporan.html')
+            + navItem('📈','Statistik','statistik.html')
+            + navItem('🧂','Bahan Baku','bahan_baku.html')
+            + navItem('💰','HPP Produk','hpp_produk.html')
+            + navItem('💸','Belanja','belanja.html');
+        h += navGroup('executive', 'Executive', exec, PAGES_EXEC);
     }
     if (role === 'VIP') {
-        h += `<div class="nav-group-label">VIP Access</div>`;
-        h += navItem('👥','Manajemen User','user.html');
-        h += navItem('🔑','History Login','login_history.html');
+        let vip = navItem('👥','Manajemen User','user.html')
+            + navItem('🔑','History Login','login_history.html');
+        h += navGroup('vip', 'VIP Access', vip, PAGES_VIP);
     }
     document.getElementById('sidebarNav').innerHTML = h;
-    const name = currentUser.fullName || currentUser.user || '?';
+    const name = currentUser.user || '?';
     document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
     document.getElementById('sidebarUserName').innerText   = name;
     document.getElementById('sidebarUserRole').innerText   = role;
+}
+
+function toggleNavGroup(id) {
+    const items = document.getElementById('navg-' + id);
+    const btn   = items.previousElementSibling;
+    const ti    = btn.querySelector('.nav-group-ti');
+    const open  = items.style.display !== 'none';
+    items.style.display = open ? 'none' : '';
+    if (ti) ti.textContent = open ? '+' : '−';
+    localStorage.setItem('navGroup_' + id, open ? '0' : '1');
 }
 
 /* ── CLOCK ── */
