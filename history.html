@@ -478,38 +478,43 @@ async function renderHistory() {
         let count = 0;
 
         transaksiList.forEach(t => {
-            const waktuStr  = t.waktu || '';
-            const dateTrx   = waktuStr.split('T')[0].split(' ')[0];
-            const cabangTrx = (t.cabang || '').trim();
+            try {
+                if (!t) return;
+                const waktuStr  = t.waktu || '';
+                const dateTrx   = waktuStr.split('T')[0].split(' ')[0];
+                const cabangTrx = (t.cabang || '').trim();
 
-            if (['VIP','Owner'].includes(role)) {
-                if (selectedCabang !== 'Semua' && cabangTrx !== selectedCabang) return;
-            } else {
-                if (cabangAkses.length > 0) {
-                    const boleh = cabangAkses.some(c => c.toLowerCase() === cabangTrx.toLowerCase())
-                                || cabangTrx.toLowerCase() === cabangLoginRaw.toLowerCase();
-                    if (!boleh) return;
+                if (['VIP','Owner'].includes(role)) {
+                    if (selectedCabang !== 'Semua' && cabangTrx !== selectedCabang) return;
+                } else {
+                    if (cabangAkses.length > 0) {
+                        const boleh = cabangAkses.some(c => c.toLowerCase() === cabangTrx.toLowerCase())
+                                    || cabangTrx.toLowerCase() === cabangLoginRaw.toLowerCase();
+                        if (!boleh) return;
+                    }
                 }
+
+                if (tglMulai   && dateTrx < tglMulai)   return;
+                if (tglSelesai && dateTrx > tglSelesai)  return;
+
+                let items = [];
+                try { const p = JSON.parse(t.items_json || '[]'); items = Array.isArray(p) ? p : []; } catch(_) {}
+                const namaItems = items.map(it => (it && (it.nama || it.name)) || '').filter(Boolean).join(', ') || '—';
+                const canDelete = ['VIP','Owner'].includes(role);
+
+                tbody.innerHTML += `<tr>
+                    <td><span class="waktu-text">${t.waktu || '—'}</span></td>
+                    <td>${t.petugas || '—'}</td>
+                    <td><span class="cabang-text">${t.cabang || '—'}</span></td>
+                    <td><span class="item-text">${namaItems}</span></td>
+                    <td><span class="total-text">Rp ${parseInt(t.total || 0).toLocaleString('id-ID')}</span></td>
+                    <td><span class="tag-metode">${t.metode || '—'}</span></td>
+                    <td>${canDelete ? `<button class="btn-hapus" onclick="hapusTransaksi(${t.id})">Hapus</button>` : '—'}</td>
+                </tr>`;
+                count++;
+            } catch(rowErr) {
+                console.warn('Skip baris history bermasalah:', rowErr, t);
             }
-
-            if (tglMulai   && dateTrx < tglMulai)   return;
-            if (tglSelesai && dateTrx > tglSelesai)  return;
-
-            let items = [];
-            try { const p = JSON.parse(t.items_json || '[]'); items = Array.isArray(p) ? p : []; } catch(_) { items = []; }
-            const namaItems = (items || []).map(it => (it && (it.nama || it.name)) || '').filter(Boolean).join(', ') || '—';
-            const canDelete = ['VIP','Owner'].includes(role);
-
-            tbody.innerHTML += `<tr>
-                <td><span class="waktu-text">${t.waktu || '—'}</span></td>
-                <td>${t.petugas || '—'}</td>
-                <td><span class="cabang-text">${t.cabang || '—'}</span></td>
-                <td><span class="item-text">${namaItems}</span></td>
-                <td><span class="total-text">Rp ${parseInt(t.total || 0).toLocaleString('id-ID')}</span></td>
-                <td><span class="tag-metode">${t.metode || '—'}</span></td>
-                <td>${canDelete ? `<button class="btn-hapus" onclick="hapusTransaksi(${t.id})">Hapus</button>` : '—'}</td>
-            </tr>`;
-            count++;
         });
 
         if (count === 0) {
