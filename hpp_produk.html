@@ -203,13 +203,14 @@
                 <h3>➕ Setting HPP Produk</h3>
 
                 <div class="input-group">
-                    <label>Nama Produk</label>
-                    <input type="text" id="hNama" placeholder="Cth: Dimsum Ayam">
+                    <label>Produk</label>
+                    <select id="hProdukSelect" onchange="pilihProdukHPP(this)">
+                        <option value="">— Pilih Produk —</option>
+                    </select>
                 </div>
-                <div class="input-group">
-                    <label>SKU</label>
-                    <input type="text" id="hSKU" placeholder="Cth: DMS" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
-                </div>
+                <input type="hidden" id="hNama">
+                <input type="hidden" id="hSKU">
+                <div id="hSKUDisplay" style="font-size:11px;color:var(--text-muted);margin-top:-8px;margin-bottom:8px;font-family:'DM Mono',monospace;"></div>
 
                 <p style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin:16px 0 8px;">Komposisi Bahan</p>
                 <div id="listBahanPicker"></div>
@@ -485,8 +486,10 @@ async function simpanHPP() {
 
 function resetForm() {
     editHPPId = null;
-    document.getElementById('hNama').value = '';
-    document.getElementById('hSKU').value  = '';
+    document.getElementById('hProdukSelect').value = '';
+    document.getElementById('hNama').value  = '';
+    document.getElementById('hSKU').value   = '';
+    document.getElementById('hSKUDisplay').innerText = '';
     document.getElementById('listBahanPicker').innerHTML = '';
     document.getElementById('hppTotal').innerText = 'HPP: Rp 0';
     document.querySelector('.btn-simpan-hpp').innerText = '💾 Simpan HPP';
@@ -496,8 +499,13 @@ function siapkanEditHPP(id) {
     const h = allHPP.find(x => x.id == id);
     if (!h) return;
     editHPPId = id;
-    document.getElementById('hNama').value = h.nama_produk;
-    document.getElementById('hSKU').value  = h.sku;
+    // Cari produk di dropdown berdasarkan SKU
+    const sel = document.getElementById('hProdukSelect');
+    const matchOpt = Array.from(sel.options).find(o => o.dataset.sku === h.sku);
+    sel.value = matchOpt ? matchOpt.value : '';
+    document.getElementById('hNama').value  = h.nama_produk;
+    document.getElementById('hSKU').value   = h.sku;
+    document.getElementById('hSKUDisplay').innerText = `SKU: ${h.sku}`;
     document.getElementById('listBahanPicker').innerHTML = '';
     const detail = JSON.parse(h.detail_json || '[]');
     detail.forEach(d => tambahBahanRow(d.bahan_id, d.qty));
@@ -542,13 +550,33 @@ async function muatHPP() {
     } catch(e) { console.error(e); }
 }
 
+function pilihProdukHPP(sel) {
+    const opt = sel.selectedOptions[0];
+    document.getElementById('hNama').value = opt.dataset.nama || '';
+    document.getElementById('hSKU').value  = opt.dataset.sku  || '';
+    document.getElementById('hSKUDisplay').innerText = opt.value ? `SKU: ${opt.dataset.sku}` : '';
+}
+
 async function init() {
     try {
-        const res = await fetch('api.php?action=get_bahan_baku');
-        allBahan  = await res.json();
+        const [resBahan, resProduk] = await Promise.all([
+            fetch('api.php?action=get_bahan_baku'),
+            fetch('api.php?action=get_produk')
+        ]);
+        allBahan = await resBahan.json();
+        const produkList = await resProduk.json();
+        const sel = document.getElementById('hProdukSelect');
+        (Array.isArray(produkList) ? produkList : []).forEach(p => {
+            const opt = document.createElement('option');
+            opt.value        = p.id;
+            opt.dataset.nama = p.nama;
+            opt.dataset.sku  = p.sku;
+            opt.textContent  = `${p.nama} (${p.sku})`;
+            sel.appendChild(opt);
+        });
     } catch(e) { console.error(e); }
     await muatHPP();
-    tambahBahanRow(); // default 1 row kosong
+    tambahBahanRow();
 }
 
 async function logout() {
