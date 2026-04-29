@@ -340,8 +340,9 @@
                                 <th>User</th>
                                 <th>Pass</th>
                                 <th>Role</th>
+                                <th>Cabang</th>
                                 <th>File</th>
-                                <th>X</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="tabelUser"></tbody>
@@ -349,6 +350,16 @@
                 </div>
             </div>
 
+        </div>
+<!-- ── MODAL EDIT CABANG ── -->
+<div id="modalEditCabang" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:2000;align-items:center;justify-content:center;">
+    <div style="background:var(--surface);border-radius:var(--r-lg);padding:24px;width:min(380px,92vw);box-shadow:var(--sh-lg);">
+        <h3 style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">✏️ Edit Akses Cabang</h3>
+        <p id="editCabangNama" style="font-size:12px;color:var(--text-muted);margin-bottom:16px;"></p>
+        <div class="checklist-container" id="editCabangList" style="max-height:140px;margin-bottom:16px;"></div>
+        <div style="display:flex;gap:8px;">
+            <button class="btn-simpan" style="flex:1;" onclick="simpanEditCabang()">💾 Simpan</button>
+            <button class="btn-reset" onclick="tutupModalCabang()">Batal</button>
         </div>
     </div>
 </div>
@@ -400,7 +411,7 @@ function buildSidebar() {
     };
     const PAGES_FRONTLINE = ['dashboard.html','history.html','stok.html','restock.html','laporan_staff.html'];
     const PAGES_MGMT      = ['rekap.html','produk.html'];
-    const PAGES_EXEC      = ['laporan.html','statistik.html','bahan_baku.html','hpp_produk.html','belanja.html'];
+    const PAGES_EXEC      = ['laporan.html','statistik.html','bahan_baku.html','hpp_produk.html','belanja.html','warehouse.html'];
     const PAGES_VIP       = ['user.html','login_history.html'];
     const inGroup = pages => pages.includes(cur);
     const getOpen = (id, pages) => {
@@ -441,6 +452,7 @@ function buildSidebar() {
             + navItem('📈','Statistik','statistik.html')
             + navItem('🧂','Bahan Baku','bahan_baku.html')
             + navItem('💰','HPP Produk','hpp_produk.html')
+            + navItem('🏭','Warehouse','warehouse.html')
             + navItem('💸','Belanja','belanja.html');
         h += navGroup('executive', 'Executive', exec, PAGES_EXEC);
     }
@@ -487,6 +499,7 @@ function buildMoreMenu() {
         items.push({icon:'🍱',label:'Produk',link:'produk.html'});
         items.push({icon:'🧂',label:'Bahan Baku',link:'bahan_baku.html'});
         items.push({icon:'💰',label:'HPP Produk',link:'hpp_produk.html'});
+        items.push({icon:'🏭',label:'Warehouse',link:'warehouse.html'});
         items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
         items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
         items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
@@ -640,16 +653,78 @@ async function renderUser() {
     const tbody = document.getElementById('tabelUser');
     tbody.innerHTML = '';
     users.forEach((u, i) => {
+        const cabangList = (u.cabang || '').split(',').map(c => c.trim()).filter(Boolean).join(', ') || '—';
         tbody.innerHTML += `
             <tr>
                 <td><b>${u.fullName || '-'}</b></td>
                 <td>${u.username}</td>
                 <td><code>${u.password}</code></td>
                 <td>${u.role}</td>
+                <td style="font-size:11px;color:var(--text-muted);">${cabangList}</td>
                 <td><button class="btn-view-doc" onclick="lihatDokumen(${i})">👁️</button></td>
-                <td><button class="btn-del-user" onclick="hapusUser(${u.id})">✖</button></td>
+                <td style="display:flex;gap:4px;">
+                    <button class="btn-edit" onclick="bukaCabangModal(${i})" title="Edit Akses Cabang">✏️</button>
+                    <button class="btn-del-user" onclick="hapusUser(${u.id})">✖</button>
+                </td>
             </tr>`;
     });
+}
+
+let editUserId = null;
+
+function bukaCabangModal(idx) {
+    const u = window.allUsersData[idx];
+    editUserId = u.id;
+    document.getElementById('editCabangNama').textContent = `${u.fullName || u.username} · ${u.role}`;
+
+    const currentCabang = (u.cabang || '').split(',').map(c => c.trim()).filter(Boolean);
+    const list = document.getElementById('editCabangList');
+    list.innerHTML = '';
+
+    const allCabang = Array.from(document.querySelectorAll('input[name="cabangAkses"]'))
+        .map(el => el.value).filter(v => v !== 'Semua');
+
+    list.innerHTML = `<label class="check-item">
+        <span>Semua</span>
+        <input type="checkbox" name="editCabangAkses" value="Semua" ${currentCabang.includes('Semua') ? 'checked' : ''}>
+    </label>`;
+    allCabang.forEach(nama => {
+        list.innerHTML += `<label class="check-item">
+            <span>${nama}</span>
+            <input type="checkbox" name="editCabangAkses" value="${nama}" ${currentCabang.includes(nama) ? 'checked' : ''}>
+        </label>`;
+    });
+
+    const modal = document.getElementById('modalEditCabang');
+    modal.style.display = 'flex';
+}
+
+function tutupModalCabang() {
+    document.getElementById('modalEditCabang').style.display = 'none';
+    editUserId = null;
+}
+
+async function simpanEditCabang() {
+    if (!editUserId) return;
+    const cabang = Array.from(document.querySelectorAll('input[name="editCabangAkses"]:checked'))
+        .map(c => c.value).join(',');
+    try {
+        const res   = await fetch('api.php?action=update_user_cabang', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ id: editUserId, cabang })
+        });
+        const hasil = await res.json();
+        if (hasil.status === 'success') {
+            toast.success('Akses cabang berhasil diperbarui!');
+            tutupModalCabang();
+            renderUser();
+        } else {
+            toast.error('Gagal: ' + (hasil.message || 'error'));
+        }
+    } catch(e) {
+        toast.error('Gagal koneksi server!');
+    }
 }
 
 function readFile(file) {

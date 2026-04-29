@@ -329,7 +329,7 @@ function buildSidebar() {
     };
     const PAGES_FRONTLINE = ['dashboard.html','history.html','stok.html','restock.html','laporan_staff.html'];
     const PAGES_MGMT      = ['rekap.html','produk.html'];
-    const PAGES_EXEC      = ['laporan.html','statistik.html','bahan_baku.html','hpp_produk.html','belanja.html'];
+    const PAGES_EXEC      = ['laporan.html','statistik.html','bahan_baku.html','hpp_produk.html','belanja.html','warehouse.html'];
     const PAGES_VIP       = ['user.html','login_history.html'];
     const inGroup = pages => pages.includes(cur);
     const getOpen = (id, pages) => {
@@ -370,6 +370,7 @@ function buildSidebar() {
             + navItem('📈','Statistik','statistik.html')
             + navItem('🧂','Bahan Baku','bahan_baku.html')
             + navItem('💰','HPP Produk','hpp_produk.html')
+            + navItem('🏭','Warehouse','warehouse.html')
             + navItem('💸','Belanja','belanja.html');
         h += navGroup('executive', 'Executive', exec, PAGES_EXEC);
     }
@@ -414,6 +415,7 @@ function buildMoreMenu() {
     if (['Owner','VIP'].includes(role)) {
         items.push({icon:'🧂',label:'Bahan Baku',link:'bahan_baku.html'});
         items.push({icon:'💰',label:'HPP Produk',link:'hpp_produk.html'});
+        items.push({icon:'🏭',label:'Warehouse',link:'warehouse.html'});
         items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
         items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
         items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
@@ -458,57 +460,53 @@ async function loadCabang() {
 }
 
 async function renderHistory() {
+    const tbody = document.getElementById('tabelHistory');
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="icon">⏳</span><p>Memuat data...</p></div></td></tr>`;
     try {
-        const res     = await fetch('api.php?action=get_history');
-        const history = await res.json();
-        const tglMulai   = document.getElementById('tglMulai').value;
-        const tglSelesai = document.getElementById('tglSelesai').value;
-        const tbody      = document.getElementById('tabelHistory');
-        const role       = currentUser.role;
+        const res = await fetch('api.php?action=get_history');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const raw     = await res.json();
+        const history = Array.isArray(raw) ? raw : [];
 
-        // Normalize cabangLogin — trim spasi dan lowercase untuk perbandingan
+        const tglMulai      = document.getElementById('tglMulai').value;
+        const tglSelesai    = document.getElementById('tglSelesai').value;
+        const role          = currentUser.role;
         const cabangLoginRaw = (cabangLogin || '').trim();
-        // Semua cabang yang boleh diakses user ini
-        const cabangAkses = (currentUser.cabang || '')
-            .split(',')
-            .map(c => c.trim())
-            .filter(c => c);
+        const cabangAkses   = (currentUser.cabang || '').split(',').map(c => c.trim()).filter(Boolean);
 
-        tbody.innerHTML  = '';
+        tbody.innerHTML = '';
         let count = 0;
 
         history.forEach(t => {
-            const dateTrx    = (t.waktu || '').split(' ')[0] || (t.waktu || '').split('T')[0];
-            const cabangTrx  = (t.cabang || '').trim();
+            const waktuStr  = t.waktu || '';
+            const dateTrx   = waktuStr.split('T')[0].split(' ')[0];
+            const cabangTrx = (t.cabang || '').trim();
 
-            // Filter berdasarkan role
             if (['VIP','Owner'].includes(role)) {
-                // VIP/Owner bisa lihat semua, filter by dropdown
                 if (selectedCabang !== 'Semua' && cabangTrx !== selectedCabang) return;
             } else {
-                // Staff/Senior Staff/SPV — filter by cabang akses
                 if (cabangAkses.length > 0) {
                     const boleh = cabangAkses.some(c => c.toLowerCase() === cabangTrx.toLowerCase())
                                 || cabangTrx.toLowerCase() === cabangLoginRaw.toLowerCase();
                     if (!boleh) return;
                 }
-                // Kalau cabangAkses kosong, tampilkan semua
             }
 
             if (tglMulai   && dateTrx < tglMulai)   return;
             if (tglSelesai && dateTrx > tglSelesai)  return;
 
-            const items     = JSON.parse(t.items_json || '[]');
-            const namaItems = items.map(it => it.nama || it.name || '').join(', ');
-            const canDelete = role === 'VIP' || role === 'Owner';
+            let items = [];
+            try { items = JSON.parse(t.items_json || '[]'); } catch(_) { items = []; }
+            const namaItems = items.map(it => it.nama || it.name || '').filter(Boolean).join(', ') || '—';
+            const canDelete = ['VIP','Owner'].includes(role);
 
             tbody.innerHTML += `<tr>
-                <td><span class="waktu-text">${t.waktu}</span></td>
-                <td>${t.petugas}</td>
-                <td><span class="cabang-text">${t.cabang}</span></td>
+                <td><span class="waktu-text">${t.waktu || '—'}</span></td>
+                <td>${t.petugas || '—'}</td>
+                <td><span class="cabang-text">${t.cabang || '—'}</span></td>
                 <td><span class="item-text">${namaItems}</span></td>
-                <td><span class="total-text">Rp ${parseInt(t.total).toLocaleString('id-ID')}</span></td>
-                <td><span class="tag-metode">${t.metode}</span></td>
+                <td><span class="total-text">Rp ${parseInt(t.total || 0).toLocaleString('id-ID')}</span></td>
+                <td><span class="tag-metode">${t.metode || '—'}</span></td>
                 <td>${canDelete ? `<button class="btn-hapus" onclick="hapusTransaksi(${t.id})">Hapus</button>` : '—'}</td>
             </tr>`;
             count++;
@@ -518,7 +516,8 @@ async function renderHistory() {
             tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="icon">📄</span><p>Tidak ada data transaksi</p></div></td></tr>`;
         }
     } catch(e) {
-        toast.error('Gagal memuat history!');
+        console.error('renderHistory:', e);
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="icon">⚠️</span><p>Gagal memuat data. Coba refresh.</p></div></td></tr>`;
     }
 }
 

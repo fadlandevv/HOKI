@@ -975,7 +975,9 @@
        border-radius: var(--r-lg);
        border: 1px solid var(--border);
        box-shadow: var(--sh-sm);
-       overflow: hidden;
+       overflow-x: auto;
+       overflow-y: hidden;
+       -webkit-overflow-scrolling: touch;
    }
    
    .table-wrap table {

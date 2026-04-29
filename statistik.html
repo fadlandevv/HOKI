@@ -402,7 +402,7 @@ function buildSidebar() {
     };
     const PAGES_FRONTLINE = ['dashboard.html','history.html','stok.html','restock.html','laporan_staff.html'];
     const PAGES_MGMT      = ['rekap.html','produk.html'];
-    const PAGES_EXEC      = ['laporan.html','statistik.html','bahan_baku.html','hpp_produk.html','belanja.html'];
+    const PAGES_EXEC      = ['laporan.html','statistik.html','bahan_baku.html','hpp_produk.html','belanja.html','warehouse.html'];
     const PAGES_VIP       = ['user.html','login_history.html'];
     const inGroup = pages => pages.includes(cur);
     const getOpen = (id, pages) => {
@@ -443,6 +443,7 @@ function buildSidebar() {
             + navItem('📈','Statistik','statistik.html')
             + navItem('🧂','Bahan Baku','bahan_baku.html')
             + navItem('💰','HPP Produk','hpp_produk.html')
+            + navItem('🏭','Warehouse','warehouse.html')
             + navItem('💸','Belanja','belanja.html');
         h += navGroup('executive', 'Executive', exec, PAGES_EXEC);
     }
@@ -489,6 +490,7 @@ function buildMoreMenu() {
         items.push({icon:'🍱',label:'Produk',link:'produk.html'});
         items.push({icon:'🧂',label:'Bahan Baku',link:'bahan_baku.html'});
         items.push({icon:'💰',label:'HPP Produk',link:'hpp_produk.html'});
+        items.push({icon:'🏭',label:'Warehouse',link:'warehouse.html'});
         items.push({icon:'💸',label:'Belanja',link:'belanja.html'});
         items.push({icon:'📊',label:'Keuangan',link:'laporan.html'});
         items.push({icon:'📈',label:'Statistik',link:'statistik.html'});
@@ -616,28 +618,32 @@ async function loadStatistik() {
         });
 
         /* C. JAM & TOP MENU */
+        const trxArr = Array.isArray(transaksi) ? transaksi : [];
         let jamData = {}, menuData = {};
-        transaksi.forEach(t => {
-            const d     = new Date(t.waktu).getTime();
-            const mCab  = (cabFilter === 'Semua' || t.cabang === cabFilter);
-            const mDate = (!startTime || d >= startTime) && (!endTime || d <= endTime);
-            if (mCab && mDate) {
-                const jam = new Date(t.waktu).getHours();
-                jamData[jam] = (jamData[jam] || 0) + 1;
-                const items = JSON.parse(t.items_json || '[]');
-                items.forEach(item => {
-                    const nama = item.nama || item.sku;
-                    menuData[nama] = (menuData[nama] || 0) + (parseInt(item.qty) || 1);
-                });
-            }
+        trxArr.forEach(t => {
+            try {
+                const d     = new Date(t.waktu).getTime();
+                const mCab  = (cabFilter === 'Semua' || t.cabang === cabFilter);
+                const mDate = (!startTime || d >= startTime) && (!endTime || d <= endTime);
+                if (mCab && mDate) {
+                    const jam = new Date(t.waktu).getHours();
+                    jamData[jam] = (jamData[jam] || 0) + 1;
+                    let items = [];
+                    try { items = JSON.parse(t.items_json || '[]'); } catch(_) {}
+                    items.forEach(item => {
+                        const nama = item.nama || item.sku || '?';
+                        if (nama !== '?') menuData[nama] = (menuData[nama] || 0) + (parseInt(item.qty) || 1);
+                    });
+                }
+            } catch(_) {}
         });
 
         const chartJam = document.getElementById('chartJam');
         chartJam.innerHTML = '';
         const maxJam = Math.max(...Object.values(jamData), 1);
         for (let h = 7; h <= 22; h++) {
-            const count = jamData[h] || 0;
-            const p     = (count / maxJam) * 100;
+            const cnt = jamData[h] || 0;
+            const p   = (cnt / maxJam) * 100;
             chartJam.innerHTML += `
                 <div class="jam-bar-wrap">
                     <div class="jam-bar-bg">
@@ -646,16 +652,24 @@ async function loadStatistik() {
                     <span class="jam-label">${h}</span>
                 </div>`;
         }
+        if (Object.keys(jamData).length === 0) {
+            chartJam.innerHTML = `<p style="font-size:12px;color:var(--text-light);padding:8px 0;">Belum ada data transaksi</p>`;
+        }
 
         const listP = document.getElementById('listProdukUnggulan');
         listP.innerHTML = '';
-        Object.entries(menuData).sort((a,b) => b[1]-a[1]).slice(0,5).forEach(([name, qty]) => {
-            listP.innerHTML += `
-                <tr>
-                    <td>${name}</td>
-                    <td class="qty-cell">${qty} <small style="font-size:10px;color:var(--text-muted);font-weight:400;">Porsi</small></td>
-                </tr>`;
-        });
+        const topMenu = Object.entries(menuData).sort((a,b) => b[1]-a[1]).slice(0,5);
+        if (topMenu.length === 0) {
+            listP.innerHTML = `<tr><td colspan="2" style="font-size:12px;color:var(--text-light);padding:8px 0;">Belum ada data menu</td></tr>`;
+        } else {
+            topMenu.forEach(([name, qty]) => {
+                listP.innerHTML += `
+                    <tr>
+                        <td>${name}</td>
+                        <td class="qty-cell">${qty} <small style="font-size:10px;color:var(--text-muted);font-weight:400;">Porsi</small></td>
+                    </tr>`;
+            });
+        }
 
     } catch (e) { console.error("Gagal sinkron statistik cloud:", e); }
 }
