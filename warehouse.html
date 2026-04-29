@@ -564,7 +564,7 @@ async function loadWarehouse() {
         const soldMap = {};
         todayTrx.forEach(t => {
             let items = [];
-            try { items = JSON.parse(t.items_json || '[]'); } catch(_) {}
+            try { const p = JSON.parse(t.items_json || '[]'); items = Array.isArray(p) ? p : []; } catch(_) {}
             items.forEach(item => {
                 const sku  = item.sku  || '';
                 const nama = item.nama || sku;

@@ -629,7 +629,7 @@ async function loadStatistik() {
                     const jam = new Date(t.waktu).getHours();
                     jamData[jam] = (jamData[jam] || 0) + 1;
                     let items = [];
-                    try { items = JSON.parse(t.items_json || '[]'); } catch(_) {}
+                    try { const p = JSON.parse(t.items_json || '[]'); items = Array.isArray(p) ? p : []; } catch(_) {}
                     items.forEach(item => {
                         const nama = item.nama || item.sku || '?';
                         if (nama !== '?') menuData[nama] = (menuData[nama] || 0) + (parseInt(item.qty) || 1);
