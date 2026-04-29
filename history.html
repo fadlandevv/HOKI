@@ -69,16 +69,26 @@
         border-radius: var(--r-lg);
         border: 1px solid var(--border);
         box-shadow: var(--sh-sm);
-        overflow: hidden;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     .table-wrap table {
         border-radius: 0;
         box-shadow: none;
         border: none;
+        min-width: 600px;
     }
 
-    .waktu-text  { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); }
+    .waktu-text {
+        font-family: 'DM Mono', monospace;
+        font-size: 11px;
+        color: var(--text-muted);
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        white-space: nowrap;
+    }
     .total-text  { font-family: 'DM Mono', monospace; font-weight: 700; color: var(--red); }
     .item-text   { font-size: 12px; color: var(--text-muted); }
     .cabang-text { font-weight: 700; color: var(--text); }
@@ -502,7 +512,11 @@ async function renderHistory() {
             const canDelete = ['VIP','Owner'].includes(role);
 
             tbody.innerHTML += `<tr>
-                <td><span class="waktu-text">${t.waktu || '—'}</span></td>
+                <td><span class="waktu-text">${(() => {
+                    if (!t.waktu) return '—';
+                    const [tgl, jam] = t.waktu.split(' ');
+                    return `<span>${tgl || '—'}</span><span style="color:var(--text-light);font-size:10px;">${jam ? jam.slice(0,5) : ''}</span>`;
+                })()}</span></td>
                 <td>${t.petugas || '—'}</td>
                 <td><span class="cabang-text">${t.cabang || '—'}</span></td>
                 <td><span class="item-text">${namaItems}</span></td>
