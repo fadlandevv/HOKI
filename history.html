@@ -496,7 +496,7 @@ async function renderHistory() {
             if (tglSelesai && dateTrx > tglSelesai)  return;
 
             let items = [];
-            try { items = JSON.parse(t.items_json || '[]'); } catch(_) { items = []; }
+            try { const p = JSON.parse(t.items_json || '[]'); items = Array.isArray(p) ? p : []; } catch(_) { items = []; }
             const namaItems = items.map(it => it.nama || it.name || '').filter(Boolean).join(', ') || '—';
             const canDelete = ['VIP','Owner'].includes(role);
 
