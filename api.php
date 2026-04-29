@@ -696,7 +696,7 @@ switch ($action) {
             LEFT JOIN bahan_baku b ON b.id=d.bahan_id 
             WHERE d.hpp_id=h.id) as detail_json
             FROM hpp_produk h ORDER BY h.nama_produk ASC");
-        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        echo json_encode($res ? $res->fetch_all(MYSQLI_ASSOC) : []);
         break;
 
     case 'save_hpp_produk':
