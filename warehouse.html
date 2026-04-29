@@ -548,14 +548,18 @@ async function loadWarehouse() {
         const allHpp = Array.isArray(rawHpp) ? rawHpp : [];
         const stokDB = Array.isArray(rawStok) ? rawStok : [];
 
-        console.log('[WH] Total transaksi dari DB:', allTrx.length);
-        console.log('[WH] Filter tanggal:', date);
-        console.log('[WH] Contoh waktu transaksi:', allTrx[0]?.waktu ?? 'kosong');
-        console.log('[WH] Total HPP:', allHpp.length);
-
         // 2. Filter transaksi by date
-        const todayTrx = allTrx.filter(t => (t.waktu || '').startsWith(date));
-        console.log('[WH] Transaksi cocok tanggal:', todayTrx.length);
+        let todayTrx = allTrx.filter(t => (t.waktu || '').startsWith(date));
+
+        // Jika hari ini kosong, auto-cari tanggal terakhir yang ada transaksinya
+        if (todayTrx.length === 0 && allTrx.length > 0) {
+            const lastDate = (allTrx[0].waktu || '').slice(0, 10);
+            if (lastDate && lastDate !== date) {
+                document.getElementById('filterDate').value = lastDate;
+                warehouseState.currentDate = lastDate;
+                todayTrx = allTrx.filter(t => (t.waktu || '').startsWith(lastDate));
+            }
+        }
 
         setVisible('loadingState', false);
 
