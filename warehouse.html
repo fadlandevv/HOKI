@@ -285,7 +285,7 @@
         <!-- FILTER BAR -->
         <div class="filter-bar">
             <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:130px;">
-                <label style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;">Tanggal</label>
+                <label for="filterDate" style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;">Tanggal</label>
                 <input type="date" id="filterDate" style="height:38px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--text);outline:none;">
             </div>
             <button class="btn-cari" onclick="loadWarehouse()" style="align-self:flex-end;">🔄 Refresh</button>
@@ -783,10 +783,13 @@ async function logout() {
 window.onload = () => {
     buildSidebar();
     updateClock();
-    // Default date = today
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('filterDate').value = today;
     loadWarehouse();
+    // Auto-refresh setiap 30 detik
+    setInterval(() => {
+        if (document.getElementById('filterDate').value) loadWarehouse();
+    }, 30000);
 };
 </script>
 
