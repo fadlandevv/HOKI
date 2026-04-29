@@ -684,19 +684,18 @@ switch ($action) {
 
     // ── HPP PRODUK ────────────────────────────────────
     case 'get_hpp_produk':
-        $res  = $conn->query("SELECT h.*, 
-            (SELECT JSON_ARRAYAGG(JSON_OBJECT(
-                'bahan_id', d.bahan_id,
-                'nama', b.nama,
-                'qty', d.qty,
-                'satuan', b.satuan,
-                'harga_satuan', b.harga_satuan,
-                'subtotal', d.subtotal
-            )) FROM hpp_produk_detail d 
-            LEFT JOIN bahan_baku b ON b.id=d.bahan_id 
-            WHERE d.hpp_id=h.id) as detail_json
-            FROM hpp_produk h ORDER BY h.nama_produk ASC");
-        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        $res  = $conn->query("SELECT * FROM hpp_produk ORDER BY nama_produk ASC");
+        $list = $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
+        foreach ($list as &$h) {
+            $hid = (int)$h['id'];
+            $dr  = $conn->query("SELECT d.bahan_id, d.qty, d.subtotal, b.nama, b.satuan, b.harga_satuan
+                                 FROM hpp_produk_detail d
+                                 LEFT JOIN bahan_baku b ON b.id = d.bahan_id
+                                 WHERE d.hpp_id = $hid");
+            $h['detail_json'] = json_encode($dr ? $dr->fetch_all(MYSQLI_ASSOC) : []);
+        }
+        unset($h);
+        echo json_encode($list);
         break;
 
     case 'save_hpp_produk':
