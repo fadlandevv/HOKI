@@ -334,7 +334,7 @@ function buildSidebar() {
     const inGroup = pages => pages.includes(cur);
     const getOpen = (id, pages) => {
         const s = localStorage.getItem('navGroup_' + id);
-        return s !== null ? s === '1' : inGroup(pages);
+        return s !== null ? s === '1' : true;
     };
     const GROUP_ICONS = { frontline:'🛒', management:'📊', executive:'📋', vip:'👑' };
     const navGroup = (id, label, items, pages) => {
