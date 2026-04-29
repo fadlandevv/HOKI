@@ -96,6 +96,12 @@ if ($isDev) {
                 ['id'=>2,'nama_produk'=>'Hakau','sku'=>'HAK','harga_pokok'=>9000,'detail_json'=>'[{"bahan_id":1,"nama":"Mentai","qty":100,"satuan":"gr","harga_satuan":50,"subtotal":5000}]'],
             ]);
             break;
+        case 'get_warehouse_stok':
+            echo json_encode([]);
+            break;
+        case 'save_warehouse_stok':
+            echo json_encode(['status'=>'success']);
+            break;
         case 'save_bahan_baku': case 'del_bahan_baku':
         case 'save_hpp_produk': case 'del_hpp_produk':
             echo json_encode(['status'=>'success']);
@@ -125,6 +131,125 @@ if ($conn->connect_error) {
     die(json_encode(["status"=>"error","message"=>"Koneksi gagal: ".$conn->connect_error]));
 }
 $conn->set_charset("utf8mb4");
+
+// ── AUTO-CREATE ESSENTIAL TABLES ──────────────────────
+$conn->query("CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) UNIQUE,
+    password VARCHAR(255) DEFAULT '',
+    role VARCHAR(50) DEFAULT 'Staff',
+    fullName VARCHAR(200) DEFAULT '',
+    cabang VARCHAR(255) DEFAULT '',
+    docs_json TEXT,
+    session_token VARCHAR(255) DEFAULT ''
+)");
+$conn->query("CREATE TABLE IF NOT EXISTS produk (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sku VARCHAR(20) DEFAULT '',
+    nama VARCHAR(150) DEFAULT '',
+    harga INT DEFAULT 0,
+    hpp INT DEFAULT 0,
+    dimsumPcs INT DEFAULT 0,
+    aluTrayPcs INT DEFAULT 0,
+    urutan INT DEFAULT 0
+)");
+$conn->query("CREATE TABLE IF NOT EXISTS transaksi (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    waktu TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    cabang VARCHAR(100) DEFAULT '',
+    petugas VARCHAR(100) DEFAULT '',
+    total BIGINT DEFAULT 0,
+    metode VARCHAR(50) DEFAULT 'CASH',
+    items_json TEXT
+)");
+$conn->query("CREATE TABLE IF NOT EXISTS logs_login (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    waktu TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    username VARCHAR(100) DEFAULT '',
+    role VARCHAR(50) DEFAULT '',
+    cabang VARCHAR(100) DEFAULT ''
+)");
+$conn->query("CREATE TABLE IF NOT EXISTS hoki_cabang (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nama_cabang VARCHAR(100) UNIQUE
+)");
+$conn->query("CREATE TABLE IF NOT EXISTS bahan_baku (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nama VARCHAR(150) DEFAULT '',
+    harga FLOAT DEFAULT 0,
+    banyak FLOAT DEFAULT 0,
+    satuan VARCHAR(20) DEFAULT 'gr',
+    harga_satuan FLOAT DEFAULT 0
+)");
+$conn->query("CREATE TABLE IF NOT EXISTS hpp_produk (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nama_produk VARCHAR(150) DEFAULT '',
+    sku VARCHAR(20) DEFAULT '',
+    harga_pokok FLOAT DEFAULT 0
+)");
+$conn->query("CREATE TABLE IF NOT EXISTS hpp_produk_detail (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    hpp_id INT DEFAULT 0,
+    bahan_id INT DEFAULT 0,
+    qty FLOAT DEFAULT 0,
+    subtotal FLOAT DEFAULT 0
+)");
+$conn->query("CREATE TABLE IF NOT EXISTS hoki_kas_jenis (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nama_jenis VARCHAR(100) UNIQUE
+)");
+$conn->query("CREATE TABLE IF NOT EXISTS hoki_kas_data (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    waktu TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    user VARCHAR(100) DEFAULT '',
+    jenis VARCHAR(100) DEFAULT '',
+    nama VARCHAR(200) DEFAULT '',
+    qty INT DEFAULT 1,
+    mode VARCHAR(20) DEFAULT '',
+    nominal BIGINT DEFAULT 0,
+    ket TEXT,
+    cabang VARCHAR(100) DEFAULT ''
+)");
+$conn->query("CREATE TABLE IF NOT EXISTS laporan_settlement (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    waktu TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    report_id VARCHAR(100) UNIQUE,
+    petugas VARCHAR(100) DEFAULT '',
+    cabang VARCHAR(100) DEFAULT '',
+    metode_json TEXT,
+    audit_json TEXT,
+    pengeluaran_json TEXT,
+    grand_total BIGINT DEFAULT 0
+)");
+$conn->query("CREATE TABLE IF NOT EXISTS stok_master (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nama_item VARCHAR(150) UNIQUE
+)");
+$conn->query("CREATE TABLE IF NOT EXISTS stok_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    waktu TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    report_id VARCHAR(100) DEFAULT '',
+    petugas VARCHAR(100) DEFAULT '',
+    cabang VARCHAR(100) DEFAULT '',
+    items_json TEXT
+)");
+$conn->query("CREATE TABLE IF NOT EXISTS restock_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    waktu TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    report_id VARCHAR(100) DEFAULT '',
+    waktu_teks VARCHAR(100) DEFAULT '',
+    petugas VARCHAR(100) DEFAULT '',
+    cabang VARCHAR(100) DEFAULT '',
+    items_json TEXT
+)");
+$conn->query("CREATE TABLE IF NOT EXISTS warehouse_stok (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tgl DATE NOT NULL,
+    bahan_id INT NOT NULL,
+    stok_awal FLOAT DEFAULT 0,
+    stok_masuk FLOAT DEFAULT 0,
+    UNIQUE KEY uq_wh (tgl, bahan_id)
+)");
 
 
 switch ($action) {
@@ -242,6 +367,14 @@ switch ($action) {
         echo json_encode(["status"=>"success"]);
         break;
 
+    case 'update_user_cabang':
+        $id     = (int)($input['id'] ?? 0);
+        $cabang = $conn->real_escape_string($input['cabang'] ?? '');
+        echo $conn->query("UPDATE users SET cabang='$cabang' WHERE id=$id")
+            ? json_encode(["status"=>"success"])
+            : json_encode(["status"=>"error","message"=>$conn->error]);
+        break;
+
     // ── PRODUK ────────────────────────────────────────
     case 'get_produk':
         $res = $conn->query("SELECT * FROM produk ORDER BY urutan ASC, nama ASC");
@@ -296,7 +429,7 @@ switch ($action) {
 
     case 'get_history':
         $res = $conn->query("SELECT * FROM transaksi ORDER BY waktu DESC");
-        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        echo json_encode($res ? $res->fetch_all(MYSQLI_ASSOC) : []);
         break;
 
     case 'del_transaksi':
@@ -599,6 +732,29 @@ switch ($action) {
         $conn->query("DELETE FROM hpp_produk_detail WHERE hpp_id=$id");
         $conn->query("DELETE FROM hpp_produk WHERE id=$id");
         echo json_encode(["status"=>"success"]);
+        break;
+
+    // ── WAREHOUSE STOK ────────────────────────────────
+    case 'get_warehouse_stok':
+        $tgl = $conn->real_escape_string($_GET['tgl'] ?? date('Y-m-d'));
+        $res = $conn->query("SELECT bahan_id, stok_awal, stok_masuk FROM warehouse_stok WHERE tgl='$tgl'");
+        echo json_encode($res ? $res->fetch_all(MYSQLI_ASSOC) : []);
+        break;
+
+    case 'save_warehouse_stok':
+        $tgl   = $conn->real_escape_string($input['tgl'] ?? date('Y-m-d'));
+        $items = $input['items'] ?? [];
+        $ok    = true;
+        foreach ($items as $item) {
+            $bid  = (int)($item['bahan_id'] ?? 0);
+            $awal = (float)($item['stok_awal'] ?? 0);
+            if ($bid <= 0) continue;
+            $r = $conn->query("INSERT INTO warehouse_stok (tgl, bahan_id, stok_awal)
+                VALUES ('$tgl', $bid, $awal)
+                ON DUPLICATE KEY UPDATE stok_awal=$awal");
+            if (!$r) $ok = false;
+        }
+        echo json_encode($ok ? ["status"=>"success"] : ["status"=>"error","message"=>$conn->error]);
         break;
 
     // ─────────────────────────────────────────────────
