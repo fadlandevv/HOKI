@@ -465,8 +465,8 @@ async function renderHistory() {
     try {
         const res = await fetch('api.php?action=get_history');
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        const raw     = await res.json();
-        const history = Array.isArray(raw) ? raw : [];
+        const raw          = await res.json();
+        const transaksiList = Array.isArray(raw) ? raw : [];
 
         const tglMulai      = document.getElementById('tglMulai').value;
         const tglSelesai    = document.getElementById('tglSelesai').value;
@@ -477,7 +477,7 @@ async function renderHistory() {
         tbody.innerHTML = '';
         let count = 0;
 
-        history.forEach(t => {
+        transaksiList.forEach(t => {
             const waktuStr  = t.waktu || '';
             const dateTrx   = waktuStr.split('T')[0].split(' ')[0];
             const cabangTrx = (t.cabang || '').trim();
