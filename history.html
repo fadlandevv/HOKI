@@ -497,7 +497,7 @@ async function renderHistory() {
 
             let items = [];
             try { const p = JSON.parse(t.items_json || '[]'); items = Array.isArray(p) ? p : []; } catch(_) { items = []; }
-            const namaItems = items.map(it => it.nama || it.name || '').filter(Boolean).join(', ') || '—';
+            const namaItems = (items || []).map(it => (it && (it.nama || it.name)) || '').filter(Boolean).join(', ') || '—';
             const canDelete = ['VIP','Owner'].includes(role);
 
             tbody.innerHTML += `<tr>
