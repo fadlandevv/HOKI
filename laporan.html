@@ -191,20 +191,11 @@
     /* ── RESPONSIVE MOBILE ── */
     @media (max-width: 844px) {
 
-        .grid-stats {
-            grid-template-columns: 1fr;
-        }
-
-        .filter-grid {
-            grid-template-columns: 1fr 1fr;
-        }
-
-        .input-group select[multiple] {
-            height: 80px;
-        }
+        .grid-stats {grid-template-columns: 1fr;}
+        .filter-grid {grid-template-columns: 1fr 1fr;}
+        .input-group select[multiple] {height: 80px;}
         
     }
-
 
     @media print {
         .sidebar, .bottom-nav, .filter-bar { display: none !important; }
@@ -266,7 +257,7 @@
         </div>
 
         <!-- FILTER -->
-        <div class="filter-box">
+        <div class="filter-bar">
             <div class="filter-grid">
 
                 <!-- Cabang custom dropdown -->
@@ -316,9 +307,9 @@
                 </div>
 
             </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="filter-actions" style="margin-top:12px;">
                 <button class="btn-reset" onclick="resetFilter()">Reset Filter</button>
-                <button class="btn-cetak" onclick="window.print()">Cetak PDF</button>
+                <button class="btn-cetak" onclick="window.print()">🖨️ Cetak PDF</button>
             </div>
         </div>
 
@@ -507,8 +498,6 @@ function toggleNavGroup(id) {
     if (ti) ti.textContent = open ? '+' : '−';
     localStorage.setItem('navGroup_' + id, open ? '0' : '1');
 }
-
-
 
 /* ── CLOCK ── */
 function updateClock() {
