@@ -104,6 +104,7 @@
         width: 100%;
         border-collapse: collapse;
         font-size: 11px;
+        min-width: 600px;
     }
 
     .laporan-table th {
@@ -115,6 +116,9 @@
         font-size: 10px;
         letter-spacing: 0.5px;
         border: 1px solid #444;
+        position: sticky;
+        top: 0;
+        z-index: 10;
     }
 
     .laporan-table td {
@@ -124,6 +128,7 @@
         color: var(--text);
         font-family: 'DM Mono', monospace;
         font-size: 11px;
+        white-space: nowrap;
     }
 
     .laporan-table .text-left {
