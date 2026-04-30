@@ -1333,6 +1333,224 @@
    @media (max-width: 480px) {
        .grid-rekap { grid-template-columns: 1fr; }
        .grid-stats { grid-template-columns: 1fr; }
+       
+       /* ── COMPREHENSIVE MOBILE STYLES ── */
+       
+       /* Filter & Input */
+       .filter-grid {
+           grid-template-columns: 1fr !important;
+           gap: 10px !important;
+       }
+       
+       .filter-box {
+           padding: 14px;
+           margin-bottom: 10px;
+           border-radius: 12px;
+       }
+       
+       .input-group {
+           width: 100%;
+       }
+       
+       .input-group label {
+           font-size: 9px;
+           margin-bottom: 6px;
+       }
+       
+       .input-group input,
+       .input-group select,
+       .input-group textarea {
+           width: 100%;
+           font-size: 14px;
+           padding: 10px;
+       }
+       
+       /* Stat Cards */
+       .stat-card {
+           padding: 14px;
+           margin-bottom: 10px;
+           border-radius: 12px;
+       }
+       
+       .stat-card h3 {
+           font-size: 9px;
+           margin-bottom: 6px;
+       }
+       
+       .stat-card p {
+           font-size: 16px;
+           margin: 8px 0 0;
+           font-weight: 700;
+       }
+       
+       /* White Box Container */
+       .white-box {
+           padding: 12px;
+           margin-bottom: 10px;
+           border-radius: 12px;
+       }
+       
+       .white-box h4 {
+           font-size: 12px;
+           margin-bottom: 10px;
+           padding-left: 8px;
+           border-left-width: 2px;
+       }
+       
+       /* TABLE MOBILE HANDLING */
+       table {
+           font-size: 11px;
+           width: 100%;
+           min-width: 100%;
+       }
+       
+       table th,
+       table td {
+           padding: 8px 6px;
+           white-space: nowrap;
+       }
+       
+       table thead {
+           position: sticky;
+           top: 0;
+           z-index: 10;
+           background: var(--surface);
+       }
+       
+       table thead th {
+           background: var(--surface-2);
+           font-size: 10px;
+           font-weight: 700;
+       }
+       
+       /* Make scrollable containers work */
+       div[style*="overflow-x: auto"],
+       .table-wrap,
+       .history-table-wrap,
+       .history-wrap {
+           overflow-x: auto !important;
+           overflow-y: hidden;
+           -webkit-overflow-scrolling: touch;
+           display: block;
+           width: 100%;
+       }
+       
+       /* Ensure table doesn't overflow */
+       .white-box > div {
+           width: 100%;
+           overflow-x: auto;
+           -webkit-overflow-scrolling: touch;
+       }
+       
+       /* Button Styling */
+       .btn-cetak,
+       .btn-reset,
+       .btn-cari,
+       .btn-hari-ini,
+       .btn-kosongkan,
+       .btn-bersihkan,
+       .btn-green,
+       .btn-dark,
+       .btn-save {
+           width: 100%;
+           padding: 10px 14px;
+           font-size: 12px;
+           min-height: 40px;
+           border-radius: 12px;
+           font-weight: 600;
+       }
+       
+       /* Flex buttons */
+       div[style*="display:flex"][style*="gap"] {
+           flex-direction: column !important;
+           align-items: stretch !important;
+       }
+       
+       /* Form Grid */
+       .form-produk .grid-input,
+       .form-belanja .grid-input,
+       .grid-input {
+           grid-template-columns: 1fr !important;
+           gap: 8px !important;
+       }
+       
+       .grid-input button {
+           grid-column: 1 / -1 !important;
+           width: 100% !important;
+       }
+       
+       /* Page Body & Header */
+       .page-body {
+           padding: 10px 10px 100px;
+       }
+       
+       .top-header {
+           padding: 0 10px;
+           height: 48px;
+       }
+       
+       .header-page-title {
+           font-size: 14px;
+           font-weight: 700;
+       }
+       
+       .clock-pill {
+           font-size: 11px;
+       }
+       
+       /* Detail Overlay */
+       #detailOverlay {
+           padding: 12px;
+       }
+       
+       .detail-container {
+           padding: 16px;
+       }
+       
+       /* Custom Select */
+       .custom-select-btn {
+           padding: 10px 12px;
+           font-size: 12px;
+           border-radius: 12px;
+       }
+       
+       .custom-dropdown {
+           border-radius: 12px;
+           max-height: 50vh;
+           overflow-y: auto;
+           -webkit-overflow-scrolling: touch;
+       }
+       
+       .dropdown-item {
+           padding: 10px 12px;
+           font-size: 12px;
+       }
+       
+       /* Fixes for specific pages */
+       .grid-stok { grid-template-columns: 1fr; }
+       .grid-laporan { grid-template-columns: 1fr; }
+       .grid-dashboard { grid-template-columns: 1fr; }
+       .grid-admin { grid-template-columns: 1fr; }
+       
+       /* Typography */
+       h4 {
+           font-size: 13px;
+       }
+       
+       h3 {
+           font-size: 12px;
+       }
+       
+       /* Row Total */
+       .row-total {
+           background: #f5f5f5 !important;
+           font-weight: 700;
+       }
+       
+       .row-total td {
+           font-size: 11px;
+           padding: 10px 6px;
+       }
    }
    
    /* ── CUSTOM DROPDOWN ── */
