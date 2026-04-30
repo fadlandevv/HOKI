@@ -351,7 +351,6 @@
         .detail-meta { flex-direction: column; gap: 8px; }
     }
 
-
     /* ── INFO BAR SIMPLE ── */
     .info-bar-simple {
         background: var(--surface);
@@ -544,10 +543,12 @@
 
                     <button class="btn-add-draft" onclick="tambahKeDraft()">+ Masukkan ke Daftar</button>
 
+                    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
                     <table class="draft-table">
                         <thead><tr><th>Material</th><th>Qty</th><th>X</th></tr></thead>
                         <tbody id="tabelDraft"></tbody>
                     </table>
+                    </div>
 
                     <button class="btn-save-stok" onclick="simpanLaporanFinal()">💾 Simpan & Update Stok</button>
                 </div>
