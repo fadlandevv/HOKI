@@ -301,7 +301,7 @@ switch ($action) {
     case 'get_cabang':
     case 'get_branches':
         $res = $conn->query("SELECT id, nama_cabang FROM hoki_cabang ORDER BY nama_cabang ASC");
-        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        echo json_encode($res ? $res->fetch_all(MYSQLI_ASSOC) : []);
         break;
 
     case 'save_cabang':
@@ -323,7 +323,7 @@ switch ($action) {
     // ── ROLES ─────────────────────────────────────────
     case 'get_roles':
         $res = $conn->query("SELECT * FROM hoki_roles ORDER BY nama_role ASC");
-        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        echo json_encode($res ? $res->fetch_all(MYSQLI_ASSOC) : []);
         break;
 
     case 'save_role':
@@ -345,7 +345,7 @@ switch ($action) {
     // ── USERS ─────────────────────────────────────────
     case 'get_users':
         $res = $conn->query("SELECT * FROM users ORDER BY id DESC");
-        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        echo json_encode($res ? $res->fetch_all(MYSQLI_ASSOC) : []);
         break;
 
     case 'save_user':
@@ -378,7 +378,7 @@ switch ($action) {
     // ── PRODUK ────────────────────────────────────────
     case 'get_produk':
         $res = $conn->query("SELECT * FROM produk ORDER BY urutan ASC, nama ASC");
-        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        echo json_encode($res ? $res->fetch_all(MYSQLI_ASSOC) : []);
         break;
 
     case 'save_produk':
@@ -468,7 +468,7 @@ switch ($action) {
 
     case 'get_logs':
         $res = $conn->query("SELECT * FROM logs_login ORDER BY waktu DESC LIMIT 200");
-        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        echo json_encode($res ? $res->fetch_all(MYSQLI_ASSOC) : []);
         break;
 
     case 'clear_logs':
@@ -480,7 +480,7 @@ switch ($action) {
     // ── MASTER STOK ───────────────────────────────────
     case 'get_master_stok':
         $res = $conn->query("SELECT * FROM stok_master ORDER BY nama_item ASC");
-        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        echo json_encode($res ? $res->fetch_all(MYSQLI_ASSOC) : []);
         break;
 
     case 'save_master_stok':
@@ -510,7 +510,7 @@ switch ($action) {
             $sql = "SELECT * FROM stok_history WHERE cabang IN ($cabangList) ORDER BY waktu DESC LIMIT 50";
         }
         $res = $conn->query($sql);
-        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        echo json_encode($res ? $res->fetch_all(MYSQLI_ASSOC) : []);
         break;
 
     case 'save_laporan_stok':
@@ -543,7 +543,7 @@ switch ($action) {
             $sql = "SELECT * FROM restock_history WHERE cabang IN ($cabangList) ORDER BY id DESC LIMIT 50";
         }
         $res = $conn->query($sql);
-        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        echo json_encode($res ? $res->fetch_all(MYSQLI_ASSOC) : []);
         break;
 
     case 'save_laporan_restock':
@@ -566,7 +566,7 @@ switch ($action) {
     // ── BUKU KAS / BELANJA ────────────────────────────
     case 'get_kas_jenis':
         $res = $conn->query("SELECT nama_jenis FROM hoki_kas_jenis ORDER BY nama_jenis ASC");
-        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        echo json_encode($res ? $res->fetch_all(MYSQLI_ASSOC) : []);
         break;
 
     case 'save_kas_jenis':
@@ -593,7 +593,7 @@ switch ($action) {
             $sql = "SELECT * FROM hoki_kas_data WHERE cabang IN ($cabangList) ORDER BY waktu DESC LIMIT 100";
         }
         $res = $conn->query($sql);
-        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        echo json_encode($res ? $res->fetch_all(MYSQLI_ASSOC) : []);
         break;
 
     case 'save_kas_data':
@@ -629,7 +629,7 @@ switch ($action) {
             $sql = "SELECT * FROM laporan_settlement WHERE cabang IN ($cabangList) ORDER BY waktu DESC";
         }
         $res = $conn->query($sql);
-        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        echo json_encode($res ? $res->fetch_all(MYSQLI_ASSOC) : []);
         break;
 
     case 'save_laporan':
@@ -656,7 +656,7 @@ switch ($action) {
     // ── BAHAN BAKU ────────────────────────────────────
     case 'get_bahan_baku':
         $res = $conn->query("SELECT * FROM bahan_baku ORDER BY nama ASC");
-        echo json_encode($res->fetch_all(MYSQLI_ASSOC));
+        echo json_encode($res ? $res->fetch_all(MYSQLI_ASSOC) : []);
         break;
 
     case 'save_bahan_baku':
