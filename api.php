@@ -102,6 +102,17 @@ if ($isDev) {
         case 'save_warehouse_stok':
             echo json_encode(['status'=>'success']);
             break;
+        case 'get_warehouse_ledger':
+            $sku = $_GET['sku'] ?? 'DMS';
+            echo json_encode([
+                ['tgl'=>date('Y-m-d'),'stok_awal'=>100,'masuk'=>50,'keluar'=>30,'sisa'=>120],
+                ['tgl'=>date('Y-m-d',strtotime('-1 day')),'stok_awal'=>80,'masuk'=>50,'keluar'=>30,'sisa'=>100],
+                ['tgl'=>date('Y-m-d',strtotime('-2 days')),'stok_awal'=>0,'masuk'=>80,'keluar'=>0,'sisa'=>80],
+            ]);
+            break;
+        case 'save_warehouse_masuk':
+            echo json_encode(['status'=>'success']);
+            break;
         case 'save_bahan_baku': case 'del_bahan_baku':
         case 'save_hpp_produk': case 'del_hpp_produk':
             echo json_encode(['status'=>'success']);
@@ -249,6 +260,14 @@ $conn->query("CREATE TABLE IF NOT EXISTS warehouse_stok (
     stok_awal FLOAT DEFAULT 0,
     stok_masuk FLOAT DEFAULT 0,
     UNIQUE KEY uq_wh (tgl, bahan_id)
+)");
+$conn->query("CREATE TABLE IF NOT EXISTS warehouse_ledger (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tgl DATE NOT NULL,
+    sku VARCHAR(50) NOT NULL,
+    masuk FLOAT DEFAULT 0,
+    catatan VARCHAR(255) DEFAULT '',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )");
 
 
@@ -754,6 +773,56 @@ switch ($action) {
             if (!$r) $ok = false;
         }
         echo json_encode($ok ? ["status"=>"success"] : ["status"=>"error","message"=>$conn->error]);
+        break;
+
+    // ── WAREHOUSE LEDGER ──────────────────────────────
+    case 'get_warehouse_ledger':
+        $sku = $conn->real_escape_string($_GET['sku'] ?? '');
+        if (!$sku) { echo json_encode([]); break; }
+
+        // masuk per hari
+        $masukMap = [];
+        $mr = $conn->query("SELECT DATE(created_at) as tgl, SUM(masuk) as total FROM warehouse_ledger WHERE sku='$sku' GROUP BY DATE(created_at)");
+        if ($mr) foreach ($mr->fetch_all(MYSQLI_ASSOC) as $r) {
+            $masukMap[$r['tgl']] = (float)$r['total'];
+        }
+
+        // keluar dari transaksi (items_json)
+        $keluarMap = [];
+        $tr = $conn->query("SELECT DATE(waktu) as tgl, items_json FROM transaksi WHERE items_json IS NOT NULL");
+        if ($tr) foreach ($tr->fetch_all(MYSQLI_ASSOC) as $t) {
+            $items = json_decode($t['items_json'] ?? '[]', true);
+            if (!is_array($items)) continue;
+            foreach ($items as $item) {
+                if (($item['sku'] ?? '') === $sku) {
+                    $keluarMap[$t['tgl']] = ($keluarMap[$t['tgl']] ?? 0) + (int)($item['qty'] ?? 1);
+                }
+            }
+        }
+
+        $allDates = array_unique(array_merge(array_keys($masukMap), array_keys($keluarMap)));
+        sort($allDates);
+
+        $sisa = 0;
+        $rows = [];
+        foreach ($allDates as $tgl) {
+            $masuk  = $masukMap[$tgl] ?? 0;
+            $keluar = $keluarMap[$tgl] ?? 0;
+            $awal   = $sisa;
+            $sisa   = $awal + $masuk - $keluar;
+            $rows[] = ['tgl'=>$tgl,'stok_awal'=>$awal,'masuk'=>$masuk,'keluar'=>$keluar,'sisa'=>$sisa];
+        }
+        echo json_encode(array_reverse($rows));
+        break;
+
+    case 'save_warehouse_masuk':
+        $sku     = $conn->real_escape_string($input['sku']     ?? '');
+        $masuk   = (float)($input['masuk']   ?? 0);
+        $catatan = $conn->real_escape_string($input['catatan'] ?? '');
+        $tgl     = $conn->real_escape_string($input['tgl']     ?? date('Y-m-d'));
+        if (!$sku || $masuk <= 0) { echo json_encode(['status'=>'error','message'=>'Data tidak valid']); break; }
+        $ok = $conn->query("INSERT INTO warehouse_ledger (tgl, sku, masuk, catatan) VALUES ('$tgl','$sku',$masuk,'$catatan')");
+        echo json_encode($ok ? ['status'=>'success'] : ['status'=>'error','message'=>$conn->error]);
         break;
 
     // ─────────────────────────────────────────────────
