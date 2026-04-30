@@ -4,219 +4,277 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hoki POS - Warehouse</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥟</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥟</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
 
-    /* ── SECTION HEADERS ── */
-    .wh-section-title {
-        font-size: 11px;
+    /* ── LAYOUT ── */
+    .wh-layout {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    /* ── PRODUCT PANEL (LEFT) ── */
+    .wh-product-panel {
+        width: 200px;
+        flex-shrink: 0;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        box-shadow: var(--sh-sm);
+        overflow: hidden;
+    }
+
+    .wh-panel-title {
+        padding: 10px 14px;
+        font-size: 10px;
         font-weight: 700;
         color: var(--text-muted);
         text-transform: uppercase;
-        letter-spacing: 1.2px;
-        margin-bottom: 10px;
-        padding-bottom: 8px;
+        letter-spacing: 0.8px;
         border-bottom: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+        background: var(--surface-2);
     }
 
-    /* ── PRODUCT CARDS GRID ── */
-    .wh-product-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-        gap: 10px;
-        margin-bottom: 12px;
-    }
-
-    .wh-product-card {
-        background: var(--surface);
-        border: 1.5px solid var(--border);
-        border-radius: var(--r-lg);
-        padding: 14px;
-        box-shadow: var(--sh-sm);
-        transition: border-color 0.15s;
-    }
-
-    .wh-product-card.has-sales {
-        border-color: var(--red-border);
-    }
-
-    .wh-card-header {
+    .wh-product-item {
         display: flex;
         align-items: center;
         gap: 10px;
-        margin-bottom: 10px;
+        padding: 10px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid var(--border);
+        transition: background 0.12s;
+        border-left: 3px solid transparent;
     }
-
-    .wh-card-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
+    .wh-product-item:last-child { border-bottom: none; }
+    .wh-product-item:hover { background: var(--surface-2); }
+    .wh-product-item.active {
         background: var(--red-soft);
-        border: 1px solid var(--red-border);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
+        border-left-color: var(--red);
+    }
+
+    .wh-prod-icon {
+        font-size: 20px;
+        width: 32px;
+        text-align: center;
         flex-shrink: 0;
     }
 
-    .wh-card-icon.active {
-        background: var(--red);
-    }
-
-    .wh-card-name {
-        font-size: 13px;
-        font-weight: 700;
+    .wh-prod-info { flex: 1; min-width: 0; }
+    .wh-prod-name {
+        font-size: 12px;
+        font-weight: 600;
         color: var(--text);
-        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
-
-    .wh-card-sku {
-        font-size: 10px;
+    .wh-prod-sku {
         font-family: 'DM Mono', monospace;
+        font-size: 10px;
         color: var(--red);
         letter-spacing: 0.5px;
     }
 
-    .wh-sold-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        padding: 5px 10px;
-        border-radius: var(--r-sm);
-        font-size: 12px;
+    .wh-sisa-pill {
+        font-family: 'DM Mono', monospace;
+        font-size: 10px;
         font-weight: 700;
-        margin-bottom: 10px;
-        width: 100%;
-        box-sizing: border-box;
+        padding: 2px 7px;
+        border-radius: 99px;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
+    .wh-sisa-pill.ok     { background: #dcfce7; color: #16a34a; }
+    .wh-sisa-pill.warn   { background: #fef9c3; color: #ca8a04; }
+    .wh-sisa-pill.danger { background: var(--red-soft); color: var(--red); }
+    .wh-sisa-pill.none   { background: var(--surface-2); color: var(--text-light); border: 1px solid var(--border); }
 
-    .wh-sold-badge.sold {
-        background: var(--red);
-        color: white;
-    }
-
-    .wh-sold-badge.zero {
-        background: var(--surface-2);
-        color: var(--text-muted);
-        border: 1px solid var(--border);
-    }
-
-    .wh-bahan-list {
+    /* ── LEDGER PANEL (RIGHT) ── */
+    .wh-ledger-panel {
+        flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 12px;
+        min-width: 0;
     }
 
-    .wh-bahan-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 11px;
-        color: var(--text-muted);
-        padding: 3px 0;
-        border-bottom: 1px dashed var(--border);
-    }
-
-    .wh-bahan-row:last-child {
-        border-bottom: none;
-    }
-
-    .wh-bahan-qty {
-        font-family: 'DM Mono', monospace;
-        font-size: 11px;
-        font-weight: 600;
-        color: var(--text);
-        white-space: nowrap;
-    }
-
-    .wh-no-hpp {
-        font-size: 11px;
+    .wh-empty-pick {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 60px 20px;
+        text-align: center;
         color: var(--text-light);
-        font-style: italic;
     }
+    .wh-empty-pick .icon { font-size: 40px; display: block; margin-bottom: 10px; }
+    .wh-empty-pick p { font-size: 13px; }
 
-    /* ── SUMMARY TABLE ── */
-    .wh-summary-wrap {
+    /* ── LEDGER HEADER CARD ── */
+    .wh-ledger-header {
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: var(--r-lg);
         box-shadow: var(--sh-sm);
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .wh-hdr-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--red);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+    }
+
+    .wh-hdr-name  { font-size: 15px; font-weight: 700; color: var(--text); }
+    .wh-hdr-sku   { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--red); }
+
+    .wh-hdr-stok {
+        margin-left: auto;
+        text-align: right;
+        flex-shrink: 0;
+    }
+    .wh-hdr-stok-val {
+        font-family: 'DM Mono', monospace;
+        font-size: 22px;
+        font-weight: 700;
+        line-height: 1;
+    }
+    .wh-hdr-stok-val.ok     { color: #16a34a; }
+    .wh-hdr-stok-val.warn   { color: #ca8a04; }
+    .wh-hdr-stok-val.danger { color: var(--red); }
+    .wh-hdr-stok-lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
+
+    /* ── MASUK FORM CARD ── */
+    .wh-form-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        box-shadow: var(--sh-sm);
+        padding: 14px 16px;
+    }
+
+    .wh-card-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
         margin-bottom: 12px;
     }
 
-    .wh-summary-table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 520px;
+    .wh-form-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: flex-end;
     }
 
-    .wh-summary-table th {
-        background: var(--red);
-        color: white;
-        padding: 10px 14px;
-        font-size: 11px;
-        font-weight: 600;
+    .wh-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 110px;
+    }
+
+    .wh-form-group label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-muted);
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        border: none;
-        white-space: nowrap;
     }
 
-    .wh-summary-table td {
-        padding: 10px 14px;
-        border-bottom: 1px solid var(--border);
-        border-top: none;
-        border-left: none;
-        border-right: none;
-        font-size: 13px;
-        color: var(--text);
-        vertical-align: middle;
-    }
-
-    .wh-summary-table tr:last-child td {
-        border-bottom: none;
-    }
-
-    .stok-input {
-        width: 90px;
-        text-align: right;
-        font-family: 'DM Mono', monospace;
-        font-size: 12px;
-        padding: 5px 8px;
+    .wh-form-group input {
+        height: 36px;
+        padding: 0 10px;
         border: 1.5px solid var(--border);
-        border-radius: var(--r-sm);
+        border-radius: var(--r-md);
+        font-size: 13px;
+        font-family: 'DM Sans', sans-serif;
         background: var(--surface);
         color: var(--text);
         outline: none;
         transition: border-color 0.15s;
     }
+    .wh-form-group input:focus { border-color: var(--red); }
 
-    .stok-input:focus {
-        border-color: var(--red);
+    /* ── LEDGER TABLE CARD ── */
+    .wh-table-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        box-shadow: var(--sh-sm);
+        overflow: hidden;
     }
 
-    .mono-val {
-        font-family: 'DM Mono', monospace;
-        font-size: 12px;
+    .wh-table-card-head {
+        padding: 10px 16px;
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface-2);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .wh-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .wh-ledger-tbl {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 480px;
+    }
+
+    .wh-ledger-tbl th {
+        background: var(--red);
+        color: white;
+        padding: 10px 14px;
+        font-size: 11px;
         font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: left;
+        white-space: nowrap;
     }
 
-    .sisa-ok     { color: var(--green); }
-    .sisa-warn   { color: var(--orange); }
-    .sisa-danger { color: var(--red); }
-    .sisa-none   { color: var(--text-light); }
+    .wh-ledger-tbl td {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+        color: var(--text);
+        vertical-align: middle;
+    }
 
-    /* ── NO DATA ── */
-    .wh-empty {
+    .wh-ledger-tbl tr:last-child td { border-bottom: none; }
+    .wh-ledger-tbl tr.latest td { background: var(--red-soft); }
+
+    .mono { font-family: 'DM Mono', monospace; font-size: 12px; }
+    .val-masuk  { color: #16a34a; font-weight: 700; }
+    .val-keluar { color: var(--red); font-weight: 700; }
+    .val-ok     { color: #16a34a; font-weight: 700; }
+    .val-warn   { color: #ca8a04; font-weight: 700; }
+    .val-danger { color: var(--red); font-weight: 700; }
+
+    .wh-empty-row td {
         text-align: center;
         padding: 40px 20px;
         color: var(--text-light);
@@ -225,15 +283,11 @@
 
     /* ── RESPONSIVE ── */
     @media (max-width: 844px) {
-        .wh-product-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @media (max-width: 480px) {
-        .wh-product-grid {
-            grid-template-columns: 1fr;
-        }
+        .wh-layout { flex-direction: column; }
+        .wh-product-panel { width: 100%; }
+        .wh-form-row { flex-direction: column; }
+        .wh-form-group { min-width: unset; width: 100%; }
+        .wh-hdr-stok { display: none; }
     }
 
     </style>
@@ -281,60 +335,87 @@
     </header>
 
     <div class="page-body">
+        <div class="wh-layout">
 
-        <!-- FILTER BAR -->
-        <div class="filter-bar">
-            <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:130px;">
-                <label for="filterDate" style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;">Tanggal</label>
-                <input type="date" id="filterDate" style="height:38px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--text);outline:none;">
+            <!-- LEFT: Product List -->
+            <div class="wh-product-panel">
+                <div class="wh-panel-title">📦 Pilih Produk</div>
+                <div id="productList">
+                    <div style="padding:20px;text-align:center;color:var(--text-light);font-size:12px;">Memuat...</div>
+                </div>
             </div>
-            <button class="btn-cari" onclick="loadWarehouse()" style="align-self:flex-end;">🔄 Refresh</button>
-            <button class="btn-simpan" id="btnSimpanStok" onclick="simpanStokAwal()" style="align-self:flex-end;">💾 Simpan Stok Awal</button>
-        </div>
 
-        <!-- LOADING STATE -->
-        <div id="loadingState" class="empty-state" style="display:none;">
-            <span class="icon">⏳</span>
-            <p>Memuat data warehouse...</p>
-        </div>
+            <!-- RIGHT: Ledger -->
+            <div class="wh-ledger-panel">
 
-        <!-- PRODUCT CARDS -->
-        <div id="sectionProduct" style="display:none;">
-            <div class="wh-section-title">
-                <span>📦 Ringkasan Terjual — Per Produk</span>
-                <span id="totalTrxLabel" style="font-size:11px;color:var(--text-light);font-weight:500;text-transform:none;letter-spacing:0;"></span>
+                <!-- Empty: belum pilih produk -->
+                <div class="wh-empty-pick" id="ledgerEmpty">
+                    <span class="icon">📋</span>
+                    <p>Pilih produk di sebelah kiri<br>untuk melihat riwayat stok</p>
+                </div>
+
+                <!-- Ledger Content -->
+                <div id="ledgerContent" style="display:none;">
+
+                    <!-- Header produk -->
+                    <div class="wh-ledger-header">
+                        <div class="wh-hdr-icon" id="hdrIcon">🥟</div>
+                        <div>
+                            <div class="wh-hdr-name" id="hdrName">—</div>
+                            <div class="wh-hdr-sku" id="hdrSku">—</div>
+                        </div>
+                        <div class="wh-hdr-stok">
+                            <div class="wh-hdr-stok-val" id="hdrSisaVal">—</div>
+                            <div class="wh-hdr-stok-lbl">Stok Saat Ini</div>
+                        </div>
+                    </div>
+
+                    <!-- Form Masuk -->
+                    <div class="wh-form-card">
+                        <div class="wh-card-label">➕ Tambah Stok Masuk</div>
+                        <div class="wh-form-row">
+                            <div class="wh-form-group">
+                                <label for="masukTgl">Tanggal</label>
+                                <input type="date" id="masukTgl">
+                            </div>
+                            <div class="wh-form-group" style="flex:1;">
+                                <label for="masukQty">Jumlah Masuk</label>
+                                <input type="number" id="masukQty" min="1" step="1" placeholder="0">
+                            </div>
+                            <div class="wh-form-group" style="flex:2;">
+                                <label for="masukCatatan">Catatan (opsional)</label>
+                                <input type="text" id="masukCatatan" placeholder="Cth: Kiriman dari pusat">
+                            </div>
+                            <button class="btn-simpan" onclick="tambahMasuk()" style="height:36px;align-self:flex-end;white-space:nowrap;">💾 Simpan</button>
+                        </div>
+                    </div>
+
+                    <!-- Ledger Table -->
+                    <div class="wh-table-card">
+                        <div class="wh-table-card-head">
+                            <span>📋 Riwayat Mutasi Stok</span>
+                            <span id="ledgerCountLabel" style="font-size:10px;color:var(--text-light);font-weight:500;text-transform:none;letter-spacing:0;"></span>
+                        </div>
+                        <div class="wh-table-wrap">
+                            <table class="wh-ledger-tbl">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Stok Awal</th>
+                                        <th>Masuk</th>
+                                        <th>Keluar (Auto)</th>
+                                        <th>Sisa Stok</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ledgerTbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
             </div>
-            <div class="wh-product-grid" id="productGrid"></div>
-        </div>
 
-        <!-- BAHAN SUMMARY TABLE -->
-        <div id="sectionBahan" style="display:none;">
-            <div class="wh-section-title">
-                <span>🧂 Pemakaian & Sisa Bahan Baku</span>
-                <span style="font-size:10px;color:var(--text-light);font-weight:500;text-transform:none;letter-spacing:0;">Isi Stok Awal lalu klik Simpan</span>
-            </div>
-            <div class="wh-summary-wrap">
-                <table class="wh-summary-table">
-                    <thead>
-                        <tr>
-                            <th>Bahan Baku</th>
-                            <th>Satuan</th>
-                            <th>Stok Awal</th>
-                            <th>Terpakai Hari Ini</th>
-                            <th>Sisa</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bahanTableBody"></tbody>
-                </table>
-            </div>
         </div>
-
-        <!-- EMPTY STATE -->
-        <div id="emptyState" class="empty-state" style="display:none;">
-            <span class="icon">🏭</span>
-            <p>Belum ada data transaksi untuk tanggal ini</p>
-        </div>
-
     </div>
 </div>
 
@@ -388,13 +469,13 @@ function buildSidebar() {
     const PAGES_EXEC      = ['laporan.html','statistik.html','bahan_baku.html','hpp_produk.html','belanja.html','warehouse.html'];
     const PAGES_VIP       = ['user.html','login_history.html'];
     const inGroup = pages => pages.includes(cur);
-    const getOpen = (id, pages) => {
+    const getOpen = (id) => {
         const s = localStorage.getItem('navGroup_' + id);
         return s !== null ? s === '1' : true;
     };
     const GROUP_ICONS = { frontline:'🛒', management:'📊', executive:'📋', vip:'👑' };
     const navGroup = (id, label, items, pages) => {
-        const open      = getOpen(id, pages);
+        const open      = getOpen(id);
         const hasActive = inGroup(pages);
         const icon      = GROUP_ICONS[id] || '📁';
         return `<div class="nav-group-wrap">
@@ -436,10 +517,10 @@ function buildSidebar() {
         h += navGroup('vip', 'VIP Access', vip, PAGES_VIP);
     }
     document.getElementById('sidebarNav').innerHTML = h;
-    const name = currentUser.user || '?';
+    const name = currentUser.fullName || currentUser.user || '?';
     document.getElementById('userAvatarInitial').innerText = name.charAt(0).toUpperCase();
     document.getElementById('sidebarUserName').innerText   = name;
-    document.getElementById('sidebarUserRole').innerText   = role;
+    document.getElementById('sidebarUserRole').innerText   = currentUser.role || '—';
 }
 
 function toggleNavGroup(id) {
@@ -491,284 +572,221 @@ function buildMoreMenu() {
 function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
 function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
 
-/* ─────────────────────────────────────────────────
+/* ─────────────────────────────────────────────
    WAREHOUSE LOGIC
-───────────────────────────────────────────────── */
-
-// State global
-let warehouseState = {
-    stokAwal: {},   // { bahan_id: float }
-    terpakai: {},   // { bahan_id: float }
-    bahanMeta: {},  // { bahan_id: {nama, satuan} }
-    hppMap: {},     // { sku: [{bahan_id, nama, qty, satuan}] }
-    soldMap: {},    // { sku: {nama, qty} }
-    currentDate: ''
-};
+───────────────────────────────────────────── */
 
 const PRODUCT_ICONS = {
-    default: '🥟',
-    'DMS':'🥟', 'SIW':'🍡', 'HAK':'🫔', 'CSP':'🦶',
-    'NAS':'🍚', 'DR':'🥤', 'MIE':'🍜', 'BAK':'🍢'
+    'DMS':'🥟','SIW':'🍡','HAK':'🫔','CSP':'🦶',
+    'NAS':'🍚','DR':'🥤','MIE':'🍜','BAK':'🍢'
 };
 
 function getIcon(sku) {
-    if (!sku) return PRODUCT_ICONS.default;
-    for (const [k, v] of Object.entries(PRODUCT_ICONS)) {
-        if (sku.startsWith(k)) return v;
+    if (!sku) return '🥟';
+    for (const [k,v] of Object.entries(PRODUCT_ICONS)) {
+        if (sku.toUpperCase().startsWith(k)) return v;
     }
-    return PRODUCT_ICONS.default;
+    return '🥟';
 }
 
-async function loadWarehouse() {
-    const dateInput = document.getElementById('filterDate');
-    const date      = dateInput.value;
-    if (!date) { toast.warning('Pilih tanggal dulu!'); return; }
+function sisaClass(sisa, hasData) {
+    if (!hasData) return 'none';
+    if (sisa < 0)   return 'danger';
+    if (sisa < 10)  return 'warn';
+    return 'ok';
+}
 
-    warehouseState.currentDate = date;
+let selectedSKU  = null;
+let selectedProd = null;
+let sisaPerSKU   = {};  // { sku: sisa }
 
-    // Show loading
-    setVisible('loadingState', true);
-    setVisible('sectionProduct', false);
-    setVisible('sectionBahan', false);
-    setVisible('emptyState', false);
-
+/* Load daftar produk + sisa stok masing-masing */
+async function loadProdukList() {
     try {
-        // 1. Fetch data parallel
-        const [resTrx, resHpp, resStok] = await Promise.all([
+        const [resProd, resTrx, resMasuk] = await Promise.all([
+            fetch('api.php?action=get_produk'),
             fetch('api.php?action=get_history'),
-            fetch('api.php?action=get_hpp_produk'),
-            fetch(`api.php?action=get_warehouse_stok&tgl=${date}`)
+            fetch('api.php?action=get_warehouse_ledger&sku=__all__')
         ]);
 
-        const rawTrx  = await resTrx.json();
-        const rawHpp  = await resHpp.json();
-        const rawStok = await resStok.json();
+        const produkList = await resProd.json().catch(() => []);
+        const trxList    = await resTrx.json().catch(() => []);
 
-        const allTrx = Array.isArray(rawTrx) ? rawTrx : [];
-        const allHpp = Array.isArray(rawHpp) ? rawHpp : [];
-        const stokDB = Array.isArray(rawStok) ? rawStok : [];
-
-        // 2. Filter transaksi by date
-        let todayTrx = allTrx.filter(t => (t.waktu || '').startsWith(date));
-
-        // Jika hari ini kosong, auto-cari tanggal terakhir yang ada transaksinya
-        if (todayTrx.length === 0 && allTrx.length > 0) {
-            const lastDate = (allTrx[0].waktu || '').slice(0, 10);
-            if (lastDate && lastDate !== date) {
-                document.getElementById('filterDate').value = lastDate;
-                warehouseState.currentDate = lastDate;
-                todayTrx = allTrx.filter(t => (t.waktu || '').startsWith(lastDate));
-            }
-        }
-
-        setVisible('loadingState', false);
-
-        if (todayTrx.length === 0) {
-            setVisible('emptyState', true);
-            return;
-        }
-
-        document.getElementById('totalTrxLabel').textContent =
-            `${todayTrx.length} transaksi`;
-
-        // 3. Aggregate sold qty per SKU
-        const soldMap = {};
-        todayTrx.forEach(t => {
+        // Hitung keluar per SKU dari semua transaksi
+        const keluarPerSKU = {};
+        (Array.isArray(trxList) ? trxList : []).forEach(t => {
             let items = [];
             try { const p = JSON.parse(t.items_json || '[]'); items = Array.isArray(p) ? p : []; } catch(_) {}
             items.forEach(item => {
-                const sku  = item.sku  || '';
-                const nama = item.nama || sku;
-                if (!soldMap[sku]) soldMap[sku] = { nama, sku, qty: 0 };
-                soldMap[sku].qty += (parseInt(item.qty) || 1);
+                const sku = item.sku || '';
+                if (sku) keluarPerSKU[sku] = (keluarPerSKU[sku] || 0) + (parseInt(item.qty) || 1);
             });
         });
-        warehouseState.soldMap = soldMap;
 
-        // 4. Build HPP map: sku → [{bahan_id, nama, qty, satuan}]
-        const hppMap = {};
-        allHpp.forEach(h => {
-            let detail = [];
-            try { detail = JSON.parse(h.detail_json || '[]'); } catch(_) {}
-            if (detail && detail.length > 0) {
-                hppMap[h.sku] = detail.map(d => ({
-                    bahan_id: d.bahan_id,
-                    nama:     d.nama     || '?',
-                    satuan:   d.satuan   || '',
-                    qty:      parseFloat(d.qty) || 0
-                }));
-            }
-        });
-        warehouseState.hppMap = hppMap;
+        // Hitung masuk per SKU (fetch individually per produk — approximation via all ledger)
+        // sisaPerSKU akan diupdate saat user klik produk; untuk list tampilkan estimasi
+        const masukPerSKU = {};
+        // (akan diisi saat loadLedger per SKU)
 
-        // 5. Calculate total bahan terpakai
-        const terpakai = {};
-        const bahanMeta = {};
-        Object.entries(soldMap).forEach(([sku, s]) => {
-            const recipe = hppMap[sku];
-            if (!recipe) return;
-            recipe.forEach(b => {
-                if (!bahanMeta[b.bahan_id]) bahanMeta[b.bahan_id] = { nama: b.nama, satuan: b.satuan };
-                terpakai[b.bahan_id] = (terpakai[b.bahan_id] || 0) + (b.qty * s.qty);
-            });
-        });
-        warehouseState.terpakai  = terpakai;
-        warehouseState.bahanMeta = bahanMeta;
+        const list = document.getElementById('productList');
+        const prods = Array.isArray(produkList) ? produkList : [];
 
-        // 6. Load saved stok awal
-        const stokAwal = {};
-        stokDB.forEach(s => { stokAwal[s.bahan_id] = parseFloat(s.stok_awal) || 0; });
-        warehouseState.stokAwal = stokAwal;
-
-        // 7. Render
-        renderProductCards(soldMap, hppMap);
-        renderBahanTable(terpakai, bahanMeta, stokAwal);
-
-        setVisible('sectionProduct', true);
-        setVisible('sectionBahan', Object.keys(terpakai).length > 0);
-
-    } catch(e) {
-        console.error('loadWarehouse:', e);
-        setVisible('loadingState', false);
-        toast.error('Gagal memuat data warehouse!');
-    }
-}
-
-function renderProductCards(soldMap, hppMap) {
-    const grid = document.getElementById('productGrid');
-    grid.innerHTML = '';
-
-    if (Object.keys(soldMap).length === 0) {
-        grid.innerHTML = `<div class="wh-empty" style="grid-column:1/-1;">Tidak ada produk terjual</div>`;
-        return;
-    }
-
-    // Sort: sold first, then zero
-    const entries = Object.entries(soldMap).sort((a,b) => b[1].qty - a[1].qty);
-
-    entries.forEach(([sku, s]) => {
-        const hasSales = s.qty > 0;
-        const recipe   = hppMap[sku];
-        const icon     = getIcon(sku);
-
-        let bahanHTML = '';
-        if (recipe && recipe.length > 0 && hasSales) {
-            bahanHTML = `<div class="wh-bahan-list">` +
-                recipe.map(b => {
-                    const total = (b.qty * s.qty).toFixed(1).replace(/\.0$/, '');
-                    return `<div class="wh-bahan-row">
-                        <span>${b.nama}</span>
-                        <span class="wh-bahan-qty">${total} ${b.satuan}</span>
-                    </div>`;
-                }).join('') +
-            `</div>`;
-        } else if (!recipe) {
-            bahanHTML = `<span class="wh-no-hpp">Belum ada resep HPP</span>`;
+        if (prods.length === 0) {
+            list.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-light);font-size:12px;">Belum ada produk.<br>Tambah di menu Produk.</div>';
+            return;
         }
 
-        grid.innerHTML += `
-            <div class="wh-product-card ${hasSales ? 'has-sales' : ''}">
-                <div class="wh-card-header">
-                    <div class="wh-card-icon ${hasSales ? 'active' : ''}">${icon}</div>
-                    <div>
-                        <div class="wh-card-name">${s.nama}</div>
-                        <div class="wh-card-sku">${sku}</div>
-                    </div>
+        list.innerHTML = prods.map(p => {
+            const icon = getIcon(p.sku);
+            return `<div class="wh-product-item" id="prod-item-${p.sku}" onclick="selectProduk(${JSON.stringify(JSON.stringify(p))})">
+                <span class="wh-prod-icon">${icon}</span>
+                <div class="wh-prod-info">
+                    <div class="wh-prod-name">${p.nama}</div>
+                    <div class="wh-prod-sku">${p.sku || '—'}</div>
                 </div>
-                <div class="wh-sold-badge ${hasSales ? 'sold' : 'zero'}">
-                    🛒 Terjual: <b>${s.qty} porsi</b>
-                </div>
-                ${bahanHTML}
+                <span class="wh-sisa-pill none" id="pill-${p.sku}">—</span>
             </div>`;
-    });
-}
+        }).join('');
 
-function renderBahanTable(terpakai, bahanMeta, stokAwal) {
-    const tbody = document.getElementById('bahanTableBody');
-    tbody.innerHTML = '';
+        // Load sisa untuk setiap produk secara paralel
+        prods.forEach(p => { if (p.sku) refreshSisaPill(p.sku); });
 
-    const entries = Object.entries(bahanMeta);
-    if (entries.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-light);font-size:12px;">Tidak ada data bahan — pastikan HPP Produk sudah diisi.</td></tr>`;
-        return;
-    }
-
-    entries.sort((a,b) => a[1].nama.localeCompare(b[1].nama)).forEach(([bid, meta]) => {
-        const awal      = stokAwal[bid] || 0;
-        const pakai     = parseFloat((terpakai[bid] || 0).toFixed(2));
-        const sisa      = awal - pakai;
-        const sisaClass = awal === 0 ? 'sisa-none'
-                        : sisa < 0   ? 'sisa-danger'
-                        : sisa < (awal * 0.2) ? 'sisa-warn'
-                        : 'sisa-ok';
-        const sisaText  = awal === 0 ? '—' : `${sisa.toFixed(1)} ${meta.satuan}`;
-
-        tbody.innerHTML += `
-            <tr>
-                <td><b>${meta.nama}</b></td>
-                <td style="color:var(--text-muted);font-size:12px;">${meta.satuan}</td>
-                <td>
-                    <input class="stok-input" type="number" min="0" step="0.5"
-                        id="stok_${bid}"
-                        value="${awal > 0 ? awal : ''}"
-                        placeholder="0"
-                        data-bahan-id="${bid}"
-                        onchange="recalcSisa(${bid}, ${pakai}, '${meta.satuan}')">
-                </td>
-                <td><span class="mono-val" style="color:var(--red);">${pakai} ${meta.satuan}</span></td>
-                <td><span class="mono-val ${sisaClass}" id="sisa_${bid}">${sisaText}</span></td>
-            </tr>`;
-    });
-}
-
-function recalcSisa(bahanId, pakai, satuan) {
-    const input = document.getElementById(`stok_${bahanId}`);
-    const sisa  = document.getElementById(`sisa_${bahanId}`);
-    const awal  = parseFloat(input.value) || 0;
-    const s     = awal - pakai;
-
-    warehouseState.stokAwal[bahanId] = awal;
-
-    if (awal === 0) {
-        sisa.textContent = '—';
-        sisa.className   = 'mono-val sisa-none';
-    } else {
-        sisa.textContent = `${s.toFixed(1)} ${satuan}`;
-        sisa.className   = `mono-val ${s < 0 ? 'sisa-danger' : s < (awal * 0.2) ? 'sisa-warn' : 'sisa-ok'}`;
+    } catch(e) {
+        console.error('loadProdukList:', e);
+        document.getElementById('productList').innerHTML =
+            '<div style="padding:16px;color:var(--red);font-size:12px;">Gagal memuat produk.</div>';
     }
 }
 
-async function simpanStokAwal() {
-    const date = warehouseState.currentDate;
-    if (!date) { toast.warning('Load data dulu!'); return; }
+async function refreshSisaPill(sku) {
+    try {
+        const res  = await fetch(`api.php?action=get_warehouse_ledger&sku=${encodeURIComponent(sku)}`);
+        const rows = await res.json().catch(() => []);
+        const list = Array.isArray(rows) ? rows : [];
+        const sisa = list.length > 0 ? list[0].sisa : 0;
+        sisaPerSKU[sku] = sisa;
 
-    const inputs = document.querySelectorAll('.stok-input');
-    const items  = [];
-    inputs.forEach(inp => {
-        const bid = parseInt(inp.dataset.bahanId);
-        const val = parseFloat(inp.value) || 0;
-        items.push({ bahan_id: bid, stok_awal: val });
-    });
+        const pill = document.getElementById(`pill-${sku}`);
+        if (!pill) return;
+        const cls = list.length === 0 ? 'none' : sisaClass(sisa, true);
+        pill.className = `wh-sisa-pill ${cls}`;
+        pill.textContent = list.length === 0 ? '—' : sisa;
+    } catch(_) {}
+}
+
+function selectProduk(jsonStr) {
+    const p = JSON.parse(jsonStr);
+    selectedSKU  = p.sku;
+    selectedProd = p;
+
+    // Update active state
+    document.querySelectorAll('.wh-product-item').forEach(el => el.classList.remove('active'));
+    const item = document.getElementById(`prod-item-${p.sku}`);
+    if (item) item.classList.add('active');
+
+    // Show ledger
+    document.getElementById('ledgerEmpty').style.display   = 'none';
+    document.getElementById('ledgerContent').style.display = '';
+
+    // Set header
+    const icon = getIcon(p.sku);
+    document.getElementById('hdrIcon').textContent = icon;
+    document.getElementById('hdrName').textContent = p.nama;
+    document.getElementById('hdrSku').textContent  = p.sku;
+
+    // Default tanggal masuk = hari ini
+    document.getElementById('masukTgl').value = new Date().toISOString().split('T')[0];
+
+    loadLedger(p.sku);
+}
+
+async function loadLedger(sku) {
+    const tbody = document.getElementById('ledgerTbody');
+    tbody.innerHTML = `<tr class="wh-empty-row"><td colspan="5">⏳ Memuat...</td></tr>`;
 
     try {
-        const res   = await fetch('api.php?action=save_warehouse_stok', {
+        const res  = await fetch(`api.php?action=get_warehouse_ledger&sku=${encodeURIComponent(sku)}`);
+        const rows = await res.json().catch(() => []);
+        const list = Array.isArray(rows) ? rows : [];
+
+        // Update header stok
+        const sisa = list.length > 0 ? list[0].sisa : 0;
+        sisaPerSKU[sku] = sisa;
+        const cls  = list.length === 0 ? '' : sisaClass(sisa, true);
+        const sisaEl = document.getElementById('hdrSisaVal');
+        sisaEl.textContent  = list.length === 0 ? '—' : sisa;
+        sisaEl.className    = `wh-hdr-stok-val ${cls}`;
+
+        // Update pill in list
+        const pill = document.getElementById(`pill-${sku}`);
+        if (pill) {
+            pill.className   = `wh-sisa-pill ${list.length === 0 ? 'none' : cls}`;
+            pill.textContent = list.length === 0 ? '—' : sisa;
+        }
+
+        document.getElementById('ledgerCountLabel').textContent =
+            list.length > 0 ? `${list.length} entri` : '';
+
+        if (list.length === 0) {
+            tbody.innerHTML = `<tr class="wh-empty-row"><td colspan="5">📋 Belum ada riwayat stok.<br>Tambahkan stok masuk pertama di atas.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = list.map((r, i) => {
+            const tgl    = r.tgl || '—';
+            const awal   = parseFloat(r.stok_awal || 0);
+            const masuk  = parseFloat(r.masuk  || 0);
+            const keluar = parseFloat(r.keluar || 0);
+            const s      = parseFloat(r.sisa   || 0);
+            const sc     = sisaClass(s, true);
+            const isLatest = i === 0;
+
+            return `<tr${isLatest ? ' class="latest"' : ''}>
+                <td>
+                    <span class="mono" style="font-size:12px;">${tgl}</span>
+                    ${isLatest ? '<span style="margin-left:6px;font-size:10px;background:var(--red);color:white;padding:1px 6px;border-radius:99px;">Terbaru</span>' : ''}
+                </td>
+                <td><span class="mono">${awal}</span></td>
+                <td><span class="mono ${masuk > 0 ? 'val-masuk' : ''}">${masuk > 0 ? '+' + masuk : '—'}</span></td>
+                <td><span class="mono ${keluar > 0 ? 'val-keluar' : ''}">${keluar > 0 ? '-' + keluar : '—'}</span></td>
+                <td><span class="mono val-${sc}">${s}</span></td>
+            </tr>`;
+        }).join('');
+
+    } catch(e) {
+        console.error('loadLedger:', e);
+        tbody.innerHTML = `<tr class="wh-empty-row"><td colspan="5">⚠️ Gagal memuat data.</td></tr>`;
+    }
+}
+
+async function tambahMasuk() {
+    if (!selectedSKU) return toast.warning('Pilih produk dulu!');
+
+    const tgl     = document.getElementById('masukTgl').value;
+    const qty     = parseFloat(document.getElementById('masukQty').value) || 0;
+    const catatan = document.getElementById('masukCatatan').value.trim();
+
+    if (!tgl)    return toast.warning('Tanggal wajib diisi!');
+    if (qty <= 0) return toast.warning('Jumlah masuk harus lebih dari 0!');
+
+    try {
+        const res   = await fetch('api.php?action=save_warehouse_masuk', {
             method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ tgl: date, items })
+            headers: {'Content-Type':'application/json'},
+            body:    JSON.stringify({ sku: selectedSKU, tgl, masuk: qty, catatan })
         });
         const hasil = await res.json();
         if (hasil.status === 'success') {
-            toast.success('Stok awal berhasil disimpan!');
+            toast.success(`Stok masuk +${qty} berhasil disimpan!`);
+            document.getElementById('masukQty').value     = '';
+            document.getElementById('masukCatatan').value = '';
+            loadLedger(selectedSKU);
         } else {
-            toast.error('Gagal menyimpan: ' + (hasil.message || 'error'));
+            toast.error('Gagal: ' + (hasil.message || 'error'));
         }
     } catch(e) {
         toast.error('Gagal koneksi server!');
     }
-}
-
-function setVisible(id, show) {
-    document.getElementById(id).style.display = show ? '' : 'none';
 }
 
 async function logout() {
@@ -783,18 +801,13 @@ async function logout() {
 window.onload = () => {
     buildSidebar();
     updateClock();
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('filterDate').value = today;
-    loadWarehouse();
-    // Auto-refresh setiap 30 detik
-    setInterval(() => {
-        if (document.getElementById('filterDate').value) loadWarehouse();
-    }, 30000);
+    loadProdukList();
+    // Auto-refresh ledger aktif setiap 30 detik
+    setInterval(() => { if (selectedSKU) loadLedger(selectedSKU); }, 30000);
 };
 </script>
 
 <script src="session.js"></script>
 <script src="toast.js"></script>
-
 </body>
 </html>
