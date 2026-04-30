@@ -10,162 +10,16 @@
     <link rel="stylesheet" href="style.css">
     <style>
 
-    /* ── LAYOUT ── */
-    .wh-layout {
-        display: flex;
-        gap: 12px;
-        align-items: flex-start;
-    }
-
-    /* ── PRODUCT PANEL (LEFT) ── */
-    .wh-product-panel {
-        width: 200px;
-        flex-shrink: 0;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--r-lg);
-        box-shadow: var(--sh-sm);
-        overflow: hidden;
-    }
-
-    .wh-panel-title {
-        padding: 10px 14px;
-        font-size: 10px;
-        font-weight: 700;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        border-bottom: 1px solid var(--border);
-        background: var(--surface-2);
-    }
-
-    .wh-product-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 12px;
-        cursor: pointer;
-        border-bottom: 1px solid var(--border);
-        transition: background 0.12s;
-        border-left: 3px solid transparent;
-    }
-    .wh-product-item:last-child { border-bottom: none; }
-    .wh-product-item:hover { background: var(--surface-2); }
-    .wh-product-item.active {
-        background: var(--red-soft);
-        border-left-color: var(--red);
-    }
-
-    .wh-prod-icon {
-        font-size: 20px;
-        width: 32px;
-        text-align: center;
-        flex-shrink: 0;
-    }
-
-    .wh-prod-info { flex: 1; min-width: 0; }
-    .wh-prod-name {
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .wh-prod-sku {
-        font-family: 'DM Mono', monospace;
-        font-size: 10px;
-        color: var(--red);
-        letter-spacing: 0.5px;
-    }
-
-    .wh-sisa-pill {
-        font-family: 'DM Mono', monospace;
-        font-size: 10px;
-        font-weight: 700;
-        padding: 2px 7px;
-        border-radius: 99px;
-        white-space: nowrap;
-        flex-shrink: 0;
-    }
-    .wh-sisa-pill.ok     { background: #dcfce7; color: #16a34a; }
-    .wh-sisa-pill.warn   { background: #fef9c3; color: #ca8a04; }
-    .wh-sisa-pill.danger { background: var(--red-soft); color: var(--red); }
-    .wh-sisa-pill.none   { background: var(--surface-2); color: var(--text-light); border: 1px solid var(--border); }
-
-    /* ── LEDGER PANEL (RIGHT) ── */
-    .wh-ledger-panel {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        min-width: 0;
-    }
-
-    .wh-empty-pick {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--r-lg);
-        padding: 60px 20px;
-        text-align: center;
-        color: var(--text-light);
-    }
-    .wh-empty-pick .icon { font-size: 40px; display: block; margin-bottom: 10px; }
-    .wh-empty-pick p { font-size: 13px; }
-
-    /* ── LEDGER HEADER CARD ── */
-    .wh-ledger-header {
+    .wh-card {
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: var(--r-lg);
         box-shadow: var(--sh-sm);
         padding: 16px;
-        display: flex;
-        align-items: center;
-        gap: 14px;
+        margin-bottom: 12px;
     }
 
-    .wh-hdr-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        background: var(--red);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 22px;
-        flex-shrink: 0;
-    }
-
-    .wh-hdr-name  { font-size: 15px; font-weight: 700; color: var(--text); }
-    .wh-hdr-sku   { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--red); }
-
-    .wh-hdr-stok {
-        margin-left: auto;
-        text-align: right;
-        flex-shrink: 0;
-    }
-    .wh-hdr-stok-val {
-        font-family: 'DM Mono', monospace;
-        font-size: 22px;
-        font-weight: 700;
-        line-height: 1;
-    }
-    .wh-hdr-stok-val.ok     { color: #16a34a; }
-    .wh-hdr-stok-val.warn   { color: #ca8a04; }
-    .wh-hdr-stok-val.danger { color: var(--red); }
-    .wh-hdr-stok-lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
-
-    /* ── MASUK FORM CARD ── */
-    .wh-form-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--r-lg);
-        box-shadow: var(--sh-sm);
-        padding: 14px 16px;
-    }
-
-    .wh-card-label {
+    .wh-card-title {
         font-size: 10px;
         font-weight: 700;
         color: var(--text-muted);
@@ -174,6 +28,57 @@
         margin-bottom: 12px;
     }
 
+    /* Produk selector row */
+    .wh-selector-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .wh-selector-row select {
+        flex: 1;
+        min-width: 180px;
+        height: 40px;
+        padding: 0 12px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--r-md);
+        font-size: 14px;
+        font-family: 'DM Sans', sans-serif;
+        background: var(--surface);
+        color: var(--text);
+        outline: none;
+        cursor: pointer;
+        transition: border-color 0.15s;
+    }
+    .wh-selector-row select:focus { border-color: var(--red); }
+
+    .wh-sisa-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: var(--r-md);
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        white-space: nowrap;
+    }
+    .wh-sisa-badge .lbl {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+    .wh-sisa-badge .val {
+        font-family: 'DM Mono', monospace;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 1;
+    }
+    .wh-sisa-badge .val.ok     { color: #16a34a; }
+    .wh-sisa-badge .val.warn   { color: #ca8a04; }
+    .wh-sisa-badge .val.danger { color: var(--red); }
+
+    /* Form input masuk */
     .wh-form-row {
         display: flex;
         gap: 10px;
@@ -184,8 +89,7 @@
     .wh-form-group {
         display: flex;
         flex-direction: column;
-        gap: 4px;
-        min-width: 110px;
+        gap: 5px;
     }
 
     .wh-form-group label {
@@ -197,8 +101,8 @@
     }
 
     .wh-form-group input {
-        height: 36px;
-        padding: 0 10px;
+        height: 38px;
+        padding: 0 12px;
         border: 1.5px solid var(--border);
         border-radius: var(--r-md);
         font-size: 13px;
@@ -210,44 +114,22 @@
     }
     .wh-form-group input:focus { border-color: var(--red); }
 
-    /* ── LEDGER TABLE CARD ── */
-    .wh-table-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--r-lg);
-        box-shadow: var(--sh-sm);
-        overflow: hidden;
-    }
-
-    .wh-table-card-head {
-        padding: 10px 16px;
-        font-size: 10px;
-        font-weight: 700;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        border-bottom: 1px solid var(--border);
-        background: var(--surface-2);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
+    /* Table */
     .wh-table-wrap {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
 
-    .wh-ledger-tbl {
+    .wh-tbl {
         width: 100%;
         border-collapse: collapse;
-        min-width: 480px;
+        min-width: 500px;
     }
 
-    .wh-ledger-tbl th {
+    .wh-tbl thead th {
         background: var(--red);
         color: white;
-        padding: 10px 14px;
+        padding: 11px 14px;
         font-size: 11px;
         font-weight: 600;
         text-transform: uppercase;
@@ -256,16 +138,16 @@
         white-space: nowrap;
     }
 
-    .wh-ledger-tbl td {
-        padding: 10px 14px;
+    .wh-tbl tbody td {
+        padding: 11px 14px;
         border-bottom: 1px solid var(--border);
         font-size: 13px;
         color: var(--text);
         vertical-align: middle;
     }
 
-    .wh-ledger-tbl tr:last-child td { border-bottom: none; }
-    .wh-ledger-tbl tr.latest td { background: var(--red-soft); }
+    .wh-tbl tbody tr:last-child td { border-bottom: none; }
+    .wh-tbl tbody tr.latest td { background: #fff5f5; }
 
     .mono { font-family: 'DM Mono', monospace; font-size: 12px; }
     .val-masuk  { color: #16a34a; font-weight: 700; }
@@ -274,20 +156,29 @@
     .val-warn   { color: #ca8a04; font-weight: 700; }
     .val-danger { color: var(--red); font-weight: 700; }
 
-    .wh-empty-row td {
+    .wh-empty-td {
         text-align: center;
-        padding: 40px 20px;
+        padding: 40px 20px !important;
         color: var(--text-light);
         font-size: 13px;
     }
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 844px) {
-        .wh-layout { flex-direction: column; }
-        .wh-product-panel { width: 100%; }
+    .terbaru-badge {
+        display: inline-block;
+        margin-left: 6px;
+        font-size: 9px;
+        background: var(--red);
+        color: white;
+        padding: 1px 6px;
+        border-radius: 99px;
+        vertical-align: middle;
+    }
+
+    @media (max-width: 640px) {
         .wh-form-row { flex-direction: column; }
-        .wh-form-group { min-width: unset; width: 100%; }
-        .wh-hdr-stok { display: none; }
+        .wh-form-group { width: 100%; }
+        .wh-selector-row { flex-direction: column; align-items: stretch; }
+        .wh-sisa-badge { justify-content: space-between; }
     }
 
     </style>
@@ -335,87 +226,64 @@
     </header>
 
     <div class="page-body">
-        <div class="wh-layout">
 
-            <!-- LEFT: Product List -->
-            <div class="wh-product-panel">
-                <div class="wh-panel-title">📦 Pilih Produk</div>
-                <div id="productList">
-                    <div style="padding:20px;text-align:center;color:var(--text-light);font-size:12px;">Memuat...</div>
+        <!-- PILIH PRODUK + SISA STOK -->
+        <div class="wh-card">
+            <div class="wh-card-title">📦 Pilih Produk</div>
+            <div class="wh-selector-row">
+                <select id="produkSelect" onchange="onProdukChange()">
+                    <option value="">— Pilih Produk —</option>
+                </select>
+                <div class="wh-sisa-badge" id="sisaBadge" style="display:none;">
+                    <span class="lbl">Sisa Stok</span>
+                    <span class="val" id="sisaVal">—</span>
                 </div>
             </div>
-
-            <!-- RIGHT: Ledger -->
-            <div class="wh-ledger-panel">
-
-                <!-- Empty: belum pilih produk -->
-                <div class="wh-empty-pick" id="ledgerEmpty">
-                    <span class="icon">📋</span>
-                    <p>Pilih produk di sebelah kiri<br>untuk melihat riwayat stok</p>
-                </div>
-
-                <!-- Ledger Content -->
-                <div id="ledgerContent" style="display:none;">
-
-                    <!-- Header produk -->
-                    <div class="wh-ledger-header">
-                        <div class="wh-hdr-icon" id="hdrIcon">🥟</div>
-                        <div>
-                            <div class="wh-hdr-name" id="hdrName">—</div>
-                            <div class="wh-hdr-sku" id="hdrSku">—</div>
-                        </div>
-                        <div class="wh-hdr-stok">
-                            <div class="wh-hdr-stok-val" id="hdrSisaVal">—</div>
-                            <div class="wh-hdr-stok-lbl">Stok Saat Ini</div>
-                        </div>
-                    </div>
-
-                    <!-- Form Masuk -->
-                    <div class="wh-form-card">
-                        <div class="wh-card-label">➕ Tambah Stok Masuk</div>
-                        <div class="wh-form-row">
-                            <div class="wh-form-group">
-                                <label for="masukTgl">Tanggal</label>
-                                <input type="date" id="masukTgl">
-                            </div>
-                            <div class="wh-form-group" style="flex:1;">
-                                <label for="masukQty">Jumlah Masuk</label>
-                                <input type="number" id="masukQty" min="1" step="1" placeholder="0">
-                            </div>
-                            <div class="wh-form-group" style="flex:2;">
-                                <label for="masukCatatan">Catatan (opsional)</label>
-                                <input type="text" id="masukCatatan" placeholder="Cth: Kiriman dari pusat">
-                            </div>
-                            <button class="btn-simpan" onclick="tambahMasuk()" style="height:36px;align-self:flex-end;white-space:nowrap;">💾 Simpan</button>
-                        </div>
-                    </div>
-
-                    <!-- Ledger Table -->
-                    <div class="wh-table-card">
-                        <div class="wh-table-card-head">
-                            <span>📋 Riwayat Mutasi Stok</span>
-                            <span id="ledgerCountLabel" style="font-size:10px;color:var(--text-light);font-weight:500;text-transform:none;letter-spacing:0;"></span>
-                        </div>
-                        <div class="wh-table-wrap">
-                            <table class="wh-ledger-tbl">
-                                <thead>
-                                    <tr>
-                                        <th>Tanggal</th>
-                                        <th>Stok Awal</th>
-                                        <th>Masuk</th>
-                                        <th>Keluar (Auto)</th>
-                                        <th>Sisa Stok</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="ledgerTbody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
         </div>
+
+        <!-- FORM TAMBAH STOK MASUK -->
+        <div class="wh-card" id="formCard" style="display:none;">
+            <div class="wh-card-title">➕ Tambah Stok Masuk</div>
+            <div class="wh-form-row">
+                <div class="wh-form-group">
+                    <label for="masukTgl">Tanggal</label>
+                    <input type="date" id="masukTgl">
+                </div>
+                <div class="wh-form-group">
+                    <label for="masukQty">Jumlah Masuk</label>
+                    <input type="number" id="masukQty" min="1" step="1" placeholder="0" style="width:120px;">
+                </div>
+                <div class="wh-form-group" style="flex:1;min-width:160px;">
+                    <label for="masukCatatan">Catatan (opsional)</label>
+                    <input type="text" id="masukCatatan" placeholder="Cth: Kiriman dari pusat">
+                </div>
+                <button class="btn-simpan" onclick="tambahMasuk()" style="height:38px;align-self:flex-end;white-space:nowrap;">💾 Simpan</button>
+            </div>
+        </div>
+
+        <!-- TABEL LEDGER -->
+        <div class="wh-card" id="tableCard" style="display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <div class="wh-card-title" style="margin-bottom:0;">📋 Riwayat Stok</div>
+                <span id="ledgerCount" style="font-size:11px;color:var(--text-light);"></span>
+            </div>
+            <div class="wh-table-wrap">
+                <table class="wh-tbl">
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Masuk (Manual)</th>
+                            <th>Keluar (Auto Penjualan)</th>
+                            <th>Sisa Stok</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ledgerTbody">
+                        <tr><td class="wh-empty-td" colspan="4">Pilih produk untuk melihat riwayat.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -576,186 +444,104 @@ function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) do
    WAREHOUSE LOGIC
 ───────────────────────────────────────────── */
 
-const PRODUCT_ICONS = {
-    'DMS':'🥟','SIW':'🍡','HAK':'🫔','CSP':'🦶',
-    'NAS':'🍚','DR':'🥤','MIE':'🍜','BAK':'🍢'
-};
+let selectedSKU = null;
 
-function getIcon(sku) {
-    if (!sku) return '🥟';
-    for (const [k,v] of Object.entries(PRODUCT_ICONS)) {
-        if (sku.toUpperCase().startsWith(k)) return v;
-    }
-    return '🥟';
-}
-
-function sisaClass(sisa, hasData) {
-    if (!hasData) return 'none';
-    if (sisa < 0)   return 'danger';
-    if (sisa < 10)  return 'warn';
+function sisaClass(sisa) {
+    if (sisa < 0)  return 'danger';
+    if (sisa < 10) return 'warn';
     return 'ok';
 }
 
-let selectedSKU  = null;
-let selectedProd = null;
-let sisaPerSKU   = {};  // { sku: sisa }
-
-/* Load daftar produk + sisa stok masing-masing */
 async function loadProdukList() {
     try {
-        const [resProd, resTrx, resMasuk] = await Promise.all([
-            fetch('api.php?action=get_produk'),
-            fetch('api.php?action=get_history'),
-            fetch('api.php?action=get_warehouse_ledger&sku=__all__')
-        ]);
+        const res  = await fetch('api.php?action=get_produk');
+        const list = await res.json().catch(() => []);
+        const prods = Array.isArray(list) ? list : [];
 
-        const produkList = await resProd.json().catch(() => []);
-        const trxList    = await resTrx.json().catch(() => []);
-
-        // Hitung keluar per SKU dari semua transaksi
-        const keluarPerSKU = {};
-        (Array.isArray(trxList) ? trxList : []).forEach(t => {
-            let items = [];
-            try { const p = JSON.parse(t.items_json || '[]'); items = Array.isArray(p) ? p : []; } catch(_) {}
-            items.forEach(item => {
-                const sku = item.sku || '';
-                if (sku) keluarPerSKU[sku] = (keluarPerSKU[sku] || 0) + (parseInt(item.qty) || 1);
-            });
-        });
-
-        // Hitung masuk per SKU (fetch individually per produk — approximation via all ledger)
-        // sisaPerSKU akan diupdate saat user klik produk; untuk list tampilkan estimasi
-        const masukPerSKU = {};
-        // (akan diisi saat loadLedger per SKU)
-
-        const list = document.getElementById('productList');
-        const prods = Array.isArray(produkList) ? produkList : [];
-
-        if (prods.length === 0) {
-            list.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-light);font-size:12px;">Belum ada produk.<br>Tambah di menu Produk.</div>';
-            return;
-        }
-
-        list.innerHTML = prods.map(p => {
-            const icon = getIcon(p.sku);
-            return `<div class="wh-product-item" id="prod-item-${p.sku}" onclick="selectProduk(${JSON.stringify(JSON.stringify(p))})">
-                <span class="wh-prod-icon">${icon}</span>
-                <div class="wh-prod-info">
-                    <div class="wh-prod-name">${p.nama}</div>
-                    <div class="wh-prod-sku">${p.sku || '—'}</div>
-                </div>
-                <span class="wh-sisa-pill none" id="pill-${p.sku}">—</span>
-            </div>`;
-        }).join('');
-
-        // Load sisa untuk setiap produk secara paralel
-        prods.forEach(p => { if (p.sku) refreshSisaPill(p.sku); });
-
+        const sel = document.getElementById('produkSelect');
+        sel.innerHTML = '<option value="">— Pilih Produk —</option>'
+            + prods.map(p => `<option value="${p.sku}" data-nama="${p.nama}">${p.nama} (${p.sku})</option>`).join('');
     } catch(e) {
         console.error('loadProdukList:', e);
-        document.getElementById('productList').innerHTML =
-            '<div style="padding:16px;color:var(--red);font-size:12px;">Gagal memuat produk.</div>';
     }
 }
 
-async function refreshSisaPill(sku) {
-    try {
-        const res  = await fetch(`api.php?action=get_warehouse_ledger&sku=${encodeURIComponent(sku)}`);
-        const rows = await res.json().catch(() => []);
-        const list = Array.isArray(rows) ? rows : [];
-        const sisa = list.length > 0 ? list[0].sisa : 0;
-        sisaPerSKU[sku] = sisa;
+function onProdukChange() {
+    const sel = document.getElementById('produkSelect');
+    const sku = sel.value;
 
-        const pill = document.getElementById(`pill-${sku}`);
-        if (!pill) return;
-        const cls = list.length === 0 ? 'none' : sisaClass(sisa, true);
-        pill.className = `wh-sisa-pill ${cls}`;
-        pill.textContent = list.length === 0 ? '—' : sisa;
-    } catch(_) {}
-}
+    if (!sku) {
+        selectedSKU = null;
+        document.getElementById('sisaBadge').style.display = 'none';
+        document.getElementById('formCard').style.display  = 'none';
+        document.getElementById('tableCard').style.display = 'none';
+        return;
+    }
 
-function selectProduk(jsonStr) {
-    const p = JSON.parse(jsonStr);
-    selectedSKU  = p.sku;
-    selectedProd = p;
-
-    // Update active state
-    document.querySelectorAll('.wh-product-item').forEach(el => el.classList.remove('active'));
-    const item = document.getElementById(`prod-item-${p.sku}`);
-    if (item) item.classList.add('active');
-
-    // Show ledger
-    document.getElementById('ledgerEmpty').style.display   = 'none';
-    document.getElementById('ledgerContent').style.display = '';
-
-    // Set header
-    const icon = getIcon(p.sku);
-    document.getElementById('hdrIcon').textContent = icon;
-    document.getElementById('hdrName').textContent = p.nama;
-    document.getElementById('hdrSku').textContent  = p.sku;
-
-    // Default tanggal masuk = hari ini
+    selectedSKU = sku;
     document.getElementById('masukTgl').value = new Date().toISOString().split('T')[0];
+    document.getElementById('masukQty').value = '';
+    document.getElementById('masukCatatan').value = '';
 
-    loadLedger(p.sku);
+    document.getElementById('formCard').style.display  = '';
+    document.getElementById('tableCard').style.display = '';
+    document.getElementById('sisaBadge').style.display = '';
+
+    loadLedger(sku);
 }
 
 async function loadLedger(sku) {
     const tbody = document.getElementById('ledgerTbody');
-    tbody.innerHTML = `<tr class="wh-empty-row"><td colspan="5">⏳ Memuat...</td></tr>`;
+    tbody.innerHTML = `<tr><td class="wh-empty-td" colspan="4">⏳ Memuat...</td></tr>`;
 
     try {
         const res  = await fetch(`api.php?action=get_warehouse_ledger&sku=${encodeURIComponent(sku)}`);
         const rows = await res.json().catch(() => []);
         const list = Array.isArray(rows) ? rows : [];
 
-        // Update header stok
-        const sisa = list.length > 0 ? list[0].sisa : 0;
-        sisaPerSKU[sku] = sisa;
-        const cls  = list.length === 0 ? '' : sisaClass(sisa, true);
-        const sisaEl = document.getElementById('hdrSisaVal');
-        sisaEl.textContent  = list.length === 0 ? '—' : sisa;
-        sisaEl.className    = `wh-hdr-stok-val ${cls}`;
+        // Update sisa badge
+        const sisa   = list.length > 0 ? list[0].sisa : 0;
+        const cls    = list.length > 0 ? sisaClass(sisa) : '';
+        const sisaEl = document.getElementById('sisaVal');
+        sisaEl.textContent = list.length > 0 ? sisa : '—';
+        sisaEl.className   = `val ${cls}`;
 
-        // Update pill in list
-        const pill = document.getElementById(`pill-${sku}`);
-        if (pill) {
-            pill.className   = `wh-sisa-pill ${list.length === 0 ? 'none' : cls}`;
-            pill.textContent = list.length === 0 ? '—' : sisa;
-        }
-
-        document.getElementById('ledgerCountLabel').textContent =
+        document.getElementById('ledgerCount').textContent =
             list.length > 0 ? `${list.length} entri` : '';
 
         if (list.length === 0) {
-            tbody.innerHTML = `<tr class="wh-empty-row"><td colspan="5">📋 Belum ada riwayat stok.<br>Tambahkan stok masuk pertama di atas.</td></tr>`;
+            tbody.innerHTML = `<tr><td class="wh-empty-td" colspan="4">📋 Belum ada riwayat stok.<br>Tambahkan stok masuk pertama di atas.</td></tr>`;
             return;
         }
 
         tbody.innerHTML = list.map((r, i) => {
-            const tgl    = r.tgl || '—';
-            const awal   = parseFloat(r.stok_awal || 0);
+            const tgl    = r.tgl    || '—';
             const masuk  = parseFloat(r.masuk  || 0);
             const keluar = parseFloat(r.keluar || 0);
             const s      = parseFloat(r.sisa   || 0);
-            const sc     = sisaClass(s, true);
+            const sc     = sisaClass(s);
             const isLatest = i === 0;
 
             return `<tr${isLatest ? ' class="latest"' : ''}>
                 <td>
-                    <span class="mono" style="font-size:12px;">${tgl}</span>
-                    ${isLatest ? '<span style="margin-left:6px;font-size:10px;background:var(--red);color:white;padding:1px 6px;border-radius:99px;">Terbaru</span>' : ''}
+                    <span class="mono">${tgl}</span>
+                    ${isLatest ? '<span class="terbaru-badge">Terbaru</span>' : ''}
                 </td>
-                <td><span class="mono">${awal}</span></td>
-                <td><span class="mono ${masuk > 0 ? 'val-masuk' : ''}">${masuk > 0 ? '+' + masuk : '—'}</span></td>
-                <td><span class="mono ${keluar > 0 ? 'val-keluar' : ''}">${keluar > 0 ? '-' + keluar : '—'}</span></td>
-                <td><span class="mono val-${sc}">${s}</span></td>
+                <td>
+                    <span class="mono ${masuk > 0 ? 'val-masuk' : ''}">${masuk > 0 ? '+' + masuk : '—'}</span>
+                </td>
+                <td>
+                    <span class="mono ${keluar > 0 ? 'val-keluar' : ''}">${keluar > 0 ? '-' + keluar : '—'}</span>
+                </td>
+                <td>
+                    <span class="mono val-${sc}">${s}</span>
+                </td>
             </tr>`;
         }).join('');
 
     } catch(e) {
         console.error('loadLedger:', e);
-        tbody.innerHTML = `<tr class="wh-empty-row"><td colspan="5">⚠️ Gagal memuat data.</td></tr>`;
+        tbody.innerHTML = `<tr><td class="wh-empty-td" colspan="4">⚠️ Gagal memuat data.</td></tr>`;
     }
 }
 
@@ -766,7 +552,7 @@ async function tambahMasuk() {
     const qty     = parseFloat(document.getElementById('masukQty').value) || 0;
     const catatan = document.getElementById('masukCatatan').value.trim();
 
-    if (!tgl)    return toast.warning('Tanggal wajib diisi!');
+    if (!tgl)     return toast.warning('Tanggal wajib diisi!');
     if (qty <= 0) return toast.warning('Jumlah masuk harus lebih dari 0!');
 
     try {
@@ -802,7 +588,6 @@ window.onload = () => {
     buildSidebar();
     updateClock();
     loadProdukList();
-    // Auto-refresh ledger aktif setiap 30 detik
     setInterval(() => { if (selectedSKU) loadLedger(selectedSKU); }, 30000);
 };
 </script>
