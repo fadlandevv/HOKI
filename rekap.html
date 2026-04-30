@@ -93,6 +93,11 @@
         .main-content { margin: 0 !important; }
     }
 
+    .tbl-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
     @media (max-width: 844px) {
         .detail-grid { grid-template-columns: 1fr; }
     }
@@ -170,35 +175,43 @@
         <div class="detail-grid">
             <div class="card-rekap">
                 <div class="section-title" style="margin-bottom:12px;">💳 Rincian Pembayaran</div>
+                <div class="tbl-scroll">
                 <table id="tableMetode">
                     <thead><tr><th>Metode</th><th>Nominal</th></tr></thead>
                     <tbody></tbody>
                 </table>
+                </div>
             </div>
             <div class="card-rekap">
                 <div class="section-title" style="margin-bottom:12px;">🍱 Menu Terjual</div>
+                <div class="tbl-scroll">
                 <table id="tableMenu">
                     <thead><tr><th>Nama Menu</th><th>Qty</th></tr></thead>
                     <tbody></tbody>
                 </table>
+                </div>
             </div>
         </div>
 
         <!-- BREAKDOWN DIMSUM PER PRODUK -->
         <div class="card-rekap" style="margin-bottom:16px;">
             <div class="section-title" style="margin-bottom:12px;">🥟 Breakdown Dimsum Terjual per Produk</div>
+            <div class="tbl-scroll">
             <table id="tableBreakdown">
                 <thead><tr><th>Produk</th><th>Qty Porsi</th><th>Dimsum (Pcs)</th><th>Bar</th></tr></thead>
                 <tbody></tbody>
             </table>
+            </div>
         </div>
 
         <div class="card-rekap">
             <div class="section-title" style="margin-bottom:12px;">📝 Detail Pengeluaran</div>
+            <div class="tbl-scroll">
             <table id="tableDaftarExp">
                 <thead><tr><th>Nama Barang</th><th>Qty</th><th>Harga</th></tr></thead>
                 <tbody></tbody>
             </table>
+            </div>
         </div>
 
     </div>
