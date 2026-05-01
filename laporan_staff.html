@@ -239,6 +239,8 @@
         .card-header-right { align-items: flex-start; width: 100%; }
         .card-header-right input[type="date"] { width: 100%; }
         #historyTable { min-width: 500px; }
+        .btn-simpan-laporan { width: 100%; justify-content: center; }
+        .card-laporan { padding: 14px; }
     }
     /* ── INFO BAR SIMPLE ── */
     .info-bar-simple {
@@ -352,26 +354,30 @@
                 </div>
 
                 <div class="section-title">💰 Omset Per Metode</div>
+                <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
                 <table id="tableMetode"><tbody></tbody></table>
+                </div>
 
                 <div class="section-title">📉 Audit Stok</div>
+                <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
                 <table id="tableAudit">
                     <thead><tr><th>Item</th><th>Awal</th><th>Laku</th><th>Sisa</th></tr></thead>
                     <tbody>
                         <tr>
                             <td>Dimsum (Pcs)</td>
-                            <td><input type="number" id="dAw" value="0" oninput="hitungSisa()" style="width:80px;padding:5px 8px;font-size:12px;margin:0;"></td>
+                            <td><input type="number" id="dAw" value="0" oninput="hitungSisa()" style="width:72px;padding:5px 8px;font-size:12px;margin:0;"></td>
                             <td><b id="dLak">0</b></td>
                             <td><b id="dSis">0</b></td>
                         </tr>
                         <tr>
                             <td>Tray (Pcs)</td>
-                            <td><input type="number" id="tAw" value="0" oninput="hitungSisa()" style="width:80px;padding:5px 8px;font-size:12px;margin:0;"></td>
+                            <td><input type="number" id="tAw" value="0" oninput="hitungSisa()" style="width:72px;padding:5px 8px;font-size:12px;margin:0;"></td>
                             <td><b id="tLak">0</b></td>
                             <td><b id="tSis">0</b></td>
                         </tr>
                     </tbody>
                 </table>
+                </div>
 
                 <div class="section-title">💸 Pengeluaran</div>
                 <div class="exp-input-row">
@@ -379,7 +385,9 @@
                     <input type="number" id="exHarga" placeholder="Rp Total">
                     <button class="btn-add-exp" onclick="addEx()">+</button>
                 </div>
+                <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
                 <table id="tableExp"><tbody></tbody></table>
+                </div>
 
                 <div class="total-highlight">
                     <span id="grandTotal">Rp 0</span>

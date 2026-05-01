@@ -2041,19 +2041,19 @@
    /* ── MOBILE RESPONSIVE FIXES ── */
    @media (max-width: 844px) {
    
-       /* Prevent horizontal scroll globally */
+       /* Prevent horizontal scroll globally — clip avoids suppressing inner scroll */
        body {
-           overflow-x: hidden !important;
+           overflow-x: clip;
            max-width: 100vw;
        }
-   
+
        .main-content {
-           overflow-x: hidden;
+           overflow-x: clip;
            max-width: 100%;
        }
-   
+
        .page-body {
-           overflow-x: hidden;
+           overflow-x: clip;
            max-width: 100%;
            box-sizing: border-box;
        }
