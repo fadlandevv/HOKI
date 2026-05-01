@@ -173,11 +173,26 @@
         margin: 2px;
     }
 
+    .input-group select {
+        width: 100%;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 9px 12px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--r-md);
+        font-size: 13px;
+        font-family: 'DM Sans', sans-serif;
+        background: var(--surface);
+        color: var(--text);
+        outline: none;
+    }
+
     @media (max-width: 844px) {
         .grid-hpp { grid-template-columns: 1fr; }
-        .card-hpp { padding: 14px; overflow: hidden; }
+        .card-hpp { padding: 14px; overflow: visible; }
         .btn-add-bahan, .btn-simpan-hpp { width: 100%; justify-content: center; }
         .bahan-row input { width: 70px; }
+        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .table-wrap table { min-width: 480px; }
         .hpp-total { font-size: 15px; }
     }
