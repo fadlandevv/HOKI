@@ -82,22 +82,24 @@
         width: 100%;
     }
 
-    .bahan-row select {
+    /* Custom select inside bahan-row */
+    .bahan-wrap {
         flex: 1;
         min-width: 0;
-        margin: 0;
-        padding: 8px 10px;
-        border: 1.5px solid var(--border);
-        border-radius: var(--r-md);
-        font-size: 13px;
-        font-family: 'DM Sans', sans-serif;
-        background: var(--surface);
-        color: var(--text);
-        outline: none;
-        width: auto;
+        margin-bottom: 0;
     }
 
-    .bahan-row input {
+    .bahan-wrap .custom-select-btn {
+        height: 38px;
+        padding: 0 10px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--r-md);
+        border-width: 1.5px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .bahan-row .bahan-qty-input {
         width: 80px;
         flex-shrink: 0;
         margin: 0;
@@ -109,13 +111,12 @@
         background: var(--surface);
         color: var(--text);
         outline: none;
+        height: 38px;
+        box-sizing: border-box;
     }
 
+    .bahan-row .bahan-qty-input:focus { border-color: var(--red); }
     .bahan-row button { flex-shrink: 0; }
-
-    .bahan-row select:focus, .bahan-row input:focus { border-color: var(--red); }
-
-
 
     .hpp-total {
         font-family: 'DM Mono', monospace;
@@ -127,7 +128,6 @@
         border-top: 2px dashed var(--border);
         margin-top: 8px;
     }
-
 
     /* Tabel list */
     .table-wrap {
@@ -164,7 +164,6 @@
     .mono { font-family: 'DM Mono', monospace; font-weight: 700; }
     .red  { color: var(--red); }
 
-
     .detail-chip {
         display: inline-block;
         background: var(--surface-2);
@@ -176,25 +175,22 @@
         margin: 2px;
     }
 
-    .input-group select {
-        width: 100%;
-        box-sizing: border-box;
-        margin: 0;
+    /* Custom select for produk picker (input-group context) */
+    .input-group .custom-select-wrap { margin-bottom: 0; }
+    .input-group .custom-select-btn {
         padding: 9px 12px;
         border: 1.5px solid var(--border);
         border-radius: var(--r-md);
+        border-width: 1.5px;
         font-size: 13px;
-        font-family: 'DM Sans', sans-serif;
-        background: var(--surface);
-        color: var(--text);
-        outline: none;
+        font-weight: 500;
     }
 
     @media (max-width: 844px) {
         .grid-hpp { grid-template-columns: 1fr; gap: 12px; }
         .card-hpp { padding: 14px; }
         .btn-add-bahan, .btn-simpan-hpp { display: flex !important; width: 100%; justify-content: center; }
-        .bahan-row input { width: 70px; }
+        .bahan-row .bahan-qty-input { width: 70px; }
         .table-wrap table { min-width: 480px; }
         .hpp-total { font-size: 15px; }
     }
@@ -246,10 +242,15 @@
 
                 <div class="input-group">
                     <label>Produk</label>
-                    <select id="hProdukSelect" onchange="pilihProdukHPP(this)">
-                        <option value="">— Pilih Produk —</option>
-                    </select>
+                    <div class="custom-select-wrap" id="wrapProdukHPP">
+                        <button class="custom-select-btn" onclick="toggleDropdown('wrapProdukHPP')">
+                            <span id="labelProdukHPP">— Pilih Produk —</span>
+                            <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1l5 5 5-5" stroke="#d32f2f" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        </button>
+                        <div class="custom-dropdown" id="dropdownProdukHPP"></div>
+                    </div>
                 </div>
+                <input type="hidden" id="hProdukId">
                 <input type="hidden" id="hNama">
                 <input type="hidden" id="hSKU">
                 <div id="hSKUDisplay" style="font-size:11px;color:var(--text-muted);margin-top:-8px;margin-bottom:8px;font-family:'DM Mono',monospace;"></div>
@@ -339,13 +340,13 @@ function buildSidebar() {
     const PAGES_EXEC      = ['laporan.html','statistik.html','bahan_baku.html','hpp_produk.html','belanja.html','warehouse.html'];
     const PAGES_VIP       = ['user.html','login_history.html'];
     const inGroup = pages => pages.includes(cur);
-    const getOpen = (id, pages) => {
+    const getOpen = (id) => {
         const s = localStorage.getItem('navGroup_' + id);
         return s !== null ? s === '1' : true;
     };
     const GROUP_ICONS = { frontline:'🛒', management:'📊', executive:'📋', vip:'👑' };
     const navGroup = (id, label, items, pages) => {
-        const open      = getOpen(id, pages);
+        const open      = getOpen(id);
         const hasActive = inGroup(pages);
         const icon      = GROUP_ICONS[id] || '📁';
         return `<div class="nav-group-wrap">
@@ -440,23 +441,73 @@ function buildMoreMenu() {
 function openSheet(id) { if(id==='moreSheet') buildMoreMenu(); document.getElementById(id).classList.add('open'); }
 function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
 
+/* ── CUSTOM DROPDOWN HELPERS ── */
+function toggleDropdown(wrapId) {
+    const wrap = document.getElementById(wrapId);
+    document.querySelectorAll('.custom-select-wrap.open').forEach(w => {
+        if (w.id !== wrapId) w.classList.remove('open');
+    });
+    wrap.classList.toggle('open');
+}
+
+document.addEventListener('click', function(e) {
+    document.querySelectorAll('.custom-select-wrap').forEach(wrap => {
+        if (!wrap.contains(e.target)) wrap.classList.remove('open');
+    });
+});
+
+/* ── PILIH PRODUK (custom dropdown) ── */
+function pilihProdukHPP(el) {
+    document.getElementById('labelProdukHPP').innerText = el.textContent.trim();
+    document.querySelectorAll('#dropdownProdukHPP .dropdown-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('wrapProdukHPP').classList.remove('open');
+    document.getElementById('hProdukId').value = el.dataset.id  || '';
+    document.getElementById('hNama').value     = el.dataset.nama || '';
+    document.getElementById('hSKU').value      = el.dataset.sku  || '';
+    document.getElementById('hSKUDisplay').innerText = el.dataset.sku ? `SKU: ${el.dataset.sku}` : '';
+}
+
+/* ── PILIH BAHAN dalam row ── */
+function pilihBahanRow(wrapId, dropId, lblId, el) {
+    document.getElementById(lblId).innerText = el.textContent.trim();
+    document.querySelectorAll('#' + dropId + ' .dropdown-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(wrapId).classList.remove('open');
+    hitungTotal();
+}
+
 /* ── BAHAN PICKER ROWS ── */
 function tambahBahanRow(bahanId='', qty='') {
     const container = document.getElementById('listBahanPicker');
-    const rowId     = 'row_' + Date.now();
-    const options   = allBahan.map(b =>
-        `<option value="${b.id}" data-hs="${b.harga_satuan}" data-satuan="${b.satuan}" ${b.id == bahanId ? 'selected' : ''}>${b.nama} (Rp${parseFloat(b.harga_satuan).toLocaleString('id-ID',{maximumFractionDigits:2})}/${b.satuan})</option>`
-    ).join('');
+    const uid    = Date.now() + '_' + Math.random().toString(36).slice(2,5);
+    const rowId  = 'br_' + uid;
+    const wrapId = 'bw_' + uid;
+    const dropId = 'bd_' + uid;
+    const lblId  = 'bl_' + uid;
+
+    const selectedBahan = bahanId ? allBahan.find(b => b.id == bahanId) : null;
+    const selectedLabel = selectedBahan ? selectedBahan.nama : 'Pilih Bahan...';
+
+    const optionsHTML = allBahan.map(b => {
+        const label = `${b.nama} (Rp${parseFloat(b.harga_satuan).toLocaleString('id-ID',{maximumFractionDigits:2})}/${b.satuan})`;
+        return `<div class="dropdown-item${b.id == bahanId ? ' active' : ''}"
+            data-id="${b.id}" data-hs="${b.harga_satuan}" data-satuan="${b.satuan}"
+            onclick="pilihBahanRow('${wrapId}','${dropId}','${lblId}',this)">${label}</div>`;
+    }).join('');
 
     const row = document.createElement('div');
     row.className = 'bahan-row';
     row.id = rowId;
     row.innerHTML = `
-        <select onchange="hitungTotal()">
-            <option value="">Pilih Bahan...</option>
-            ${options}
-        </select>
-        <input type="number" placeholder="Qty" value="${qty}" oninput="hitungTotal()" min="0" step="0.01">
+        <div class="custom-select-wrap bahan-wrap" id="${wrapId}">
+            <button class="custom-select-btn" onclick="toggleDropdown('${wrapId}')">
+                <span id="${lblId}">${selectedLabel}</span>
+                <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1l5 5 5-5" stroke="#d32f2f" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+            <div class="custom-dropdown" id="${dropId}">${optionsHTML}</div>
+        </div>
+        <input type="number" class="bahan-qty-input" placeholder="Qty" value="${qty}" oninput="hitungTotal()" min="0" step="0.01">
         <button class="btn-del-bahan" onclick="document.getElementById('${rowId}').remove();hitungTotal()">×</button>`;
     container.appendChild(row);
     hitungTotal();
@@ -465,12 +516,10 @@ function tambahBahanRow(bahanId='', qty='') {
 function hitungTotal() {
     let total = 0;
     document.querySelectorAll('.bahan-row').forEach(row => {
-        const sel = row.querySelector('select');
-        const qty = parseFloat(row.querySelector('input').value) || 0;
-        if (sel.value) {
-            const opt = sel.selectedOptions[0];
-            const hs  = parseFloat(opt.dataset.hs) || 0;
-            total += hs * qty;
+        const active = row.querySelector('.custom-dropdown .dropdown-item.active');
+        const qty    = parseFloat(row.querySelector('.bahan-qty-input')?.value) || 0;
+        if (active && active.dataset.id) {
+            total += (parseFloat(active.dataset.hs) || 0) * qty;
         }
     });
     document.getElementById('hppTotal').innerText = `HPP: Rp ${total.toLocaleString('id-ID', {minimumFractionDigits:0, maximumFractionDigits:0})}`;
@@ -480,18 +529,17 @@ function hitungTotal() {
 function getBahanList() {
     const list = [];
     document.querySelectorAll('.bahan-row').forEach(row => {
-        const sel = row.querySelector('select');
-        const qty = parseFloat(row.querySelector('input').value) || 0;
-        if (sel.value && qty > 0) {
-            const opt      = sel.selectedOptions[0];
-            const hs       = parseFloat(opt.dataset.hs) || 0;
-            const bahan    = allBahan.find(b => b.id == sel.value);
+        const active = row.querySelector('.custom-dropdown .dropdown-item.active');
+        const qty    = parseFloat(row.querySelector('.bahan-qty-input')?.value) || 0;
+        if (active && active.dataset.id && qty > 0) {
+            const hs    = parseFloat(active.dataset.hs) || 0;
+            const bahan = allBahan.find(b => b.id == active.dataset.id);
             list.push({
-                bahan_id: parseInt(sel.value),
-                nama:     bahan ? bahan.nama : '',
+                bahan_id:     parseInt(active.dataset.id),
+                nama:         bahan ? bahan.nama : active.textContent.trim().split(' (')[0],
                 qty,
                 harga_satuan: hs,
-                subtotal: hs * qty
+                subtotal:     hs * qty
             });
         }
     });
@@ -504,7 +552,7 @@ async function simpanHPP() {
     const bahan = getBahanList();
     const hpp   = hitungTotal();
 
-    if (!nama || !sku) return toast.warning('Nama dan SKU wajib diisi!');
+    if (!nama || !sku) return toast.warning('Pilih produk terlebih dahulu!');
     if (bahan.length === 0) return toast.warning('Tambah minimal 1 bahan!');
 
     const payload = { id: editHPPId, nama_produk: nama, sku, bahan, harga_pokok: hpp };
@@ -528,9 +576,11 @@ async function simpanHPP() {
 
 function resetForm() {
     editHPPId = null;
-    document.getElementById('hProdukSelect').value = '';
-    document.getElementById('hNama').value  = '';
-    document.getElementById('hSKU').value   = '';
+    document.getElementById('labelProdukHPP').innerText = '— Pilih Produk —';
+    document.querySelectorAll('#dropdownProdukHPP .dropdown-item').forEach(i => i.classList.remove('active'));
+    document.getElementById('hProdukId').value = '';
+    document.getElementById('hNama').value     = '';
+    document.getElementById('hSKU').value      = '';
     document.getElementById('hSKUDisplay').innerText = '';
     document.getElementById('listBahanPicker').innerHTML = '';
     document.getElementById('hppTotal').innerText = 'HPP: Rp 0';
@@ -541,13 +591,17 @@ function siapkanEditHPP(id) {
     const h = allHPP.find(x => x.id == id);
     if (!h) return;
     editHPPId = id;
-    // Cari produk di dropdown berdasarkan SKU
-    const sel = document.getElementById('hProdukSelect');
-    const matchOpt = Array.from(sel.options).find(o => o.dataset.sku === h.sku);
-    sel.value = matchOpt ? matchOpt.value : '';
-    document.getElementById('hNama').value  = h.nama_produk;
-    document.getElementById('hSKU').value   = h.sku;
+
+    const matchItem = document.querySelector(`#dropdownProdukHPP .dropdown-item[data-sku="${h.sku}"]`);
+    if (matchItem) {
+        document.getElementById('labelProdukHPP').innerText = matchItem.textContent.trim();
+        document.querySelectorAll('#dropdownProdukHPP .dropdown-item').forEach(i => i.classList.remove('active'));
+        matchItem.classList.add('active');
+    }
+    document.getElementById('hNama').value = h.nama_produk;
+    document.getElementById('hSKU').value  = h.sku;
     document.getElementById('hSKUDisplay').innerText = `SKU: ${h.sku}`;
+
     document.getElementById('listBahanPicker').innerHTML = '';
     const detail = JSON.parse(h.detail_json || '[]');
     detail.forEach(d => tambahBahanRow(d.bahan_id, d.qty));
@@ -592,13 +646,6 @@ async function muatHPP() {
     } catch(e) { console.error(e); }
 }
 
-function pilihProdukHPP(sel) {
-    const opt = sel.selectedOptions[0];
-    document.getElementById('hNama').value = opt.dataset.nama || '';
-    document.getElementById('hSKU').value  = opt.dataset.sku  || '';
-    document.getElementById('hSKUDisplay').innerText = opt.value ? `SKU: ${opt.dataset.sku}` : '';
-}
-
 async function init() {
     try {
         const [resBahan, resProduk] = await Promise.all([
@@ -607,15 +654,12 @@ async function init() {
         ]);
         allBahan = await resBahan.json();
         const produkList = await resProduk.json();
-        const sel = document.getElementById('hProdukSelect');
-        (Array.isArray(produkList) ? produkList : []).forEach(p => {
-            const opt = document.createElement('option');
-            opt.value        = p.id;
-            opt.dataset.nama = p.nama;
-            opt.dataset.sku  = p.sku;
-            opt.textContent  = `${p.nama} (${p.sku})`;
-            sel.appendChild(opt);
-        });
+
+        const dropdown = document.getElementById('dropdownProdukHPP');
+        dropdown.innerHTML = (Array.isArray(produkList) ? produkList : []).map(p =>
+            `<div class="dropdown-item" data-id="${p.id}" data-nama="${p.nama}" data-sku="${p.sku}"
+                onclick="pilihProdukHPP(this)">${p.nama} (${p.sku})</div>`
+        ).join('');
     } catch(e) { console.error(e); }
     await muatHPP();
     tambahBahanRow();

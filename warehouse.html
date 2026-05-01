@@ -36,22 +36,21 @@
         flex-wrap: wrap;
     }
 
-    .wh-selector-row select {
+    .wh-selector-row .custom-select-wrap {
         flex: 1;
         min-width: 180px;
+        margin-bottom: 0;
+    }
+
+    .wh-selector-row .custom-select-btn {
         height: 40px;
         padding: 0 12px;
         border: 1.5px solid var(--border);
         border-radius: var(--r-md);
+        border-width: 1.5px;
         font-size: 14px;
-        font-family: 'DM Sans', sans-serif;
-        background: var(--surface);
-        color: var(--text);
-        outline: none;
-        cursor: pointer;
-        transition: border-color 0.15s;
+        font-weight: 500;
     }
-    .wh-selector-row select:focus { border-color: var(--red); }
 
     .wh-sisa-badge {
         display: flex;
@@ -178,6 +177,7 @@
         .wh-form-row { flex-direction: column; }
         .wh-form-group { width: 100%; }
         .wh-selector-row { flex-direction: column; align-items: stretch; }
+        .wh-selector-row .custom-select-wrap { min-width: 0; width: 100%; }
         .wh-sisa-badge { justify-content: space-between; }
     }
 
@@ -231,9 +231,13 @@
         <div class="wh-card">
             <div class="wh-card-title">🧂 Pilih Bahan Baku</div>
             <div class="wh-selector-row">
-                <select id="produkSelect" onchange="onProdukChange()">
-                    <option value="">— Pilih Bahan Baku —</option>
-                </select>
+                <div class="custom-select-wrap" id="wrapProdukWH">
+                    <button class="custom-select-btn" onclick="toggleDropdownWH()">
+                        <span id="labelProdukWH">— Pilih Bahan Baku —</span>
+                        <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1l5 5 5-5" stroke="#d32f2f" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    </button>
+                    <div class="custom-dropdown" id="dropdownProdukWH"></div>
+                </div>
                 <div class="wh-sisa-badge" id="sisaBadge" style="display:none;">
                     <span class="lbl">Sisa Stok</span>
                     <span class="val" id="sisaVal">—</span>
@@ -446,6 +450,24 @@ function closeSheetOutside(e,id) { if(e.target===document.getElementById(id)) do
 
 let selectedSKU = null;
 
+/* ── CUSTOM DROPDOWN ── */
+function toggleDropdownWH() {
+    document.getElementById('wrapProdukWH').classList.toggle('open');
+}
+
+document.addEventListener('click', function(e) {
+    const wrap = document.getElementById('wrapProdukWH');
+    if (wrap && !wrap.contains(e.target)) wrap.classList.remove('open');
+});
+
+function pilihProdukWH(el) {
+    document.getElementById('labelProdukWH').innerText = el.textContent.trim();
+    document.querySelectorAll('#dropdownProdukWH .dropdown-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('wrapProdukWH').classList.remove('open');
+    onProdukChange(el.dataset.id);
+}
+
 function sisaClass(sisa) {
     if (sisa < 0)  return 'danger';
     if (sisa < 10) return 'warn';
@@ -454,23 +476,22 @@ function sisaClass(sisa) {
 
 async function loadProdukList() {
     try {
-        const res  = await fetch('api.php?action=get_bahan_baku');
-        const list = await res.json().catch(() => []);
+        const res   = await fetch('api.php?action=get_bahan_baku');
+        const list  = await res.json().catch(() => []);
         const prods = Array.isArray(list) ? list : [];
 
-        const sel = document.getElementById('produkSelect');
-        sel.innerHTML = '<option value="">— Pilih Bahan Baku —</option>'
-            + prods.map(p => `<option value="${p.id}" data-nama="${p.nama}">${p.nama} (${p.satuan})</option>`).join('');
+        const dropdown = document.getElementById('dropdownProdukWH');
+        dropdown.innerHTML = prods.map(p =>
+            `<div class="dropdown-item" data-id="${p.id}" data-nama="${p.nama}"
+                onclick="pilihProdukWH(this)">${p.nama} (${p.satuan})</div>`
+        ).join('');
     } catch(e) {
         console.error('loadProdukList:', e);
     }
 }
 
-function onProdukChange() {
-    const sel = document.getElementById('produkSelect');
-    const sku = sel.value;
-
-    if (!sku) {
+function onProdukChange(id) {
+    if (!id) {
         selectedSKU = null;
         document.getElementById('sisaBadge').style.display = 'none';
         document.getElementById('formCard').style.display  = 'none';
@@ -478,16 +499,16 @@ function onProdukChange() {
         return;
     }
 
-    selectedSKU = sku;
-    document.getElementById('masukTgl').value = new Date().toISOString().split('T')[0];
-    document.getElementById('masukQty').value = '';
+    selectedSKU = id;
+    document.getElementById('masukTgl').value     = new Date().toISOString().split('T')[0];
+    document.getElementById('masukQty').value     = '';
     document.getElementById('masukCatatan').value = '';
 
     document.getElementById('formCard').style.display  = '';
     document.getElementById('tableCard').style.display = '';
     document.getElementById('sisaBadge').style.display = '';
 
-    loadLedger(sku);
+    loadLedger(id);
 }
 
 async function loadLedger(sku) {
