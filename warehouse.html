@@ -229,10 +229,10 @@
 
         <!-- PILIH PRODUK + SISA STOK -->
         <div class="wh-card">
-            <div class="wh-card-title">📦 Pilih Produk</div>
+            <div class="wh-card-title">🧂 Pilih Bahan Baku</div>
             <div class="wh-selector-row">
                 <select id="produkSelect" onchange="onProdukChange()">
-                    <option value="">— Pilih Produk —</option>
+                    <option value="">— Pilih Bahan Baku —</option>
                 </select>
                 <div class="wh-sisa-badge" id="sisaBadge" style="display:none;">
                     <span class="lbl">Sisa Stok</span>
@@ -454,13 +454,13 @@ function sisaClass(sisa) {
 
 async function loadProdukList() {
     try {
-        const res  = await fetch('api.php?action=get_produk');
+        const res  = await fetch('api.php?action=get_bahan_baku');
         const list = await res.json().catch(() => []);
         const prods = Array.isArray(list) ? list : [];
 
         const sel = document.getElementById('produkSelect');
-        sel.innerHTML = '<option value="">— Pilih Produk —</option>'
-            + prods.map(p => `<option value="${p.sku}" data-nama="${p.nama}">${p.nama} (${p.sku})</option>`).join('');
+        sel.innerHTML = '<option value="">— Pilih Bahan Baku —</option>'
+            + prods.map(p => `<option value="${p.id}" data-nama="${p.nama}">${p.nama} (${p.satuan})</option>`).join('');
     } catch(e) {
         console.error('loadProdukList:', e);
     }
