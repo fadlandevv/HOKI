@@ -16,6 +16,8 @@
         align-items: start;
     }
 
+    .grid-hpp > div { min-width: 0; }
+
     .card-hpp {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -132,9 +134,10 @@
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: var(--r-lg);
-        overflow: hidden;
-        box-shadow: var(--sh-sm);
         overflow-x: auto;
+        overflow-y: hidden;
+        box-shadow: var(--sh-sm);
+        -webkit-overflow-scrolling: touch;
     }
 
     .table-wrap table { width: 100%; border-collapse: collapse; }
@@ -188,11 +191,10 @@
     }
 
     @media (max-width: 844px) {
-        .grid-hpp { grid-template-columns: 1fr; }
-        .card-hpp { padding: 14px; overflow: visible; }
-        .btn-add-bahan, .btn-simpan-hpp { width: 100%; justify-content: center; }
+        .grid-hpp { grid-template-columns: 1fr; gap: 12px; }
+        .card-hpp { padding: 14px; }
+        .btn-add-bahan, .btn-simpan-hpp { display: flex !important; width: 100%; justify-content: center; }
         .bahan-row input { width: 70px; }
-        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .table-wrap table { min-width: 480px; }
         .hpp-total { font-size: 15px; }
     }
