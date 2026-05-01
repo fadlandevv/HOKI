@@ -175,10 +175,10 @@ $conn->query("CREATE TABLE IF NOT EXISTS transaksi (
 )");
 $conn->query("CREATE TABLE IF NOT EXISTS logs_login (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    waktu TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    username VARCHAR(100) DEFAULT '',
-    role VARCHAR(50) DEFAULT '',
-    cabang VARCHAR(100) DEFAULT ''
+    waktu TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    username VARCHAR(100) NOT NULL DEFAULT '',
+    role VARCHAR(50) NOT NULL DEFAULT '',
+    cabang VARCHAR(100) NOT NULL DEFAULT ''
 )");
 $conn->query("CREATE TABLE IF NOT EXISTS hoki_cabang (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -481,12 +481,12 @@ switch ($action) {
         $u = $conn->real_escape_string($input['user'] ?? '');
         $r = $conn->real_escape_string($input['role'] ?? '');
         $c = $conn->real_escape_string($input['cabang'] ?? '');
-        $conn->query("INSERT INTO logs_login (username, role, cabang) VALUES ('$u','$r','$c')");
+        $conn->query("INSERT INTO logs_login (waktu, username, role, cabang) VALUES (NOW(),'$u','$r','$c')");
         echo json_encode(["status"=>"success"]);
         break;
 
     case 'get_logs':
-        $res = $conn->query("SELECT * FROM logs_login ORDER BY waktu DESC LIMIT 200");
+        $res = $conn->query("SELECT id, DATE_FORMAT(waktu,'%Y-%m-%d %H:%i:%s') as waktu, username, role, cabang FROM logs_login ORDER BY waktu DESC LIMIT 200");
         echo json_encode($res ? $res->fetch_all(MYSQLI_ASSOC) : []);
         break;
 
