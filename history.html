@@ -575,6 +575,8 @@ async function logout() {
 window.onload = async function() {
     buildSidebar();
     updateClock();
+    document.getElementById('infoPetugas').innerText = currentUser.fullName || currentUser.user || '—';
+    document.getElementById('infoCabang').innerText  = cabangLogin || '—';
     await loadCabang();
     renderHistory();
 };
