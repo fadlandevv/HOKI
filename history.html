@@ -482,6 +482,8 @@ async function renderHistory() {
         tbody.innerHTML = '';
         let count = 0;
 
+        transaksiList.sort((a, b) => new Date((b.waktu || '').replace('T',' ')) - new Date((a.waktu || '').replace('T',' ')));
+
         transaksiList.forEach(t => {
             const waktuStr  = t.waktu || '';
             const dateTrx   = waktuStr.split('T')[0].split(' ')[0];
@@ -508,7 +510,8 @@ async function renderHistory() {
             tbody.innerHTML += `<tr>
                 <td><span class="waktu-text">${(() => {
                     if (!t.waktu) return '—';
-                    const [tgl, jam] = t.waktu.split(' ');
+                    const norm = t.waktu.replace('T', ' ');
+                    const [tgl, jam] = norm.split(' ');
                     return `<span>${tgl || '—'}</span><span style="color:var(--text-light);font-size:10px;">${jam ? jam.slice(0,5) : ''}</span>`;
                 })()}</span></td>
                 <td>${t.petugas || '—'}</td>
