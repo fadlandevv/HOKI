@@ -16,6 +16,8 @@
         gap: 20px;
     }
 
+    .left-col { min-width: 0; }
+
     .card-stok {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -24,6 +26,7 @@
         box-shadow: var(--sh-sm);
         margin-bottom: 12px;
         overflow: visible;
+        min-width: 0;
     }
 
     .card-stok:last-child { margin-bottom: 0; }
@@ -345,11 +348,11 @@
     }
 
     @media (max-width: 844px) {
-        .grid-stok { grid-template-columns: 1fr; }
+        .grid-stok { grid-template-columns: 1fr; gap: 12px; }
         #detailOverlay { padding: 12px; }
         .detail-container { padding: 18px; }
         .detail-meta { flex-direction: column; gap: 8px; }
-        .btn-add-draft, .btn-save-stok { width: 100%; justify-content: center; margin-top: 6px; }
+        .btn-add-draft, .btn-save-stok { display: flex !important; width: 100%; justify-content: center; margin-top: 6px; }
         .pkp-qty { width: 70px; }
         .pkp-nama { font-size: 12px; }
         .card-stok { padding: 14px; }
