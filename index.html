@@ -385,9 +385,15 @@
         .step-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
         .step-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
 
-        select#cabangPilihan {
+        /* Custom dropdown cabang */
+        .cabang-select-wrap {
+            position: relative;
+            margin-bottom: 14px;
+        }
+
+        .cabang-select-btn {
             width: 100%;
-            padding: 11px 40px 11px 14px;
+            padding: 11px 14px;
             border: 1.5px solid var(--border);
             border-radius: 11px;
             font-size: 14px;
@@ -396,17 +402,58 @@
             background: var(--surface2);
             outline: none;
             cursor: pointer;
-            margin-bottom: 14px;
-            transition: border-color 0.2s;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23d32f2f' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-align: left;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
         }
-        select#cabangPilihan:focus {
+
+        .cabang-select-btn svg { margin-left: auto; flex-shrink: 0; transition: transform 0.2s; }
+
+        .cabang-select-wrap.open .cabang-select-btn {
             border-color: var(--green);
+            background: var(--surface);
             box-shadow: 0 0 0 3px var(--green-glow);
         }
+
+        .cabang-select-wrap.open .cabang-select-btn svg { transform: rotate(180deg); }
+
+        .cabang-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0; right: 0;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            z-index: 300;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+            animation: cabangDropIn 0.15s ease;
+        }
+
+        @keyframes cabangDropIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .cabang-select-wrap.open .cabang-dropdown { display: block; }
+
+        .cabang-dropdown-item {
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+            cursor: pointer;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.12s;
+        }
+
+        .cabang-dropdown-item:last-child { border-bottom: none; }
+        .cabang-dropdown-item:hover { background: var(--green-soft); }
+        .cabang-dropdown-item.active { background: var(--green-soft); color: var(--green); font-weight: 700; }
 
         .login-note { text-align: center; margin-top: 18px; font-size: 11px; color: var(--text-muted); }
         .login-note span { color: var(--green); font-weight: 600; }
@@ -556,7 +603,14 @@
                 <div id="userBadge" class="user-badge"></div>
                 <div class="step-title">Pilih Lokasi Cabang</div>
                 <div class="step-sub">Cabang tempat kamu bertugas hari ini</div>
-                <select id="cabangPilihan"></select>
+                <div class="cabang-select-wrap" id="wrapCabang">
+                    <button class="cabang-select-btn" type="button" onclick="toggleCabangDropdown()">
+                        <span id="lblCabang">-- Pilih Cabang --</span>
+                        <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1l5 5 5-5" stroke="#d32f2f" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    </button>
+                    <div class="cabang-dropdown" id="dropdownCabang"></div>
+                </div>
+                <input type="hidden" id="cabangPilihan" value="">
                 <button class="btn-login" onclick="finalMasuk()">
                     <span>Buka Kasir Sekarang</span>
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -572,6 +626,24 @@
     </div>
 
     <script>
+    /* ── CABANG CUSTOM DROPDOWN ── */
+    function toggleCabangDropdown() {
+        document.getElementById('wrapCabang').classList.toggle('open');
+    }
+
+    function pilihCabang(el) {
+        document.getElementById('lblCabang').innerText = el.textContent.trim();
+        document.querySelectorAll('#dropdownCabang .cabang-dropdown-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('cabangPilihan').value = el.dataset.value;
+        document.getElementById('wrapCabang').classList.remove('open');
+    }
+
+    document.addEventListener('click', function(e) {
+        const wrap = document.getElementById('wrapCabang');
+        if (wrap && !wrap.contains(e.target)) wrap.classList.remove('open');
+    });
+
     function showError(msg) {
         const el = document.getElementById('errorMsg');
         document.getElementById('errorText').innerText = msg;
@@ -670,20 +742,21 @@
                     document.getElementById('nextStepCard').classList.remove('hidden');
                     document.getElementById('userBadge').innerText = 'ROLE: ' + ketemu.role;
 
-                    const select = document.getElementById('cabangPilihan');
-                    select.innerHTML = '<option value="">-- Pilih Cabang --</option>';
+                    const dropdown = document.getElementById('dropdownCabang');
+                    document.getElementById('lblCabang').innerText = '-- Pilih Cabang --';
+                    document.getElementById('cabangPilihan').value = '';
+                    dropdown.innerHTML = '';
+
+                    const addItem = (nama) => {
+                        dropdown.innerHTML += `<div class="cabang-dropdown-item" data-value="${nama}" onclick="pilihCabang(this)">${nama}</div>`;
+                    };
 
                     if (ketemu.cabang) {
-                        ketemu.cabang.split(',').forEach(cab => {
-                            select.innerHTML += `<option value="${cab.trim()}">${cab.trim()}</option>`;
-                        });
+                        ketemu.cabang.split(',').forEach(cab => addItem(cab.trim()));
                     } else {
-                        const resCab     = await fetch('api.php?action=get_cabang');
-                        const globalCab  = await resCab.json();
-                        globalCab.forEach(c => {
-                            const nama = c.nama_cabang || c;
-                            select.innerHTML += `<option value="${nama}">${nama}</option>`;
-                        });
+                        const resCab    = await fetch('api.php?action=get_cabang');
+                        const globalCab = await resCab.json();
+                        globalCab.forEach(c => addItem(c.nama_cabang || c));
                     }
                 }
             } else {
