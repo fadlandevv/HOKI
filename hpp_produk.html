@@ -139,7 +139,7 @@
         -webkit-overflow-scrolling: touch;
     }
 
-    .table-wrap table { width: 100%; border-collapse: collapse; }
+    .table-wrap table { width: 100%; border-collapse: collapse; table-layout: fixed; }
     .table-wrap thead th {
         background: var(--red);
         color: white;
@@ -150,12 +150,20 @@
         border: none;
         text-align: left;
     }
+    /* fixed column widths — Komposisi ambil sisa ruang */
+    .table-wrap thead th:nth-child(1) { width: 140px; }
+    .table-wrap thead th:nth-child(2) { width: 75px; }
+    /* th:nth-child(3) Komposisi: flexible */
+    .table-wrap thead th:nth-child(4) { width: 115px; }
+    .table-wrap thead th:nth-child(5) { width: 105px; text-align: center; }
+    .table-wrap tbody td:nth-child(5) { text-align: center; }
     .table-wrap tbody td {
         padding: 10px 14px;
         border-bottom: 1px solid var(--border);
         font-size: 13px;
         color: var(--text);
         border-top: none; border-left: none; border-right: none;
+        word-break: break-word;
     }
     .table-wrap tbody tr:last-child td { border-bottom: none; }
     .table-wrap tbody tr:hover td { background: var(--red-soft); }
@@ -172,6 +180,7 @@
         font-size: 11px;
         color: var(--text-muted);
         margin: 2px;
+        white-space: nowrap;
     }
 
     /* Custom select for produk picker (input-group context) */
@@ -190,7 +199,7 @@
         .card-hpp { padding: 14px; }
         .btn-add-bahan, .btn-simpan-hpp { display: flex !important; width: 100%; justify-content: center; }
         .bahan-row .bahan-qty-input { width: 70px; }
-        .table-wrap table { min-width: 480px; }
+        .table-wrap table { min-width: 560px; }
         .hpp-total { font-size: 15px; }
     }
     </style>
