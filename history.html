@@ -483,7 +483,7 @@ async function renderHistory() {
         let count = 0;
 
         transaksiList.sort((a, b) => {
-            const toMs = s => new Date((s || '').trim().replace(' ', 'T'));
+            const toMs = s => s ? new Date(String(s).trim().replace(' ', 'T')).getTime() : 0;
             return toMs(b.waktu) - toMs(a.waktu);
         });
 
