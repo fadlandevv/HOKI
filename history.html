@@ -510,13 +510,18 @@ async function renderHistory() {
             const namaItems = (items || []).map(it => (it && (it.nama || it.name)) || '').filter(Boolean).join(', ') || '—';
             const canDelete = ['VIP','Owner'].includes(role);
 
+            let waktuDisplay = '—';
+            if (t.waktu) {
+                const norm = String(t.waktu).replace('T', ' ');
+                const parts = norm.split(' ');
+                const tgl   = parts[0] || '—';
+                const jam   = parts[1] ? parts[1].slice(0, 5) : '';
+                waktuDisplay = '<span>' + tgl + '</span>'
+                    + '<span style="color:var(--text-light);font-size:10px;">' + jam + '</span>';
+            }
+
             tbody.innerHTML += `<tr>
-                <td><span class="waktu-text">${(() => {
-                    if (!t.waktu) return '—';
-                    const norm = t.waktu.replace('T', ' ');
-                    const [tgl, jam] = norm.split(' ');
-                    return `<span>${tgl || '—'}</span><span style="color:var(--text-light);font-size:10px;">${jam ? jam.slice(0,5) : ''}</span>`;
-                })()}</span></td>
+                <td><span class="waktu-text">${waktuDisplay}</span></td>
                 <td>${t.petugas || '—'}</td>
                 <td><span class="cabang-text">${t.cabang || '—'}</span></td>
                 <td><span class="item-text">${namaItems}</span></td>
