@@ -482,7 +482,10 @@ async function renderHistory() {
         tbody.innerHTML = '';
         let count = 0;
 
-        transaksiList.sort((a, b) => new Date((b.waktu || '').replace('T',' ')) - new Date((a.waktu || '').replace('T',' ')));
+        transaksiList.sort((a, b) => {
+            const toMs = s => new Date((s || '').trim().replace(' ', 'T'));
+            return toMs(b.waktu) - toMs(a.waktu);
+        });
 
         transaksiList.forEach(t => {
             const waktuStr  = t.waktu || '';
