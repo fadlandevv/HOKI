@@ -173,8 +173,6 @@ $conn->query("CREATE TABLE IF NOT EXISTS transaksi (
     metode VARCHAR(50) DEFAULT 'CASH',
     items_json TEXT
 )");
-// Migrasi: pastikan kolom waktu ada di tabel lama yang dibuat sebelum skema ini
-$conn->query("ALTER TABLE transaksi ADD COLUMN waktu TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP");
 $conn->query("CREATE TABLE IF NOT EXISTS logs_login (
     id INT AUTO_INCREMENT PRIMARY KEY,
     waktu TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -442,7 +440,7 @@ switch ($action) {
         $tt = (int)($input['total'] ?? 0);
         $mt = $conn->real_escape_string($input['metode'] ?? '');
         $it = $conn->real_escape_string(json_encode($input['items'] ?? []));
-        $sql = "INSERT INTO transaksi (waktu, cabang, petugas, total, metode, items_json) VALUES (NOW(),'$cb','$pt',$tt,'$mt','$it')";
+        $sql = "INSERT INTO transaksi (cabang, petugas, total, metode, items_json) VALUES ('$cb','$pt',$tt,'$mt','$it')";
         echo $conn->query($sql)
             ? json_encode(["status"=>"success","id"=>$conn->insert_id])
             : json_encode(["status"=>"error","message"=>$conn->error]);
