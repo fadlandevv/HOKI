@@ -150,13 +150,16 @@
         border: none;
         text-align: left;
     }
-    /* fixed column widths — Komposisi ambil sisa ruang */
-    .table-wrap thead th:nth-child(1) { width: 140px; }
-    .table-wrap thead th:nth-child(2) { width: 75px; }
-    /* th:nth-child(3) Komposisi: flexible */
-    .table-wrap thead th:nth-child(4) { width: 115px; }
-    .table-wrap thead th:nth-child(5) { width: 105px; text-align: center; }
+    /* column widths — persentase agar proporsional di semua lebar layar */
+    .table-wrap thead th:nth-child(1) { width: 16%; }
+    .table-wrap thead th:nth-child(2) { width: 8%; }
+    .table-wrap thead th:nth-child(3) { width: 46%; }
+    .table-wrap thead th:nth-child(4) { width: 14%; }
+    .table-wrap thead th:nth-child(5) { width: 16%; text-align: center; }
     .table-wrap tbody td:nth-child(5) { text-align: center; }
+
+    /* tombol aksi sejajar */
+    .aksi-group { display: flex; gap: 6px; align-items: center; justify-content: center; }
     .table-wrap tbody td {
         padding: 10px 14px;
         border-bottom: 1px solid var(--border);
@@ -645,10 +648,10 @@ async function muatHPP() {
                 <td class="mono">${h.sku}</td>
                 <td>${chips}</td>
                 <td class="mono red">Rp ${parseFloat(h.harga_pokok).toLocaleString('id-ID')}</td>
-                <td>
+                <td><div class="aksi-group">
                     <button class="btn-edit" onclick="siapkanEditHPP(${h.id})">✎ Edit</button>
                     <button class="btn-del" onclick="hapusHPP(${h.id})">✖</button>
-                </td>
+                </div></td>
             </tr>`;
         }).join('');
     } catch(e) { console.error(e); }
