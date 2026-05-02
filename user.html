@@ -13,8 +13,13 @@
     /* ── GRID LAYOUT ── */
     .grid-admin {
         display: grid;
-        grid-template-columns: 1fr 1fr 1.5fr;
+        grid-template-columns: 1fr 2fr;
         gap: 20px;
+    }
+
+    /* Database Tim span penuh di bawah */
+    .grid-admin > .box-db {
+        grid-column: 1 / -1;
     }
 
     /* ── BOX ── */
@@ -204,6 +209,10 @@
             grid-template-columns: 1fr;
         }
 
+        .grid-admin > .box-db {
+            grid-column: 1;
+        }
+
         .two-col {
             flex-direction: column;
         }
@@ -330,8 +339,8 @@
                 <button class="btn-save" onclick="tambahUser()">💾 Daftarkan Sekarang</button>
             </div>
 
-            <!-- KOLOM KANAN: Database Tim -->
-            <div class="box" style="margin-bottom:0;">
+            <!-- DATABASE TIM: full width di bawah -->
+            <div class="box box-db" style="margin-bottom:0;">
                 <h3 class="section-title">👥 Database Tim</h3>
                 <div class="table-wrap">
                     <table>
