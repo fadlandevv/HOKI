@@ -173,16 +173,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS transaksi (
     metode VARCHAR(50) DEFAULT 'CASH',
     items_json TEXT
 )");
-// Migrasi satu kali: tambah kolom waktu ke tabel lama yang dibuat sebelum skema ini.
-// Flag file mencegah ALTER TABLE dijalankan lagi setelah berhasil.
-$_migFlag = __DIR__ . '/.waktu_migrated';
-if (!file_exists($_migFlag)) {
-    $conn->query("ALTER TABLE transaksi ADD COLUMN waktu TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
-    // Sukses (kolom baru ditambah) ATAU errno 1060 (kolom sudah ada) — keduanya berarti aman
-    if ($conn->errno === 0 || $conn->errno === 1060) {
-        @file_put_contents($_migFlag, '1');
-    }
-}
+
 $conn->query("CREATE TABLE IF NOT EXISTS logs_login (
     id INT AUTO_INCREMENT PRIMARY KEY,
     waktu TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
