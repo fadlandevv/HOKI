@@ -237,6 +237,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS laporan_settlement (
     pengeluaran_json TEXT,
     grand_total BIGINT DEFAULT 0
 )");
+$conn->query("ALTER TABLE laporan_settlement ADD COLUMN IF NOT EXISTS waktu TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
 $conn->query("CREATE TABLE IF NOT EXISTS stok_master (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nama_item VARCHAR(150) UNIQUE
@@ -645,12 +646,12 @@ switch ($action) {
         $role  = $_GET['role'] ?? 'Staff';
         $akses = $_GET['cabang'] ?? '';
         if ($role === 'Owner' || $role === 'VIP' || $akses === 'Semua') {
-            $sql = "SELECT * FROM laporan_settlement ORDER BY waktu DESC";
+            $sql = "SELECT *, DATE_FORMAT(waktu,'%Y-%m-%d %H:%i:%s') as waktu FROM laporan_settlement ORDER BY waktu DESC";
         } else {
             $cabangArr  = explode(',', $akses);
             $cleanCabang = array_map(fn($i) => "'".$conn->real_escape_string(trim($i))."'", $cabangArr);
             $cabangList  = implode(',', $cleanCabang);
-            $sql = "SELECT * FROM laporan_settlement WHERE cabang IN ($cabangList) ORDER BY waktu DESC";
+            $sql = "SELECT *, DATE_FORMAT(waktu,'%Y-%m-%d %H:%i:%s') as waktu FROM laporan_settlement WHERE cabang IN ($cabangList) ORDER BY waktu DESC";
         }
         $res = $conn->query($sql);
         echo json_encode($res ? $res->fetch_all(MYSQLI_ASSOC) : []);
@@ -665,7 +666,7 @@ switch ($action) {
         $au      = $conn->real_escape_string(json_encode($input['audit'] ?? []));
         $ex      = $conn->real_escape_string(json_encode($input['expens'] ?? []));
         $tt      = (int)($input['total'] ?? 0);
-        $sql = "REPLACE INTO laporan_settlement (report_id, petugas, cabang, metode_json, audit_json, pengeluaran_json, grand_total) VALUES ('$rid','$petugas','$cb','$mt','$au','$ex',$tt)";
+        $sql = "INSERT INTO laporan_settlement (report_id, waktu, petugas, cabang, metode_json, audit_json, pengeluaran_json, grand_total) VALUES ('$rid',NOW(),'$petugas','$cb','$mt','$au','$ex',$tt) ON DUPLICATE KEY UPDATE petugas='$petugas', cabang='$cb', metode_json='$mt', audit_json='$au', pengeluaran_json='$ex', grand_total=$tt";
         echo $conn->query($sql)
             ? json_encode(["status"=>"success"])
             : json_encode(["status"=>"error","message"=>$conn->error]);
