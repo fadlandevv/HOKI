@@ -194,6 +194,10 @@ $conn->query("CREATE TABLE IF NOT EXISTS hoki_cabang (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nama_cabang VARCHAR(100) UNIQUE
 )");
+$conn->query("CREATE TABLE IF NOT EXISTS hoki_roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nama_role VARCHAR(100) UNIQUE
+)");
 $conn->query("CREATE TABLE IF NOT EXISTS bahan_baku (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nama VARCHAR(150) DEFAULT '',
@@ -384,7 +388,7 @@ switch ($action) {
         $fn   = $conn->real_escape_string($input['fullName'] ?? '');
         $cb   = $conn->real_escape_string($input['cabang'] ?? '');
         $docs = $conn->real_escape_string(json_encode($input['docs'] ?? []));
-        $sql  = "REPLACE INTO users (username, password, role, fullName, cabang, docs_json) VALUES ('$u','$p','$r','$fn','$cb','$docs')";
+        $sql  = "INSERT INTO users (username, password, role, fullName, cabang, docs_json) VALUES ('$u','$p','$r','$fn','$cb','$docs') ON DUPLICATE KEY UPDATE password='$p', role='$r', fullName='$fn', cabang='$cb', docs_json='$docs'";
         echo $conn->query($sql)
             ? json_encode(["status"=>"success"])
             : json_encode(["status"=>"error","message"=>$conn->error]);
@@ -482,7 +486,7 @@ switch ($action) {
             $sql = "SELECT SUM(total) as total, COUNT(*) as jumlah FROM transaksi WHERE DATE(waktu)='$today' AND cabang='$cabang'";
         }
         $res  = $conn->query($sql);
-        $data = $res->fetch_assoc();
+        $data = ($res && $res->num_rows > 0) ? $res->fetch_assoc() : [];
         echo json_encode(["total"=>(int)($data['total']??0),"jumlah"=>(int)($data['jumlah']??0)]);
         break;
 
@@ -677,8 +681,8 @@ switch ($action) {
         break;
 
     case 'del_laporan':
-        $rid = $conn->real_escape_string($_GET['id'] ?? '');
-        $conn->query("DELETE FROM laporan_settlement WHERE id='$rid'");
+        $rid = (int)($_GET['id'] ?? 0);
+        $conn->query("DELETE FROM laporan_settlement WHERE id=$rid");
         echo json_encode(["status"=>"success"]);
         break;
 
@@ -797,6 +801,13 @@ switch ($action) {
             $masukMap[$r['tgl']] = (float)$r['total'];
         }
 
+        // Build nama→sku map dari tabel produk (items_json transaksi hanya simpan nama, bukan sku)
+        $namaSku = [];
+        $pr = $conn->query("SELECT nama, sku FROM produk");
+        if ($pr) foreach ($pr->fetch_all(MYSQLI_ASSOC) as $p) {
+            $namaSku[$p['nama']] = $p['sku'];
+        }
+
         // keluar dari transaksi (items_json)
         $keluarMap = [];
         $tr = $conn->query("SELECT DATE(waktu) as tgl, items_json FROM transaksi WHERE items_json IS NOT NULL");
@@ -804,7 +815,8 @@ switch ($action) {
             $items = json_decode($t['items_json'] ?? '[]', true);
             if (!is_array($items)) continue;
             foreach ($items as $item) {
-                if (($item['sku'] ?? '') === $sku) {
+                $itemSku = $item['sku'] ?? ($namaSku[$item['nama'] ?? ''] ?? '');
+                if ($itemSku === $sku) {
                     $keluarMap[$t['tgl']] = ($keluarMap[$t['tgl']] ?? 0) + (int)($item['qty'] ?? 1);
                 }
             }
