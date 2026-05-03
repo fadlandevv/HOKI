@@ -173,11 +173,6 @@ $conn->query("CREATE TABLE IF NOT EXISTS transaksi (
     metode VARCHAR(50) DEFAULT 'CASH',
     items_json TEXT
 )");
-// Migrasi satu kali: tambah kolom waktu jika belum ada di tabel lama
-$_chk = $conn->query("SELECT COUNT(*) AS c FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='transaksi' AND COLUMN_NAME='waktu'");
-if ($_chk && (int)$_chk->fetch_assoc()['c'] === 0) {
-    $conn->query("ALTER TABLE transaksi ADD COLUMN waktu TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
-}
 $conn->query("CREATE TABLE IF NOT EXISTS logs_login (
     id INT AUTO_INCREMENT PRIMARY KEY,
     waktu TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -445,14 +440,14 @@ switch ($action) {
         $tt = (int)($input['total'] ?? 0);
         $mt = $conn->real_escape_string($input['metode'] ?? '');
         $it = $conn->real_escape_string(json_encode($input['items'] ?? []));
-        $sql = "INSERT INTO transaksi (waktu, cabang, petugas, total, metode, items_json) VALUES (NOW(),'$cb','$pt',$tt,'$mt','$it')";
+        $sql = "INSERT INTO transaksi (cabang, petugas, total, metode, items_json) VALUES ('$cb','$pt',$tt,'$mt','$it')";
         echo $conn->query($sql)
             ? json_encode(["status"=>"success","id"=>$conn->insert_id])
             : json_encode(["status"=>"error","message"=>$conn->error]);
         break;
 
     case 'get_history':
-        $res = $conn->query("SELECT * FROM transaksi ORDER BY waktu DESC");
+        $res = $conn->query("SELECT * FROM transaksi ORDER BY id DESC");
         echo json_encode($res ? $res->fetch_all(MYSQLI_ASSOC) : []);
         break;
 
